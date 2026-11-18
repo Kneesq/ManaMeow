@@ -21,11 +21,8 @@
     park: '#c9e1a8',
     parkEdge: '#a3bf87',
     neighborhood: '#f4d9ca',
-    building: '#edc4b7',
-    buildingEdge: '#ddb09f',
     majorRoad: '#f0b37e',
     road: '#fffbf1',
-    roadEdge: '#e7ccb2',
     border: '#b19298',
   };
 
@@ -41,37 +38,106 @@
     landcover_wood: { 'fill-color': colors.woodland, 'fill-opacity': .8 },
     landcover_grass: { 'fill-color': colors.grass, 'fill-opacity': .72 },
     landuse_residential: { 'fill-color': colors.neighborhood },
-    building: { 'fill-color': colors.building, 'fill-outline-color': colors.buildingEdge },
-    'building-3d': { 'fill-extrusion-color': colors.building },
     boundary_2: { 'line-color': colors.border },
     boundary_3: { 'line-color': colors.border },
   };
-  const roadTone = {
-    road_motorway: colors.majorRoad,
-    road_trunk_primary: '#f5c89a',
-    road_secondary_tertiary: '#ffe1b9',
-    road_minor: colors.road,
+  const roadColors = {
+    road_motorway: ['#f3ae87', '#cb9574'],
+    road_motorway_link: ['#f3ae87', '#cb9574'],
+    road_trunk_primary: ['#f9cc9b', '#d4a37e'],
+    road_secondary_tertiary: ['#ffe4b9', '#dbc096'],
+    road_link: ['#ffe4b9', '#dbc096'],
+    road_minor: ['#fff9ee', '#d9c3ac'],
+    road_service_track: ['#fff5e6', '#e0c9b1'],
   };
+  const walkingPaths = new Set(['road_path_pedestrian', 'bridge_path_pedestrian', 'tunnel_path_pedestrian']);
+  const stitchedRoads = new Set(['road_motorway', 'road_trunk_primary']);
+  const roundedStroke = { 'line-cap': 'round', 'line-join': 'round' };
+
+  function styleRoad(layer) {
+    const id = layer.id.replace(/^(bridge|tunnel)_/, 'road_');
+    const casing = id.endsWith('_casing');
+    const road = casing ? id.slice(0, -7) : id;
+    const tone = roadColors[road];
+    if (!tone && !walkingPaths.has(layer.id)) return layer;
+    const paint = tone ? { 'line-color': tone[casing ? 1 : 0] } : {
+      'line-color': '#ab8695', 'line-dasharray': [1.3, 2.3],
+    };
+    return {
+      ...layer,
+      layout: { ...layer.layout, ...roundedStroke },
+      paint: { ...layer.paint, ...paint },
+    };
+  }
+
+  function roadStitches(layer) {
+    return {
+      ...layer,
+      id: 'manameow-' + layer.id + '-stitches',
+      minzoom: 12,
+      paint: {
+        'line-color': '#fff8e9',
+        'line-width': ['interpolate', ['linear'], ['zoom'], 12, .7, 16, 1.4],
+        'line-dasharray': [1.7, 3.2],
+        'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 14, .66, 17, .86],
+      },
+    };
+  }
+
+  const buildingColor = ['match',
+    ['%', ['floor', ['abs', ['to-number', ['id'], ['get', 'render_height'], 0]]], 7],
+    0, '#efb6a8', 1, '#f4d292', 2, '#dfbedc',
+    3, '#bdd9c2', 4, '#bcd8de', 5, '#e6a796', '#fad3b1',
+  ];
+
+  function styleBuildings(layer) {
+    // The map is overhead. Draw real building footprints with a small offset shadow and a pastel roof.
+    const { maxzoom, ...footprints } = layer;
+    return [
+      {
+        ...footprints,
+        id: 'manameow-building-shadows',
+        paint: {
+          'fill-color': '#a78586',
+          'fill-translate': [1.7, 2.6],
+          'fill-translate-anchor': 'viewport',
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 14.5, .13, 17, .24],
+        },
+      },
+      {
+        ...footprints,
+        paint: {
+          ...layer.paint,
+          'fill-color': ['interpolate', ['linear'], ['zoom'], 13, '#f5dcc4', 14.45, buildingColor],
+          'fill-outline-color': ['interpolate', ['linear'], ['zoom'], 13, '#e3cbb2', 16.5, '#c8a198'],
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, .78, 14.45, 1],
+        },
+      },
+    ];
+  }
 
   function styleTheMap(_previous, style) {
-    return {
-      ...style,
-      layers: style.layers.map(layer => {
-        let custom = layerPaint[layer.id];
-        if (layer.type === 'line' && layer.id in roadTone) {
-          custom = { 'line-color': roadTone[layer.id] };
-        } else if (layer.type === 'line' && layer.id.endsWith('_casing') && layer.id.slice(0, -7) in roadTone) {
-          custom = { 'line-color': colors.roadEdge };
-        } else if (layer.type === 'symbol' && layer.layout?.['text-field']) {
-          const waterLabel = /^(water_name|waterway)/.test(layer.id);
-          custom = {
-            'text-color': waterLabel ? colors.waterInk : colors.ink,
-            'text-halo-color': waterLabel ? '#e7f5ed' : colors.halo,
-          };
-        }
-        return custom ? { ...layer, paint: { ...layer.paint, ...custom } } : layer;
-      }),
-    };
+    const footprints = style.layers.find(layer => layer.id === 'building' && layer.type === 'fill');
+    const layers = style.layers.flatMap(layer => {
+      if (layer === footprints) return styleBuildings(layer);
+      if (footprints && layer.id === 'building-3d') return [];
+      if (layer.type === 'line') {
+        const road = styleRoad(layer);
+        if (stitchedRoads.has(layer.id)) return [road, roadStitches(road)];
+        if (road !== layer) return [road];
+      }
+
+      let custom = layerPaint[layer.id];
+      if (layer.type === 'symbol' && layer.layout?.['text-field']) {
+        const waterLabel = /^(water_name|waterway)/.test(layer.id);
+        custom = {
+          'text-color': waterLabel ? colors.waterInk : colors.ink,
+          'text-halo-color': waterLabel ? '#e7f5ed' : colors.halo,
+        };
+      }
+      return [custom ? { ...layer, paint: { ...layer.paint, ...custom } } : layer];
+    });
+    return { ...style, layers };
   }
 
   function drawRipple(context, x, y) {
@@ -442,7 +508,7 @@
     function select(id) {
       selectedId = id;
       const match = pins.find(({ card }) => card.id === id);
-      if (match) center(match.card, Math.max(center().zoom, 9.5));
+      if (match) center(match.card, Math.max(center().zoom, 14.4));
       scheduleRender();
     }
 
