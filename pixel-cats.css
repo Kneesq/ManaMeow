@@ -1,0 +1,101 @@
+.mana-map__pin--pixel {
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  box-shadow: none;
+  transform: translate(-50%, -86%);
+}
+
+.mana-map__pin--pixel::before {
+  inset: -7px -9px;
+  border-radius: 13px;
+}
+
+.mana-map__pin--pixel::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  left: 50%;
+  bottom: 5px;
+  transform: translate(-50%, 50%);
+  border: 2px solid #fff9ed;
+  border-radius: 50%;
+  background: var(--pin-color);
+  box-shadow: 0 1px 3px #6149374f;
+  pointer-events: none;
+}
+
+.mana-map__pin--pixel .mana-map__paw {
+  display: none;
+}
+
+.mana-map__pin--pixel .mana-map__pin-name {
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+}
+
+.mana-pixel-cat {
+  position: absolute;
+  left: calc(50% - 24px);
+  bottom: 8px;
+  width: 48px;
+  height: 32px;
+  animation: mana-cat-wander var(--cat-duration) linear var(--cat-delay) infinite;
+  pointer-events: none;
+}
+
+.mana-pixel-cat::before {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 12px;
+  width: 24px;
+  height: 5px;
+  border-radius: 50%;
+  background: #74544137;
+}
+
+.mana-pixel-cat__body {
+  position: absolute;
+  inset: 0;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  background-size: 192px 32px;
+  background-position: 0 0;
+  scale: var(--cat-direction) 1;
+  filter: drop-shadow(0 0 1px #fff9e9);
+  animation:
+    mana-cat-walk var(--cat-duration) steps(1, end) var(--cat-delay) infinite,
+    mana-cat-face var(--cat-duration) steps(1, end) var(--cat-delay) infinite;
+}
+
+@keyframes mana-cat-wander {
+  0%, 8%, 96%, 100% { translate: var(--cat-from-x) 0; }
+  47%, 58% { translate: var(--cat-to-x) var(--cat-to-y); }
+}
+
+@keyframes mana-cat-walk {
+  0%, 8%, 28%, 47%, 58%, 78%, 96%, 100% { background-position: 0 0; }
+  13%, 33%, 63%, 83% { background-position: -48px 0; }
+  18%, 38%, 68%, 88% { background-position: -96px 0; }
+  23%, 43%, 73%, 93% { background-position: -144px 0; }
+}
+
+@keyframes mana-cat-face {
+  0%, 98%, 100% { scale: var(--cat-direction) 1; }
+  50% { scale: var(--cat-reverse) 1; }
+}
+
+.mana-map:is([data-motion='off'], .mana-map--picking) :is(.mana-pixel-cat, .mana-pixel-cat__body),
+.mana-map__pin--pixel:is(:hover, :focus-visible) :is(.mana-pixel-cat, .mana-pixel-cat__body) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mana-pixel-cat,
+  .mana-pixel-cat__body {
+    animation: none;
+  }
+}

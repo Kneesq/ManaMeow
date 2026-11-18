@@ -439,9 +439,9 @@
         // Offset overlapping buttons so each sighting remains independently selectable.
         let offset = 0;
         let candidate = 0;
-        while (placed.some(pin => Math.abs(pin.x - x - offset) < 42 && Math.abs(pin.y - y) < 44)) {
+        while (placed.some(pin => Math.abs(pin.x - x - offset) < 53 && Math.abs(pin.y - y) < 48)) {
           candidate += 1;
-          offset = Math.ceil(candidate / 2) * 44 * (candidate % 2 ? 1 : -1);
+          offset = Math.ceil(candidate / 2) * 54 * (candidate % 2 ? 1 : -1);
         }
         placed.push({ x: x + offset, y });
         button.style.left = `${x + offset}px`;
@@ -461,28 +461,37 @@
     }
 
     function setCards(nextCards) {
+      const existing = new Map(pins.map(pin => [pin.card.id,pin]));
       pins = nextCards.filter(card => Number.isFinite(card.lat) && Number.isFinite(card.lng))
         .map(card => {
-          const button = document.createElement('button');
-          const paw = document.createElement('span');
-          const label = document.createElement('span');
-          button.className = 'mana-map__pin';
-          button.type = 'button';
-          button.dataset.category = String(card.category ?? '').toLowerCase();
-          button.setAttribute('aria-label', card.name);
-          button.title = card.name;
-          paw.className = 'mana-map__paw';
-          paw.setAttribute('aria-hidden', 'true');
-          label.className = 'mana-map__pin-name';
-          label.textContent = card.name;
-          button.append(paw, label);
-          button.addEventListener('click', () => {
-            if (picking) onPick?.({ lat: card.lat, lng: card.lng });
-            else selectCard?.(card.id);
-          });
-          return { card, button };
+          let pin = existing.get(card.id);
+          if (!pin) {
+            const button = document.createElement('button');
+            const paw = document.createElement('span');
+            const label = document.createElement('span');
+            button.className = 'mana-map__pin';
+            button.type = 'button';
+            paw.className = 'mana-map__paw';
+            paw.setAttribute('aria-hidden', 'true');
+            label.className = 'mana-map__pin-name';
+            button.append(paw, label);
+            window.attachManaPixelCat?.(button, card.id ?? card.name);
+            pin = { card, button, label };
+            button.addEventListener('click', () => {
+              const { id, lat, lng } = pin.card;
+              if (picking) onPick?.({ lat, lng });
+              else selectCard?.(id);
+            });
+            pinLayer.append(button);
+          }
+          pin.card = card;
+          pin.button.dataset.category = String(card.category ?? '').toLowerCase();
+          pin.button.setAttribute('aria-label', card.name);
+          pin.label.textContent = card.name;
+          existing.delete(card.id);
+          return pin;
         });
-      pinLayer.replaceChildren(...pins.map(pin => pin.button));
+      for (const pin of existing.values()) pin.button.remove();
       scheduleRender();
     }
 
