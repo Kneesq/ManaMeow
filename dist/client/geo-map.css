@@ -65,15 +65,15 @@
 }
 
 .mana-map__pin {
-  --pin-color: #bc542f;
+  --pin-color: #b6593b;
   position: absolute;
   display: grid;
   place-items: center;
-  border: 2px solid white;
+  border: 2px solid #fffdf6;
   border-radius: 50% 50% 50% 18%;
-  box-shadow: 0 3px 9px #493c3650;
-  color: white;
-  background: var(--pin-color);
+  box-shadow: 0 3px 8px #493c3640;
+  background-color: var(--pin-color);
+  background-image: linear-gradient(125deg, #fff4dd42, transparent 75%);
   width: 36px;
   height: 36px;
   margin: 0;
@@ -100,21 +100,33 @@
   outline-offset: 2px;
 }
 
+.mana-map__pin:focus-visible {
+  outline-color: #42332b;
+}
+
 .mana-map__pin[data-category="pet"] {
-  --pin-color: #5e7955;
+  --pin-color: #627b53;
 }
 
 .mana-map__pin:is([data-category="cafe"], [data-category="café"], [data-category="cat cafe"], [data-category="cat café"]) {
-  --pin-color: #87638c;
+  --pin-color: #866494;
 }
 
 .mana-map__paw {
+  --face-cream: #fff4df;
+  --face-ink: #553932;
   position: relative;
-  transform: rotate(45deg) translateY(3px);
-  background: currentColor;
-  border-radius: 60% 60% 45% 45%;
-  width: 10px;
-  height: 8px;
+  transform: rotate(45deg) translateY(2px);
+  width: 21px;
+  height: 15px;
+  border-radius: 48% 48% 44% 44%;
+  background:
+    radial-gradient(ellipse 1.25px 1.55px at 28% 47%, var(--face-ink) 74%, transparent),
+    radial-gradient(ellipse 1.25px 1.55px at 72% 47%, var(--face-ink) 74%, transparent),
+    radial-gradient(ellipse 1.4px 1px at 50% 62%, #a46455 74%, transparent),
+    radial-gradient(ellipse 2.3px 1.35px at 20% 68%, #edb9a7 71%, transparent),
+    radial-gradient(ellipse 2.3px 1.35px at 80% 68%, #edb9a7 71%, transparent),
+    var(--face-cream);
   pointer-events: none;
 }
 
@@ -122,19 +134,19 @@
 .mana-map__paw::after {
   content: '';
   position: absolute;
-  border-radius: 50%;
-  width: 4px;
-  height: 5px;
-  top: -6px;
-  left: 1px;
-  background: currentColor;
-  box-shadow: 5px 0 currentColor;
+  width: 8px;
+  height: 9px;
+  top: -5px;
+  left: 0.5px;
+  background: var(--face-cream);
+  background-image: radial-gradient(ellipse 1.45px 2.35px at 35% 59%, #eeb6a2 70%, transparent);
+  clip-path: polygon(2% 8%, 12% 0, 32% 5%, 100% 84%, 94% 100%, 9% 100%);
 }
 
 .mana-map__paw::after {
-  top: -2px;
-  left: -3px;
-  box-shadow: 13px 0 currentColor;
+  left: auto;
+  right: 0.5px;
+  transform: scaleX(-1);
 }
 
 .mana-map__pin-name {

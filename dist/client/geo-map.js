@@ -8,6 +8,118 @@
   const MAX_ZOOM = 17;
   const DEGREES = Math.PI / 180;
 
+  const colors = {
+    paper: '#fff1db',
+    ink: '#504139',
+    halo: '#fff9eb',
+    ocean: '#b7e1de',
+    river: '#83c1bd',
+    waterInk: '#376b70',
+    wave: '#e5f6ef',
+    woodland: '#b3d39e',
+    grass: '#d3e5aa',
+    park: '#c9e1a8',
+    parkEdge: '#a3bf87',
+    neighborhood: '#f4d9ca',
+    building: '#edc4b7',
+    buildingEdge: '#ddb09f',
+    majorRoad: '#f0b37e',
+    road: '#fffbf1',
+    roadEdge: '#e7ccb2',
+    border: '#b19298',
+  };
+
+  const layerPaint = {
+    background: { 'background-color': colors.paper },
+    natural_earth: { 'raster-opacity': ['interpolate', ['linear'], ['zoom'], 0, .25, 5, .15, 7, 0] },
+    water: { 'fill-color': colors.ocean },
+    waterway_river: { 'line-color': colors.river },
+    waterway_other: { 'line-color': colors.river },
+    waterway_tunnel: { 'line-color': colors.river },
+    park: { 'fill-color': colors.park, 'fill-outline-color': colors.parkEdge, 'fill-opacity': .74 },
+    park_outline: { 'line-color': colors.parkEdge },
+    landcover_wood: { 'fill-color': colors.woodland, 'fill-opacity': .8 },
+    landcover_grass: { 'fill-color': colors.grass, 'fill-opacity': .72 },
+    landuse_residential: { 'fill-color': colors.neighborhood },
+    building: { 'fill-color': colors.building, 'fill-outline-color': colors.buildingEdge },
+    'building-3d': { 'fill-extrusion-color': colors.building },
+    boundary_2: { 'line-color': colors.border },
+    boundary_3: { 'line-color': colors.border },
+  };
+  const roadTone = {
+    road_motorway: colors.majorRoad,
+    road_trunk_primary: '#f5c89a',
+    road_secondary_tertiary: '#ffe1b9',
+    road_minor: colors.road,
+  };
+
+  function styleTheMap(_previous, style) {
+    return {
+      ...style,
+      layers: style.layers.map(layer => {
+        let custom = layerPaint[layer.id];
+        if (layer.type === 'line' && layer.id in roadTone) {
+          custom = { 'line-color': roadTone[layer.id] };
+        } else if (layer.type === 'line' && layer.id.endsWith('_casing') && layer.id.slice(0, -7) in roadTone) {
+          custom = { 'line-color': colors.roadEdge };
+        } else if (layer.type === 'symbol' && layer.layout?.['text-field']) {
+          const waterLabel = /^(water_name|waterway)/.test(layer.id);
+          custom = {
+            'text-color': waterLabel ? colors.waterInk : colors.ink,
+            'text-halo-color': waterLabel ? '#e7f5ed' : colors.halo,
+          };
+        }
+        return custom ? { ...layer, paint: { ...layer.paint, ...custom } } : layer;
+      }),
+    };
+  }
+
+  function drawRipple(context, x, y) {
+    context.beginPath();
+    context.moveTo(x, y);
+    context.quadraticCurveTo(x + 3, y - 3, x + 6, y);
+    context.quadraticCurveTo(x + 9, y + 3, x + 12, y);
+    context.moveTo(x + 6, y + 5);
+    context.quadraticCurveTo(x + 9, y + 3, x + 12, y + 5);
+    context.stroke();
+  }
+
+  function waterTexture() {
+    const tile = document.createElement('canvas');
+    tile.width = tile.height = 128;
+    const context = tile.getContext('2d');
+    if (!context) return null;
+    context.strokeStyle = colors.wave;
+    context.lineWidth = 1.6;
+    context.lineCap = 'round';
+    drawRipple(context, 20, 28);
+    drawRipple(context, 85, 95);
+    return tile;
+  }
+
+  function addWaterTexture(map, texture) {
+    if (!texture) return;
+    const layers = map.getStyle().layers;
+    const index = layers.findIndex(layer => layer.id === 'water' && layer.type === 'fill');
+    if (index < 0) return;
+    const { source, 'source-layer': sourceLayer, filter } = layers[index];
+    const context = texture.getContext('2d');
+    if (!context) return;
+
+    map.addImage('manameow-water-texture', context.getImageData(0, 0, texture.width, texture.height));
+    map.addLayer({
+      id: 'manameow-water-ripples',
+      type: 'fill',
+      source,
+      'source-layer': sourceLayer,
+      ...(filter ? { filter } : {}),
+      paint: {
+        'fill-pattern': 'manameow-water-texture',
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 4, .38, 6, .8, 11, .34, 14, .22],
+      },
+    }, layers[index + 1]?.id);
+  }
+
   // Generalized coastlines for the built-in overview. The streets and boundaries
   // in the online map come from OpenStreetMap via OpenFreeMap.
   const land = [
@@ -127,6 +239,8 @@
     const pinLayer = document.createElement('div');
     const fallbackCredit = document.createElement('span');
     const context = canvas.getContext('2d');
+    const texture = waterTexture();
+    const waterPattern = texture && context?.createPattern(texture, 'repeat');
     let map = null;
     let loaded = false;
     let picking = false;
@@ -181,15 +295,19 @@
     function drawSchematic() {
       if (!context) return;
       const water = context.createLinearGradient(0, 0, width, height);
-      water.addColorStop(0, '#d9edeb');
-      water.addColorStop(1, '#c6e1e2');
+      water.addColorStop(0, '#c8eae4');
+      water.addColorStop(1, colors.ocean);
       context.fillStyle = water;
       context.fillRect(0, 0, width, height);
+      if (waterPattern) {
+        context.fillStyle = waterPattern;
+        context.fillRect(0, 0, width, height);
+      }
 
       context.lineJoin = 'round';
       context.lineCap = 'round';
-      context.fillStyle = '#f4f0db';
-      context.strokeStyle = '#aecac1';
+      context.fillStyle = colors.paper;
+      context.strokeStyle = '#a1c9bb';
       context.lineWidth = 1.5;
       land.forEach(points => {
         path(points, true);
@@ -197,13 +315,13 @@
         context.stroke();
       });
 
-      context.fillStyle = '#dbe6c9';
+      context.fillStyle = colors.woodland;
       forests.forEach(points => {
         path(points, true);
         context.fill();
       });
 
-      context.strokeStyle = '#a3aa94';
+      context.strokeStyle = colors.border;
       context.lineWidth = 1.2;
       context.setLineDash([3, 5]);
       path(border);
@@ -213,10 +331,10 @@
       if (camera.zoom >= 5) {
         roads.forEach(points => {
           path(points);
-          context.strokeStyle = '#e7cdae';
+          context.strokeStyle = colors.majorRoad;
           context.lineWidth = 2.7;
           context.stroke();
-          context.strokeStyle = '#fffaf0';
+          context.strokeStyle = colors.road;
           context.lineWidth = 1.25;
           context.stroke();
         });
@@ -234,10 +352,10 @@
         context.textAlign = type === 'city' ? 'left' : 'center';
         context.font = type === 'sea' ? 'italic 12px Georgia, serif' :
           type === 'region' ? '700 10px system-ui, sans-serif' : '550 11px system-ui, sans-serif';
-        context.fillStyle = type === 'sea' ? '#5d7880' : type === 'region' ? '#728269' : '#645846';
+        context.fillStyle = type === 'sea' ? colors.waterInk : type === 'region' ? '#4e6651' : colors.ink;
         if (type === 'city') {
           context.lineWidth = 3;
-          context.strokeStyle = '#f7f3e4';
+          context.strokeStyle = colors.halo;
           context.strokeText(name, x + 5, y + 4);
         }
         context.fillText(name, x + (type === 'city' ? 5 : 0), y + 4);
@@ -431,10 +549,12 @@
       map = new Map({
         container: engine, style: STYLE, center: [camera.lng, camera.lat], zoom: camera.zoom,
         minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: 0, dragRotate: false,
-        renderWorldCopies: false, cooperativeGestures: false, attributionControl: false
+        renderWorldCopies: false, cooperativeGestures: false, attributionControl: false,
+        transformStyle: styleTheMap
       });
       map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
       map.once('load', () => {
+        addWaterTexture(map, texture);
         map.jumpTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
         loaded = true;
         container.classList.add('mana-map--online');
