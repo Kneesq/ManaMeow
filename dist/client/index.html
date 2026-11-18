@@ -12,9 +12,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css">
   <link rel="stylesheet" href="geo-map.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=3">
-  <script defer src="geo-map.js?v=4"></script>
-  <script defer src="app.js?v=2"></script>
+  <link rel="stylesheet" href="pixel-cats.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <script defer src="pixel-cats.js?v=1"></script>
+  <script defer src="geo-map.js?v=5"></script>
+  <script defer src="app.js?v=3"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -61,6 +63,7 @@
           <option value="en">English</option><option value="zh">简体中文</option><option value="ms">Bahasa Melayu</option>
         </select>
       </label>
+      <label class="language-row animation-setting"><span data-i="animation">Cat animation</span><input id="cat-animation" type="checkbox" checked></label>
     </section>
 
     <div id="map-instruction" class="map-instruction" hidden>
@@ -75,16 +78,54 @@
     <noscript><p class="map-instruction">Enable JavaScript to open the map.</p></noscript>
   </main>
 
-  <dialog id="cat-dialog" aria-labelledby="cat-title">
+  <dialog id="cat-dialog" class="cat-profile" aria-labelledby="cat-title">
     <button class="close" type="button" data-close aria-label="Close">×</button>
-    <img id="cat-image" class="profile-image" alt="" width="480" height="265" hidden>
     <div class="dialog-body">
-      <span id="cat-category" class="badge"></span>
-      <h2 id="cat-title"></h2>
-      <p id="cat-location" class="profile-location"></p>
-      <p id="cat-note"></p>
-      <p id="cat-date" class="fine"></p>
-      <p id="cat-demo" class="fine" data-i="profileDemo">Illustrative photo and approximate sample location.</p>
+      <div class="profile-head">
+        <div class="profile-avatar">
+          <img id="cat-image" alt="" width="96" height="96" hidden>
+          <span id="cat-avatar-fallback" class="paw" aria-hidden="true"></span>
+        </div>
+        <div class="profile-identity">
+          <span id="cat-category" class="badge"></span>
+          <h2 id="cat-title"></h2>
+          <dl class="profile-facts">
+            <div><dt data-i="age">Age</dt><dd id="cat-age"></dd></div>
+            <div><dt data-i="gender">Sex</dt><dd id="cat-gender"></dd></div>
+          </dl>
+        </div>
+      </div>
+      <div class="profile-bio">
+        <p id="cat-note"></p>
+        <p id="cat-location" class="profile-location"></p>
+        <p id="cat-date" class="fine"></p>
+        <p id="cat-demo" class="fine" data-i="profileDemo">Sample profile</p>
+      </div>
+      <section class="profile-photos" aria-labelledby="photos-heading">
+        <div class="profile-section-head">
+          <h3 id="photos-heading" data-i="photos">Photos</h3>
+          <button class="button secondary" type="button" id="add-profile-photo"><span aria-hidden="true">＋</span><span data-i="addPhoto">Add photo</span></button>
+        </div>
+        <form id="profile-photo-form" hidden>
+          <label><span data-i="photo">Photo</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <div class="photo-form-actions">
+            <button class="button primary" type="submit" id="submit-profile-photo" data-i="submit">Submit for review</button>
+            <button class="button secondary" type="button" id="cancel-profile-photo" data-i="cancel">Cancel</button>
+          </div>
+        </form>
+        <p id="profile-photo-status" class="fine" role="status" hidden></p>
+        <ul id="cat-photos" class="photo-grid"></ul>
+        <p id="cat-photos-empty" class="fine" data-i="noPhotos" hidden>No photos yet.</p>
+      </section>
+    </div>
+  </dialog>
+  <dialog id="photo-dialog" class="photo-viewer" aria-labelledby="photo-title">
+    <button class="close" type="button" data-close aria-label="Close">×</button>
+    <img id="viewer-image" alt="">
+    <div class="dialog-body">
+      <h2 id="photo-title"></h2>
+      <time id="viewer-date" class="fine"></time>
+      <p id="viewer-caption"></p>
     </div>
   </dialog>
   <dialog id="account-dialog" aria-labelledby="account-title">
@@ -107,13 +148,17 @@
           <label><span data-i="category">Category</span><select name="category"><option value="stray" data-i="stray">Stray</option><option value="pet" data-i="pet">Pet</option><option value="cafe" data-i="cafe">Café</option></select></label>
           <label><span data-i="city">City or town</span><input name="city" maxlength="70" required data-placeholder="cityExample" placeholder="e.g. Ipoh"></label>
         </div>
+        <div class="form-grid">
+          <label><span data-i="ageMonths">Age (months)</span><input name="ageMonths" type="number" min="0" max="480" step="1" data-placeholder="unknown" placeholder="Unknown"></label>
+          <label><span data-i="gender">Sex</span><select name="gender"><option value="unknown" data-i="unknown">Unknown</option><option value="female" data-i="female">Female</option><option value="male" data-i="male">Male</option></select></label>
+        </div>
         <label><span data-i="around">Nearby public landmark</span><input name="location" maxlength="100" required data-placeholder="placeExample" placeholder="e.g. Near the town garden"></label>
         <div class="pin-row">
           <button class="button secondary" type="button" id="pick-location" data-i="selectPin">Choose a map pin</button>
           <span id="pin-status" class="fine" data-i="pinNone">No pin selected</span>
         </div>
         <label><span data-i="observed">Date spotted</span><input name="observed" type="date" required></label>
-        <label><span data-i="photo">Photo</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
+        <label><span data-i="profilePhoto">Profile photo</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
         <label><span data-i="note">Notes (optional)</span><textarea name="note" rows="3" maxlength="450" data-placeholder="noteExample" placeholder="What would help others recognise this cat?"></textarea></label>
         <p id="upload-error" class="error" role="alert" hidden></p>
         <div class="dialog-actions"><button class="button primary" type="submit" id="submit-sighting" data-i="submit">Submit for review</button></div>

@@ -10,10 +10,11 @@
   };
   const translations = {
     zh: {
+      age:'年龄', gender:'性别', ageMonths:'年龄（月）', unknown:'未知', female:'雌性', male:'雄性', photos:'照片', addPhoto:'添加照片', profilePhoto:'头像', animation:'猫咪动画', noPhotos:'还没有照片。', photoOffline:'连接网站后可以上传照片。', photoFailed:'照片上传失败，请再试一次。', photoSubmitted:'照片已提交审核。',
       skip:'跳到地图', account:'我的账号', add:'添加猫咪', findCats:'找猫', menu:'菜单', language:'语言',
       mapLabel:'猫咪地图', mapControls:'地图控件', filter:'猫咪分类', pick:'点击地图放置标记。', cancel:'取消',
       stray:'流浪猫', pet:'家猫', cafe:'猫咖', all:'全部', search:'猫名、城市或地点',
-      profileDemo:'示例肖像与大概位置。', name:'猫咪名字', nameExample:'例如 Milo', category:'分类', city:'城市或城镇', cityExample:'例如怡保',
+      profileDemo:'示例档案', name:'猫咪名字', nameExample:'例如 Milo', category:'分类', city:'城市或城镇', cityExample:'例如怡保',
       around:'附近的公共地标', placeExample:'例如公园附近', selectPin:'在地图上选点', pinNone:'尚未选择位置', pinSet:'已选好大概位置',
       observed:'目击日期', photo:'照片', photoHelp:'支持 JPG、PNG 和 WebP，最大 10 MB。请上传你有权分享的照片。', note:'补充说明（选填）', noteExample:'有什么特征能帮助别人认出这只猫？', submit:'提交审核', saveDraft:'保存草稿',
       noMatches:'没有符合条件的猫咪。', close:'关闭', zoomIn:'放大', zoomOut:'缩小', resetMap:'重置地图',
@@ -24,10 +25,11 @@
       submitted:'投稿成功，等待审核。', draftSaved:'已在本机保存草稿。', pending:'待审核', approved:'已通过', rejected:'未通过', review:'审核投稿', spotted:'目击于', loading:'加载中…'
     },
     ms: {
+      age:'Umur', gender:'Jantina', ageMonths:'Umur (bulan)', unknown:'Tidak diketahui', female:'Betina', male:'Jantan', photos:'Gambar', addPhoto:'Tambah gambar', profilePhoto:'Foto profil', animation:'Animasi kucing', noPhotos:'Belum ada gambar.', photoOffline:'Sambung ke laman untuk memuat naik gambar.', photoFailed:'Gambar gagal dimuat naik. Cuba lagi.', photoSubmitted:'Gambar dihantar untuk semakan.',
       skip:'Langkau ke peta', account:'Akaun saya', add:'Tambah kucing', findCats:'Cari kucing', menu:'Menu', language:'Bahasa',
       mapLabel:'Peta penampakan kucing', mapControls:'Kawalan peta', filter:'Kategori kucing', pick:'Ketik peta untuk meletakkan penanda.', cancel:'Batal',
       stray:'Jalanan', pet:'Peliharaan', cafe:'Kafe', all:'Semua', search:'Nama kucing, bandar atau tempat',
-      profileDemo:'Gambar ilustrasi dan contoh lokasi anggaran.', name:'Nama kucing', nameExample:'Cth. Milo', category:'Kategori', city:'Bandar', cityExample:'Cth. Ipoh',
+      profileDemo:'Contoh profil', name:'Nama kucing', nameExample:'Cth. Milo', category:'Kategori', city:'Bandar', cityExample:'Cth. Ipoh',
       around:'Mercu tanda awam terdekat', placeExample:'Cth. Berhampiran taman', selectPin:'Pilih penanda', pinNone:'Tiada penanda dipilih', pinSet:'Lokasi anggaran dipilih',
       observed:'Tarikh ditemui', photo:'Gambar', photoHelp:'JPG, PNG atau WebP sehingga 10 MB. Pilih gambar yang anda dibenarkan kongsi.', note:'Catatan (pilihan)', noteExample:'Apakah ciri yang membantu orang mengenali kucing ini?', submit:'Hantar untuk semakan', saveDraft:'Simpan draf',
       noMatches:'Tiada padanan.', close:'Tutup', zoomIn:'Zum masuk', zoomOut:'Zum keluar', resetMap:'Tetapkan semula peta',
@@ -38,6 +40,7 @@
       submitted:'Kiriman diterima dan menunggu semakan.', draftSaved:'Draf disimpan pada peranti ini.', pending:'Menunggu', approved:'Diluluskan', rejected:'Ditolak', review:'Semak kiriman', spotted:'Ditemui pada', loading:'Memuatkan…'
     },
     en: {
+      photoOffline:'Connect to the site to upload a photo.', photoFailed:'Couldn’t upload this photo. Try again.', photoSubmitted:'Photo sent for review.',
       close:'Close', zoomIn:'Zoom in', zoomOut:'Zoom out', resetMap:'Reset map view', pinSet:'Approximate pin selected',
       signIn:'Sign in with ChatGPT', signOut:'Sign out', signPrompt:'Sign in to submit sightings and check their status.',
       accountOffline:'You can browse the sample sightings and save a draft to this device. Submissions need a connection to the website service.',
@@ -60,10 +63,10 @@
     remove(key) { try { localStorage.removeItem(key); } catch {} }
   };
   const samples = [
-    { id:'mochi', name:'Mochi', category:'stray', city:'Kuala Lumpur', location:'Perdana Botanical Garden area', lat:3.14, lng:101.68, image:'mochi.jpg', observed:'2026-11-16', note:'An orange tabby who likes to nap in the shade. You can spot a little white patch under the chin.' },
-    { id:'pudding', name:'Pudding', category:'cafe', city:'George Town, Penang', location:'George Town heritage district', lat:5.42, lng:100.33, image:'pudding.jpg', observed:'2026-11-14', note:'A fluffy cream café cat with amber eyes. She likes to watch the street from the window.' },
-    { id:'shadow', name:'Shadow', category:'stray', city:'Johor Bahru', location:'Dataran Bandaraya area', lat:1.46, lng:103.74, image:'shadow.jpg', observed:'2026-11-12', note:'A quiet charcoal cat often seen sitting close to the hedges. Give him a little space if you spot him.' },
-    { id:'biscuit', name:'Biscuit', category:'pet', city:'Petaling Jaya', location:'Taman Jaya Park area', lat:3.10, lng:101.65, image:'biscuit.jpg', observed:'2026-11-10', note:'A tabby with a white bib who likes to watch the world go by on walks with her person.' }
+    { id:'mochi', ageMonths:30, gender:'female', name:'Mochi', category:'stray', city:'Kuala Lumpur', location:'Perdana Botanical Garden area', lat:3.14, lng:101.68, image:'mochi.jpg', observed:'2026-11-16', note:'An orange tabby who likes to nap in the shade. You can spot a little white patch under the chin.' },
+    { id:'pudding', ageMonths:26, gender:'female', name:'Pudding', category:'cafe', city:'George Town, Penang', location:'George Town heritage district', lat:5.42, lng:100.33, image:'pudding.jpg', observed:'2026-11-14', note:'A fluffy cream café cat with amber eyes. She likes to watch the street from the window.' },
+    { id:'shadow', ageMonths:36, gender:'male', name:'Shadow', category:'stray', city:'Johor Bahru', location:'Dataran Bandaraya area', lat:1.46, lng:103.74, image:'shadow.jpg', observed:'2026-11-12', note:'A quiet charcoal cat often seen sitting close to the hedges. Give him a little space if you spot him.' },
+    { id:'biscuit', ageMonths:18, gender:'female', name:'Biscuit', category:'pet', city:'Petaling Jaya', location:'Taman Jaya Park area', lat:3.10, lng:101.65, image:'biscuit.jpg', observed:'2026-11-10', note:'A tabby with a white bib who likes to watch the world go by on walks with her person.' }
   ].map(cat => ({ ...cat, sample:true }));
   const sampleNotes = {
     zh: ['这只橘猫喜欢在阴凉处打盹，下巴有一小块白毛。','这只猫咖里的奶油色长毛猫有琥珀色眼睛，喜欢坐在窗边看街景。','一只安静的深灰色猫，常坐在树篱附近。遇见时可以留些距离。','一只胸前有白毛的虎斑猫，喜欢跟主人散步时看看四周。'],
@@ -93,6 +96,22 @@
   $('#zoom-in').addEventListener('click', () => map?.zoomBy(1.6));
   $('#zoom-out').addEventListener('click', () => map?.zoomBy(1/1.6));
   $('#reset-map').addEventListener('click', () => map?.reset());
+
+
+  const motionControl = $('#cat-animation');
+  const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+  const applyMotionPreference = () => {
+    const enabled = !motionPreference.matches && storage.get('manameow-cat-motion') !== 'off';
+    motionControl.checked = enabled;
+    motionControl.disabled = motionPreference.matches;
+    mapElement.dataset.motion = enabled ? 'on' : 'off';
+  };
+  motionControl.addEventListener('change', () => {
+    storage.set('manameow-cat-motion', motionControl.checked ? 'on' : 'off');
+    applyMotionPreference();
+  });
+  motionPreference.addEventListener('change', applyMotionPreference);
+  applyMotionPreference();
 
   function openSearchResult(cat) {
     searchPanel.hidePopover();
@@ -152,25 +171,169 @@
     renderMapList();
   });
 
+  let activeProfile = null;
+  let profileRequest = 0;
+  const photoForm = $('#profile-photo-form');
+  const photoSubmit = $('#submit-profile-photo');
+  const photoViewer = $('#photo-dialog');
+
+  function profileAge(ageMonths) {
+    if (!Number.isInteger(ageMonths) || ageMonths < 0) return t('unknown');
+    const agePart = (value, unit) => new Intl.NumberFormat(state.lang, {
+      style:'unit', unit, unitDisplay:'long'
+    }).format(value);
+    const years = Math.floor(ageMonths / 12);
+    const months = ageMonths % 12;
+    if (!years) return agePart(months,'month');
+    return [agePart(years,'year'), months ? agePart(months,'month') : ''].filter(Boolean).join(' ');
+  }
+
+  function setPhotoStatus(message, error = false) {
+    const status = $('#profile-photo-status');
+    status.classList.toggle('error',error);
+    status.textContent = message;
+    status.hidden = !message;
+  }
+
+  function resetPhotoForm() {
+    photoForm.reset();
+    photoForm.hidden = true;
+  }
+
+  function setPhotoDate(element, value) {
+    const timestamp = Date.parse(value);
+    element.hidden = !Number.isFinite(timestamp);
+    if (element.hidden) {
+      element.removeAttribute('datetime');
+      element.textContent = '';
+      return '';
+    }
+    element.dateTime = value;
+    element.textContent = dateFormat(state.lang).format(timestamp);
+    return element.textContent;
+  }
+
+  function viewPhoto(cat, entry) {
+    const full = $('#viewer-image');
+    full.src = entry.image;
+    full.alt = cat.name;
+    $('#photo-title').textContent = cat.name;
+    $('#viewer-caption').textContent = entry.caption || '';
+    setPhotoDate($('#viewer-date'),entry.createdAt);
+    photoViewer.showModal();
+  }
+
+  function renderPhotos(cat, uploads = []) {
+    const entries = [...uploads];
+    if (cat.image) entries.push({image:cat.image, createdAt:cat.createdAt || cat.observed});
+    entries.sort((left,right) => (Date.parse(right.createdAt) || 0) - (Date.parse(left.createdAt) || 0));
+    const tiles = entries.map(entry => {
+      const tile = node('button','photo-tile');
+      tile.type = 'button';
+      const thumbnail = node('img');
+      thumbnail.src = entry.image;
+      thumbnail.alt = '';
+      thumbnail.loading = 'lazy';
+      thumbnail.decoding = 'async';
+      thumbnail.width = thumbnail.height = 180;
+      const time = node('time');
+      const displayedDate = setPhotoDate(time,entry.createdAt);
+      tile.setAttribute('aria-label',[cat.name, entry.caption, displayedDate].filter(Boolean).join(' · '));
+      tile.append(thumbnail,time);
+      tile.addEventListener('click', () => viewPhoto(cat,entry));
+      const item = node('li');
+      item.append(tile);
+      return item;
+    });
+    $('#cat-photos').replaceChildren(...tiles);
+    $('#cat-photos-empty').hidden = !!tiles.length;
+  }
+
+  const catPhotosRoute = cat => './api/cats/' + encodeURIComponent(cat.id) + '/photos';
+  async function loadProfilePhotos(cat) {
+    const version = ++profileRequest;
+    const result = await request(catPhotosRoute(cat));
+    if (version !== profileRequest || !catDialog.open || !result?.ok) return;
+    if (Array.isArray(result.payload.photos)) renderPhotos(cat,result.payload.photos);
+  }
+
   function openCat(id) {
     const cat = state.cats.find(item => item.id === id);
     if (!cat) return;
-    const photo = $('#cat-image');
-    photo.hidden = !cat.image;
+    activeProfile = cat;
+    resetPhotoForm();
+    setPhotoStatus('');
+    const avatar = $('#cat-image');
+    avatar.hidden = !cat.image;
+    $('#cat-avatar-fallback').hidden = !!cat.image;
     if (cat.image) {
-      photo.src = cat.image;
-      photo.alt = cat.name;
-    } else photo.removeAttribute('src');
+      avatar.src = cat.image;
+      avatar.alt = cat.name;
+    } else avatar.removeAttribute('src');
     $('#cat-category').className = 'badge ' + cat.category;
     $('#cat-category').textContent = t(cat.category);
     $('#cat-title').textContent = cat.name;
+    $('#cat-age').textContent = profileAge(cat.ageMonths);
+    $('#cat-gender').textContent = t(cat.gender || 'unknown');
     $('#cat-location').textContent = [cat.location, cat.city].filter(Boolean).join(' · ');
     const translatedNote = cat.sample && sampleNotes[state.lang]?.[samples.findIndex(item => item.id === id)];
-    $('#cat-note').textContent = translatedNote || cat.note || '';
+    const note = $('#cat-note');
+    note.textContent = translatedNote || cat.note || '';
+    note.hidden = !note.textContent;
     $('#cat-date').textContent = cat.observed ? t('spotted') + ' · ' + dateFormat(state.lang).format(new Date(cat.observed + 'T12:00:00+08:00')) : '';
     $('#cat-demo').hidden = !cat.sample;
+    renderPhotos(cat);
     if (!catDialog.open) catDialog.showModal();
+    loadProfilePhotos(cat);
   }
+
+  catDialog.addEventListener('close', () => {
+    activeProfile = null;
+    profileRequest += 1;
+  });
+
+  $('#add-profile-photo').addEventListener('click', async () => {
+    const cat = activeProfile;
+    await accountLoad;
+    if (!cat || activeProfile !== cat || !catDialog.open) return;
+    if (!state.account.available) return setPhotoStatus(t('photoOffline'));
+    if (!state.account.signedIn) return openAccount();
+    setPhotoStatus('');
+    photoForm.hidden = false;
+    photoForm.elements.image.focus();
+  });
+  $('#cancel-profile-photo').addEventListener('click', () => {
+    resetPhotoForm();
+    $('#add-profile-photo').focus();
+  });
+  photoForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const cat = activeProfile;
+    if (!cat || photoSubmit.disabled) return;
+    const file = photoForm.elements.image.files[0];
+    if (!file?.size) return setPhotoStatus(t('needPhoto'),true);
+    setPhotoStatus('');
+    photoSubmit.disabled = true;
+    try {
+      const image = await encodePhoto(file);
+      const result = await request(catPhotosRoute(cat), {
+        method:'POST',
+        headers:{ Accept:'application/json', 'Content-Type':'application/json' },
+        signal:AbortSignal.timeout(20000),
+        body:JSON.stringify({image})
+      });
+      if (activeProfile !== cat || !catDialog.open) return;
+      if (!result?.ok) return setPhotoStatus(result?.payload?.message || t('photoFailed'),true);
+      resetPhotoForm();
+      $('#add-profile-photo').focus();
+      setPhotoStatus(t('photoSubmitted'));
+    } catch (error) {
+      if (activeProfile === cat && catDialog.open) setPhotoStatus(error.message || t('photoFailed'),true);
+    } finally {
+      photoSubmit.disabled = false;
+    }
+  });
+
   for (const close of $$('[data-close]')) close.addEventListener('click', () => close.closest('dialog').close());
   for (const dialog of $$('dialog')) dialog.addEventListener('click', event => {
     if (event.target !== dialog) return;
@@ -246,7 +409,7 @@
     let draft;
     try { draft = JSON.parse(storage.get('manameow-draft')); } catch { return; }
     if (!draft) return;
-    for (const name of ['name','category','city','location','observed','note']) if (draft[name]) form.elements[name].value = draft[name];
+    for (const name of ['name','category','city','location','observed','note','ageMonths','gender']) if (draft[name] != null) form.elements[name].value = draft[name];
     state.pin = draft.pin || null;
   }
   const online = () => state.account.available && state.account.signedIn;
@@ -342,6 +505,9 @@
     const data = new FormData(form);
     const fields = {};
     for (const key of ['name','category','city','location','observed','note']) fields[key] = String(data.get(key) || '').trim();
+    const age = String(data.get('ageMonths') || '').trim();
+    fields.ageMonths = age === '' ? null : Number(age);
+    fields.gender = String(data.get('gender') || 'unknown');
     if (!online()) {
       if (!storage.set('manameow-draft', JSON.stringify({...fields,pin:state.pin}))) return showError(t('failed'));
       upload.close();
