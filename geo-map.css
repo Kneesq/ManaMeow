@@ -1,0 +1,161 @@
+.mana-map {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #d8e9e2;
+}
+
+.mana-map__schematic,
+.mana-map__engine,
+.mana-map__pins {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mana-map__schematic {
+  display: block;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.mana-map__schematic:focus-visible {
+  outline: 3px solid #6d765c;
+  outline-offset: -5px;
+}
+
+.mana-map__schematic--dragging {
+  cursor: grabbing;
+}
+
+.mana-map__engine {
+  visibility: hidden;
+}
+
+.mana-map--online .mana-map__engine {
+  visibility: visible;
+}
+
+.mana-map--online .mana-map__schematic,
+.mana-map--online .mana-map__schematic-credit {
+  visibility: hidden;
+}
+
+.mana-map--picking :is(.mana-map__schematic, .maplibregl-canvas-container, .mana-map__pin) {
+  cursor: crosshair;
+}
+
+.mana-map__pins {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mana-map__schematic-credit {
+  position: absolute;
+  inset-inline-end: 8px;
+  inset-block-end: 8px;
+  z-index: 2;
+  background: #fbf9eeeb;
+  border-radius: 7px;
+  color: #4d584f;
+  font: 500 10px / 1.3 system-ui, sans-serif;
+  padding: 4px 7px;
+  pointer-events: none;
+}
+
+.mana-map__pin {
+  --pin-color: #bc542f;
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50% 50% 50% 18%;
+  box-shadow: 0 3px 9px #493c3650;
+  color: white;
+  background: var(--pin-color);
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -86%) rotate(-45deg);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.mana-map__pin[hidden] {
+  display: none;
+}
+
+.mana-map__pin::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+}
+
+.mana-map__pin:is(:hover, :focus-visible, .mana-map__pin--active) {
+  z-index: 1;
+  outline: 3px solid color-mix(in srgb, var(--pin-color), white 50%);
+  outline-offset: 2px;
+}
+
+.mana-map__pin[data-category="pet"] {
+  --pin-color: #5e7955;
+}
+
+.mana-map__pin:is([data-category="cafe"], [data-category="café"], [data-category="cat cafe"], [data-category="cat café"]) {
+  --pin-color: #87638c;
+}
+
+.mana-map__paw {
+  position: relative;
+  transform: rotate(45deg) translateY(3px);
+  background: currentColor;
+  border-radius: 60% 60% 45% 45%;
+  width: 10px;
+  height: 8px;
+  pointer-events: none;
+}
+
+.mana-map__paw::before,
+.mana-map__paw::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  width: 4px;
+  height: 5px;
+  top: -6px;
+  left: 1px;
+  background: currentColor;
+  box-shadow: 5px 0 currentColor;
+}
+
+.mana-map__paw::after {
+  top: -2px;
+  left: -3px;
+  box-shadow: 13px 0 currentColor;
+}
+
+.mana-map__pin-name {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  transform: rotate(45deg) translate(10px, -11px);
+  background: #fffdf7;
+  color: #352e29;
+  border: 1px solid #ede8de;
+  border-radius: 9px;
+  padding: 5px 8px;
+  box-shadow: 0 4px 10px #493c3623;
+  font: 650 12px / 1.2 system-ui, sans-serif;
+  white-space: nowrap;
+  max-width: 128px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mana-map__pin:is(:hover, :focus-visible, .mana-map__pin--active) .mana-map__pin-name {
+  display: block;
+}
