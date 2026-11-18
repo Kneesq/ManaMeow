@@ -397,8 +397,7 @@
       canvas.classList.remove('mana-map__schematic--dragging');
     });
     canvas.addEventListener('wheel', event => {
-      if (!event.ctrlKey && !event.metaKey) return;
-      event.preventDefault();
+        event.preventDefault();
       zoomBy(event.deltaY < 0 ? 1.25 : .8);
     }, { passive: false });
     canvas.addEventListener('keydown', event => {
@@ -432,7 +431,7 @@
       map = new Map({
         container: engine, style: STYLE, center: [camera.lng, camera.lat], zoom: camera.zoom,
         minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: 0, dragRotate: false,
-        renderWorldCopies: false, cooperativeGestures: true, attributionControl: false
+        renderWorldCopies: false, cooperativeGestures: false, attributionControl: false
       });
       map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
       map.once('load', () => {

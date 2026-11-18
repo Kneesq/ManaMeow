@@ -10,48 +10,40 @@
   };
   const translations = {
     zh: {
-      skip:'跳到猫咪地图', explore:'探索地图', gallery:'猫咪相册', about:'关于', account:'我的账号', add:'记录一只猫',
-      label:'马来西亚社区猫咪地图', find:'发现猫咪。', share:'分享快乐。',
-      intro:'一步一个猫爪印，认识马来西亚各地的猫咪。遇到熟悉的身影，也欢迎留下你的记录。',
-      mapTitle:'探索地图', mapIntro:'点击猫爪标记，认识那里的猫咪。', demo:'示例目击记录', pick:'点击地图，标记大概位置。', cancel:'取消',
-      stray:'流浪猫', pet:'家猫', cafe:'猫咖', all:'全部猫咪', sightings:'目击记录', search:'搜索猫名、城市或地点',
-      galleryTitle:'认识这些猫咪', galleryIntro:'来自马来西亚各地的近期记录。',
-      aboutTitle:'给爱猫的人一张地图', aboutText:'ManaMeow 帮你认识马来西亚各地的猫咪，并分享它们的故事。请选用附近的公共地标，给猫咪留出自己靠近的空间。', footer:'马来西亚社区猫咪地图',
-      profileDemo:'示例肖像与大概位置。', showMap:'在地图上查看', name:'猫咪名字', nameExample:'例如 Milo', category:'分类', city:'城市或城镇', cityExample:'例如怡保',
+      skip:'跳到地图', account:'我的账号', add:'添加猫咪', findCats:'找猫', menu:'菜单', language:'语言',
+      mapLabel:'猫咪地图', mapControls:'地图控件', filter:'猫咪分类', pick:'点击地图放置标记。', cancel:'取消',
+      stray:'流浪猫', pet:'家猫', cafe:'猫咖', all:'全部', search:'猫名、城市或地点',
+      profileDemo:'示例肖像与大概位置。', name:'猫咪名字', nameExample:'例如 Milo', category:'分类', city:'城市或城镇', cityExample:'例如怡保',
       around:'附近的公共地标', placeExample:'例如公园附近', selectPin:'在地图上选点', pinNone:'尚未选择位置', pinSet:'已选好大概位置',
       observed:'目击日期', photo:'照片', photoHelp:'支持 JPG、PNG 和 WebP，最大 10 MB。请上传你有权分享的照片。', note:'补充说明（选填）', noteExample:'有什么特征能帮助别人认出这只猫？', submit:'提交审核', saveDraft:'保存草稿',
-      noMatches:'没有符合条件的猫咪。换个关键词或分类试试。', count:'条记录', close:'关闭', zoomIn:'放大', zoomOut:'缩小', resetMap:'重置地图',
-      signIn:'使用 ChatGPT 登录', signOut:'退出登录', signPrompt:'登录后即可投稿并查看审核状态。浏览地图和相册无需注册 ManaMeow 账号。',
+      noMatches:'没有符合条件的猫咪。', close:'关闭', zoomIn:'放大', zoomOut:'缩小', resetMap:'重置地图',
+      signIn:'使用 ChatGPT 登录', signOut:'退出登录', signPrompt:'登录后可以投稿和查看审核状态。',
       accountOffline:'目前可浏览示例、搜索及保存本机草稿。正式投稿需要连接网站服务。', myIntro:'已登录。你可以跟踪自己的投稿。', noMine:'你还没有投稿。',
       localMode:'本机预览仅支持保存文字和地点草稿。', onlineMode:'记录猫咪出现的大概位置。审核通过后，照片和记录才会出现在地图上。',
       needPin:'请先在地图上选一个大概位置。', useMalaysia:'请选择马来西亚境内的地点。', needPhoto:'请添加猫咪照片。', badPhoto:'请选择小于 10 MB 的有效 JPG、PNG 或 WebP 照片。', failed:'保存失败，请稍后再试。',
       submitted:'投稿成功，等待审核。', draftSaved:'已在本机保存草稿。', pending:'待审核', approved:'已通过', rejected:'未通过', review:'审核投稿', spotted:'目击于', loading:'加载中…'
     },
     ms: {
-      skip:'Langkau ke peta kucing', explore:'Terokai peta', gallery:'Galeri kucing', about:'Tentang', account:'Akaun saya', add:'Tambah kucing',
-      label:'Peta komuniti kucing Malaysia', find:'Temui kucing.', share:'Kongsi kegembiraan.',
-      intro:'Kenali kucing di serata Malaysia, selangkah demi selangkah. Kongsi kucing yang anda temui.',
-      mapTitle:'Terokai peta', mapIntro:'Pilih penanda untuk mengenali kucing di situ.', demo:'Contoh penampakan', pick:'Ketik peta untuk memilih lokasi anggaran.', cancel:'Batal',
-      stray:'Jalanan', pet:'Peliharaan', cafe:'Kafe', all:'Semua kucing', sightings:'Penampakan kucing', search:'Cari kucing, bandar atau tempat',
-      galleryTitle:'Kenali kucing ini', galleryIntro:'Penampakan terkini dari serata negara.',
-      aboutTitle:'Peta daripada pencinta kucing', aboutText:'ManaMeow ialah tempat untuk mengenali kucing di Malaysia dan berkongsi kisahnya. Gunakan mercu tanda awam yang berdekatan dan beri ruang kepada kucing.', footer:'Peta komuniti kucing Malaysia',
-      profileDemo:'Gambar ilustrasi dan contoh lokasi anggaran.', showMap:'Lihat pada peta', name:'Nama kucing', nameExample:'Cth. Milo', category:'Kategori', city:'Bandar', cityExample:'Cth. Ipoh',
+      skip:'Langkau ke peta', account:'Akaun saya', add:'Tambah kucing', findCats:'Cari kucing', menu:'Menu', language:'Bahasa',
+      mapLabel:'Peta penampakan kucing', mapControls:'Kawalan peta', filter:'Kategori kucing', pick:'Ketik peta untuk meletakkan penanda.', cancel:'Batal',
+      stray:'Jalanan', pet:'Peliharaan', cafe:'Kafe', all:'Semua', search:'Nama kucing, bandar atau tempat',
+      profileDemo:'Gambar ilustrasi dan contoh lokasi anggaran.', name:'Nama kucing', nameExample:'Cth. Milo', category:'Kategori', city:'Bandar', cityExample:'Cth. Ipoh',
       around:'Mercu tanda awam terdekat', placeExample:'Cth. Berhampiran taman', selectPin:'Pilih penanda', pinNone:'Tiada penanda dipilih', pinSet:'Lokasi anggaran dipilih',
       observed:'Tarikh ditemui', photo:'Gambar', photoHelp:'JPG, PNG atau WebP sehingga 10 MB. Pilih gambar yang anda dibenarkan kongsi.', note:'Catatan (pilihan)', noteExample:'Apakah ciri yang membantu orang mengenali kucing ini?', submit:'Hantar untuk semakan', saveDraft:'Simpan draf',
-      noMatches:'Tiada padanan. Cuba carian atau kategori lain.', count:'penampakan', close:'Tutup', zoomIn:'Zum masuk', zoomOut:'Zum keluar', resetMap:'Tetapkan semula peta',
-      signIn:'Log masuk dengan ChatGPT', signOut:'Log keluar', signPrompt:'Log masuk untuk berkongsi penampakan dan melihat status semakan. Peta dan galeri boleh dilayari tanpa akaun ManaMeow.',
+      noMatches:'Tiada padanan.', close:'Tutup', zoomIn:'Zum masuk', zoomOut:'Zum keluar', resetMap:'Tetapkan semula peta',
+      signIn:'Log masuk dengan ChatGPT', signOut:'Log keluar', signPrompt:'Log masuk untuk menghantar penampakan dan menyemak status.',
       accountOffline:'Anda boleh melayari contoh, membuat carian dan menyimpan draf pada peranti ini. Penghantaran memerlukan perkhidmatan laman web.', myIntro:'Anda telah log masuk. Pantau kiriman anda di sini.', noMine:'Belum ada kiriman.',
       localMode:'Dalam pratonton setempat, anda boleh menyimpan draf teks dan lokasi sahaja.', onlineMode:'Pilih lokasi anggaran. Gambar dan penampakan muncul pada peta selepas diluluskan.',
       needPin:'Pilih lokasi anggaran pada peta dahulu.', useMalaysia:'Pilih lokasi di Malaysia.', needPhoto:'Sila tambah gambar kucing.', badPhoto:'Pilih fail JPG, PNG atau WebP yang sah dan lebih kecil daripada 10 MB.', failed:'Gagal menyimpan. Cuba lagi.',
       submitted:'Kiriman diterima dan menunggu semakan.', draftSaved:'Draf disimpan pada peranti ini.', pending:'Menunggu', approved:'Diluluskan', rejected:'Ditolak', review:'Semak kiriman', spotted:'Ditemui pada', loading:'Memuatkan…'
     },
     en: {
-      count:'sightings', close:'Close', zoomIn:'Zoom in', zoomOut:'Zoom out', resetMap:'Reset map view', pinSet:'Approximate pin selected',
-      signIn:'Sign in with ChatGPT', signOut:'Sign out', signPrompt:'Sign in to submit sightings and follow their review status. You can explore the map and gallery without a ManaMeow account.',
+      close:'Close', zoomIn:'Zoom in', zoomOut:'Zoom out', resetMap:'Reset map view', pinSet:'Approximate pin selected',
+      signIn:'Sign in with ChatGPT', signOut:'Sign out', signPrompt:'Sign in to submit sightings and check their status.',
       accountOffline:'You can browse the sample sightings and save a draft to this device. Submissions need a connection to the website service.',
       myIntro:'You’re signed in. Follow your submissions here.', noMine:'You haven’t submitted a sighting yet.', saveDraft:'Save draft',
       localMode:'This local preview can save a text and location draft to this browser.', onlineMode:'Choose an approximate location. Your photo and sighting appear on the map once reviewed.',
-      noMatches:'No cats match this search. Try a different name, place or category.', needPin:'Choose an approximate location on the map first.',
+      needPin:'Choose an approximate location on the map first.',
       useMalaysia:'Choose a location in Malaysia.', needPhoto:'Add a photo of the cat.', badPhoto:'Choose a valid JPG, PNG or WebP under 10 MB.',
       failed:'Couldn’t save this sighting. Please try again.', submitted:'Sighting sent for review.', draftSaved:'Draft saved on this device.',
       pending:'Pending review', approved:'Approved', rejected:'Rejected', review:'Review submissions', spotted:'Last spotted', loading:'Loading…'
@@ -59,6 +51,7 @@
   };
   const labels = {};
   for (const entry of $$('[data-i]')) labels[entry.dataset.i] = entry.textContent;
+  for (const entry of $$('[data-label]')) labels[entry.dataset.label] = entry.getAttribute('aria-label');
   for (const entry of $$('[data-placeholder]')) labels[entry.dataset.placeholder] = entry.placeholder;
   const dateFormat = locale => new Intl.DateTimeFormat(locale, { dateStyle:'medium', timeZone:'Asia/Kuala_Lumpur' });
   const storage = {
@@ -76,10 +69,12 @@
     zh: ['这只橘猫喜欢在阴凉处打盹，下巴有一小块白毛。','这只猫咖里的奶油色长毛猫有琥珀色眼睛，喜欢坐在窗边看街景。','一只安静的深灰色猫，常坐在树篱附近。遇见时可以留些距离。','一只胸前有白毛的虎斑猫，喜欢跟主人散步时看看四周。'],
     ms: ['Kucing jingga ini gemar tidur di tempat teduh dan mempunyai tompok putih di bawah dagu.','Kucing kafe berbulu krim ini suka melihat jalan dari tingkap.','Kucing berwarna kelabu gelap ini sering duduk berhampiran pagar tanaman. Beri sedikit ruang jika menemuinya.','Kucing belang berdada putih ini suka memerhati suasana ketika berjalan bersama penjaganya.']
   };
-  const state = { lang:storage.get('manameow-lang') || 'en', category:'all', active:null, cats:samples, account:{available:false}, pin:null, picking:false };
+  const state = { lang:storage.get('manameow-lang') || 'en', category:'all', cats:samples, account:{available:false}, pin:null, picking:false };
   if (!(state.lang in translations)) state.lang = 'en';
   const t = key => translations[state.lang][key] || translations.en[key] || labels[key] || key;
   const search = $('#cat-search');
+  const searchPanel = $('#search-panel');
+  const filterButtons = $$('.filters button');
   const mapElement = $('#map');
   const catDialog = $('#cat-dialog');
   const upload = $('#upload-dialog');
@@ -99,74 +94,50 @@
   $('#zoom-out').addEventListener('click', () => map?.zoomBy(1/1.6));
   $('#reset-map').addEventListener('click', () => map?.reset());
 
-  const artwork = $('#illustration');
-  if (window.drawManaMeowMap) {
-    const artCtx = artwork.getContext('2d');
-    artCtx.scale(.65,.65);
-    artCtx.translate(-60,-145);
-    window.drawManaMeowMap(artCtx);
+  function openSearchResult(cat) {
+    searchPanel.hidePopover();
+    map?.select(cat.id);
+    openCat(cat.id);
   }
-
-  function imageFor(cat, large = false) {
-    if (!cat.image) {
-      const placeholder = node('span', 'photo-placeholder');
-      placeholder.append(node('span','paw'));
-      placeholder.setAttribute('aria-hidden','true');
-      return placeholder;
-    }
-    const photo = node('img');
-    photo.src = cat.image;
-    photo.alt = '';
-    photo.loading = large ? 'lazy' : 'eager';
-    photo.decoding = 'async';
-    photo.width = large ? 280 : 56;
-    photo.height = large ? 196 : 56;
-    return photo;
-  }
-  function renderCard(cat, large = false) {
-    const button = node('button', large ? 'gallery-card' : 'cat-row');
+  function renderResult(cat) {
+    const button = node('button','cat-row');
     button.type = 'button';
-    button.dataset.cat = cat.id;
-    button.dataset.active = String(state.active === cat.id);
+    const image = node(cat.image ? 'img' : 'span', cat.image ? '' : 'photo-placeholder');
+    if (cat.image) {
+      image.src = cat.image;
+      image.alt = '';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.width = image.height = 45;
+    } else {
+      image.append(node('span','paw'));
+      image.setAttribute('aria-hidden','true');
+    }
     const copy = node('span');
     copy.append(node('strong','',cat.name), node('small','',cat.city));
-    const badge = node('span', 'badge ' + cat.category, t(cat.category));
-    button.append(imageFor(cat, large));
-    if (large) {
-      const details = node('span');
-      details.append(copy, badge);
-      button.append(details);
-    } else {
-      button.append(copy, badge);
-    }
-    button.addEventListener('click', () => openCat(cat.id));
+    button.append(image,copy,node('span','badge ' + cat.category,t(cat.category)));
+    button.addEventListener('click', () => openSearchResult(cat));
     const item = node('li');
     item.append(button);
     return item;
   }
   function renderMapList() {
     const query = search.value.trim().toLocaleLowerCase();
-    const activeCats = state.cats.filter(cat => (state.category === 'all' || cat.category === state.category) &&
-      (cat.name + ' ' + cat.city + ' ' + cat.location).toLocaleLowerCase().includes(query));
-    const rows = activeCats.map(cat => renderCard(cat));
-    $('#cat-list').replaceChildren(...(rows.length ? rows : [node('li','fallback',t('noMatches'))]));
-    $('#result-count').textContent = activeCats.length + ' ' + (state.lang === 'en' && activeCats.length === 1 ? 'sighting' : t('count'));
-    map?.setCards(activeCats);
-  }
-  function renderGallery() {
-    const catOrder = [...state.cats].sort((left,right) => right.observed.localeCompare(left.observed));
-    $('#cat-gallery').replaceChildren(...catOrder.slice(0, 12).map(cat => renderCard(cat, true)));
+    const cats = state.cats.filter(cat => (state.category === 'all' || cat.category === state.category) &&
+      [cat.name,cat.city,cat.location].join(' ').toLocaleLowerCase().includes(query));
+    $('#cat-list').replaceChildren(...cats.map(renderResult));
+    $('#search-empty').hidden = !!cats.length;
+    $('#search-toggle').dataset.filtered = String(Boolean(query) || state.category !== 'all');
+    map?.setCards(cats);
   }
   function renderLanguage() {
     document.documentElement.lang = state.lang === 'zh' ? 'zh-Hans' : state.lang;
     for (const el of $$('[data-i]')) el.textContent = t(el.dataset.i);
     for (const el of $$('[data-placeholder]')) el.placeholder = t(el.dataset.placeholder);
-    search.setAttribute('aria-label',t('search'));
+    for (const el of $$('[data-label]')) el.setAttribute('aria-label',t(el.dataset.label));
     for (const el of $$('[data-close]')) el.setAttribute('aria-label',t('close'));
-    for (const [id,key] of [['zoom-in','zoomIn'],['zoom-out','zoomOut'],['reset-map','resetMap']]) $('#'+id).setAttribute('aria-label',t(key));
     renderPin();
     renderMapList();
-    renderGallery();
   }
   $('#lang').value = state.lang;
   $('#lang').addEventListener('change', event => {
@@ -175,20 +146,15 @@
     renderLanguage();
   });
   search.addEventListener('input', renderMapList);
-  for (const button of $$('[data-category]')) button.addEventListener('click', () => {
+  for (const button of filterButtons) button.addEventListener('click', () => {
     state.category = button.dataset.category;
-    for (const other of $$('[data-category]')) other.setAttribute('aria-pressed', String(other === button));
+    for (const other of filterButtons) other.setAttribute('aria-pressed', String(other === button));
     renderMapList();
   });
 
-  function updateActive(id) {
-    state.active = id;
-    for (const row of $$('.cat-row')) row.dataset.active = String(row.dataset.cat === id);
-  }
   function openCat(id) {
     const cat = state.cats.find(item => item.id === id);
     if (!cat) return;
-    updateActive(id);
     const photo = $('#cat-image');
     photo.hidden = !cat.image;
     if (cat.image) {
@@ -205,15 +171,6 @@
     $('#cat-demo').hidden = !cat.sample;
     if (!catDialog.open) catDialog.showModal();
   }
-  $('#show-on-map').addEventListener('click', () => {
-    catDialog.close();
-    state.category = 'all';
-    search.value = '';
-    for (const other of $$('[data-category]')) other.setAttribute('aria-pressed', String(other.dataset.category === 'all'));
-    renderMapList();
-    map?.select(state.active);
-    $('#explore').scrollIntoView();
-  });
   for (const close of $$('[data-close]')) close.addEventListener('click', () => close.closest('dialog').close());
   for (const dialog of $$('dialog')) dialog.addEventListener('click', event => {
     if (event.target !== dialog) return;
@@ -240,7 +197,6 @@
     if (!result?.ok || !Array.isArray(result.payload.sightings)) return;
     state.cats = [...result.payload.sightings, ...samples];
     renderMapList();
-    renderGallery();
   }
   function link(label, url, primary) {
     const item = node('a', 'button ' + (primary ? 'primary' : 'secondary'), label);
@@ -281,7 +237,10 @@
       return item;
     }) : [node('li','fine',t('noMine'))]));
   }
-  $('#account').addEventListener('click', openAccount);
+  $('#account').addEventListener('click', () => {
+    $('#settings-panel').hidePopover();
+    openAccount();
+  });
 
   function restoreDraft() {
     let draft;
@@ -301,7 +260,7 @@
     renderPin();
     if (!upload.open) upload.showModal();
   }
-  for (const button of [$('#add-cat'),$('#about-add')]) button.addEventListener('click', openUpload);
+  $('#add-cat').addEventListener('click', openUpload);
   function renderPin() {
     $('#pin-status').textContent = t(state.pin ? 'pinSet' : 'pinNone');
   }
@@ -330,7 +289,6 @@
     state.picking = true;
     map.setPicking(true);
     $('#map-instruction').hidden = false;
-    $('#explore').scrollIntoView();
     $('#cancel-pick').focus({preventScroll:true});
   });
   $('#cancel-pick').addEventListener('click', openUpload);
