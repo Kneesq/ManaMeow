@@ -17,7 +17,7 @@
 .mana-map__schematic {
   display: block;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .mana-map__schematic:focus-visible {

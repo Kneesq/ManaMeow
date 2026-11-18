@@ -2,109 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#fffaf2">
-  <meta name="description" content="Discover cats around Malaysia, one paw at a time. Explore the ManaMeow map and share a sighting.">
+  <meta name="description" content="Map of cat sightings in Malaysia.">
   <title>ManaMeow · Malaysia’s cat map</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e97a4e'/%3E%3Cg fill='%23fffaf2'%3E%3Cellipse cx='32' cy='39' rx='12' ry='10'/%3E%3Cellipse cx='19' cy='29' rx='5' ry='7' transform='rotate(-25 19 29)'/%3E%3Cellipse cx='28' cy='21' rx='5' ry='7'/%3E%3Cellipse cx='38' cy='22' rx='5' ry='7'/%3E%3Cellipse cx='46' cy='31' rx='5' ry='7' transform='rotate(25 46 31)'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css">
-  <link rel="stylesheet" href="geo-map.css">
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="geo-map.js"></script>
-  <script defer src="map-art.js"></script>
-  <script defer src="app.js"></script>
+  <link rel="stylesheet" href="geo-map.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=2">
+  <script defer src="geo-map.js?v=2"></script>
+  <script defer src="app.js?v=2"></script>
 </head>
-<body id="home">
-  <a class="skip" href="#explore" data-i="skip">Skip to the cat map</a>
-  <header class="site-header">
-    <div class="shell header-inner">
-      <a class="brand" href="#home" aria-label="ManaMeow home">
-        <span class="brand-mark"><span class="paw" aria-hidden="true"></span></span>
-        <span>Mana<span class="brand-accent">Meow</span></span>
-      </a>
-      <nav aria-label="Main navigation">
-        <a href="#explore" data-i="explore">Explore map</a>
-        <a href="#gallery" data-i="gallery">Cat gallery</a>
-        <a href="#about" data-i="about">About</a>
-      </nav>
-      <div class="header-actions">
-        <select id="lang" class="language" aria-label="Language">
-          <option value="en">EN</option><option value="zh">中文</option><option value="ms">BM</option>
-        </select>
-        <button type="button" class="button plain account-trigger" id="account" data-i="account">My account</button>
-        <button type="button" class="button primary" id="add-cat"><span aria-hidden="true">＋</span> <span data-i="add">Add a cat</span></button>
-      </div>
-    </div>
-  </header>
-  <main class="shell">
-    <section class="hero" aria-labelledby="headline">
-      <div class="hero-copy">
-        <p class="hero-label"><span class="location-dot" aria-hidden="true"></span><span data-i="label">Malaysia’s community cat map</span></p>
-        <h1 id="headline"><span data-i="find">Discover cats.</span><br><em data-i="share">Share happiness.</em></h1>
-        <p data-i="intro">Find cats around Malaysia, one paw at a time. Meet the neighbourhood regulars and share who you spot along the way.</p>
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <canvas id="illustration" width="550" height="300"></canvas>
-        <span class="hero-pin hero-pin-one"><span class="paw"></span></span>
-        <span class="hero-pin hero-pin-two"><span class="paw"></span></span>
-        <span class="hero-pin hero-pin-three"><span class="paw"></span></span>
-        <div class="hero-photo"><img src="mochi.jpg" alt="" width="112" height="112"><span>Mochi</span></div>
-      </div>
-    </section>
-    <section id="explore" aria-labelledby="map-heading">
-      <div class="section-head">
-        <div><h2 id="map-heading" data-i="mapTitle">Explore the map</h2><p data-i="mapIntro">Pick a paw to meet the cat behind it.</p></div>
-        <span class="demo-label" data-i="demo">Sample sightings</span>
-      </div>
-      <div class="explorer">
-        <div class="map-frame">
-          <div id="map" aria-label="Cat sightings map"></div>
-          <p id="map-instruction" class="map-instruction" hidden>
-            <span data-i="pick">Tap the map to place an approximate pin.</span>
-            <button type="button" class="text-button" id="cancel-pick" data-i="cancel">Cancel</button>
-          </p>
-          <div class="map-tools" aria-label="Map controls">
-            <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
-            <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
-            <button type="button" id="reset-map" aria-label="Reset map view">◎</button>
-          </div>
-          <div class="map-legend" aria-label="Map legend">
-            <span class="legend-item stray" data-i="stray">Stray</span>
-            <span class="legend-item pet" data-i="pet">Pet</span>
-            <span class="legend-item cafe" data-i="cafe">Café</span>
-          </div>
+<body>
+  <a class="skip" href="#map" data-i="skip">Skip to the map</a>
+  <main class="map-app" aria-label="ManaMeow">
+    <div id="map" tabindex="-1" data-label="mapLabel" aria-label="Cat sightings map"></div>
+
+    <header class="map-toolbar">
+      <div class="toolbar-group">
+        <div class="brand" aria-label="ManaMeow">
+          <span class="brand-mark"><span class="paw" aria-hidden="true"></span></span>
+          <span class="wordmark">Mana<span class="brand-accent">Meow</span></span>
         </div>
-        <aside class="sidebar" aria-labelledby="list-heading">
-          <div class="sidebar-top">
-            <h3 id="list-heading" data-i="sightings">Cat sightings</h3>
-            <label class="search"><span aria-hidden="true" class="magnify"></span><input type="search" id="cat-search" data-placeholder="search" placeholder="Search cats, cities or places" aria-label="Search cats, cities or places"></label>
-            <div class="filters" role="group" aria-label="Filter by cat category">
-              <button type="button" data-category="all" aria-pressed="true" data-i="all">All cats</button>
-              <button type="button" data-category="stray" aria-pressed="false" data-i="stray">Stray</button>
-              <button type="button" data-category="pet" aria-pressed="false" data-i="pet">Pet</button>
-              <button type="button" data-category="cafe" aria-pressed="false" data-i="cafe">Café</button>
-            </div>
-          </div>
-          <p id="result-count" class="result-count" role="status"></p>
-          <ul id="cat-list" class="cat-list"></ul>
-          <noscript><p class="fallback">Enable JavaScript to search and explore the map.</p></noscript>
-        </aside>
+        <button class="map-button search-toggle" type="button" id="search-toggle" popovertarget="search-panel" data-label="findCats" aria-label="Find cats">
+          <span class="magnify" aria-hidden="true"></span><span class="search-label" data-i="findCats">Find cats</span>
+        </button>
       </div>
+      <div class="toolbar-group">
+        <button type="button" class="map-button primary add-cat" id="add-cat" data-label="add" aria-label="Add a cat">
+          <span class="add-icon" aria-hidden="true">+</span><span class="add-label" data-i="add">Add a cat</span>
+        </button>
+        <button class="map-button icon-button settings-toggle" type="button" popovertarget="settings-panel" data-label="menu" aria-label="Menu"><span aria-hidden="true"></span></button>
+      </div>
+    </header>
+
+    <section id="search-panel" class="map-panel search-panel" popover data-label="findCats" aria-label="Find cats">
+      <label class="search">
+        <span class="magnify" aria-hidden="true"></span>
+        <input type="search" id="cat-search" data-placeholder="search" data-label="search" placeholder="Cat name, city or place" aria-label="Cat name, city or place" autofocus>
+      </label>
+      <div class="filters" data-label="filter" role="group" aria-label="Cat category">
+        <button type="button" data-category="all" aria-pressed="true" data-i="all">All</button>
+        <button type="button" data-category="stray" aria-pressed="false" data-i="stray">Stray</button>
+        <button type="button" data-category="pet" aria-pressed="false" data-i="pet">Pet</button>
+        <button type="button" data-category="cafe" aria-pressed="false" data-i="cafe">Café</button>
+      </div>
+      <ul id="cat-list" class="cat-list"></ul>
+      <p id="search-empty" class="fallback" data-i="noMatches" role="status" hidden>No matching cats.</p>
     </section>
-    <section id="gallery" class="gallery" aria-labelledby="gallery-heading">
-      <div class="section-head"><div><h2 id="gallery-heading" data-i="galleryTitle">Meet the cats</h2><p data-i="galleryIntro">Recent sightings from around the country.</p></div></div>
-      <ul id="cat-gallery" class="gallery-grid"></ul>
+
+    <section id="settings-panel" class="map-panel settings-panel" popover data-label="menu" aria-label="Menu">
+      <button type="button" id="account" data-i="account">My account</button>
+      <label class="language-row"><span data-i="language">Language</span>
+        <select id="lang" class="language">
+          <option value="en">English</option><option value="zh">简体中文</option><option value="ms">Bahasa Melayu</option>
+        </select>
+      </label>
     </section>
-    <section id="about" class="about" aria-labelledby="about-heading">
-      <span class="about-icon" aria-hidden="true"><span class="paw"></span></span>
-      <div><h2 id="about-heading" data-i="aboutTitle">A map made by cat people</h2><p data-i="aboutText">ManaMeow is a place to discover Malaysia’s cats and share a little about them. Use nearby public landmarks and give each cat room to approach on its own terms.</p></div>
-      <button type="button" class="button secondary" id="about-add"><span data-i="add">Add a cat</span> <span aria-hidden="true">↗</span></button>
-    </section>
+
+    <div id="map-instruction" class="map-instruction" hidden>
+      <span data-i="pick">Tap the map to place a pin.</span>
+      <button type="button" class="text-button" id="cancel-pick" data-i="cancel">Cancel</button>
+    </div>
+    <div class="map-tools" data-label="mapControls" aria-label="Map controls">
+      <button type="button" id="zoom-in" data-label="zoomIn" aria-label="Zoom in">+</button>
+      <button type="button" id="zoom-out" data-label="zoomOut" aria-label="Zoom out">−</button>
+      <button type="button" id="reset-map" data-label="resetMap" aria-label="Reset map view">◎</button>
+    </div>
+    <noscript><p class="map-instruction">Enable JavaScript to open the map.</p></noscript>
   </main>
-  <footer class="shell footer"><a class="brand" href="#home">Mana<span class="brand-accent">Meow</span></a><span data-i="footer">A community cat map for Malaysia</span></footer>
 
   <dialog id="cat-dialog" aria-labelledby="cat-title">
     <button class="close" type="button" data-close aria-label="Close">×</button>
@@ -116,7 +85,6 @@
       <p id="cat-note"></p>
       <p id="cat-date" class="fine"></p>
       <p id="cat-demo" class="fine" data-i="profileDemo">Illustrative photo and approximate sample location.</p>
-      <button class="button secondary" type="button" id="show-on-map" data-i="showMap">Show on map</button>
     </div>
   </dialog>
   <dialog id="account-dialog" aria-labelledby="account-title">
