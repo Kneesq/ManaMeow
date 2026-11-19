@@ -14,10 +14,14 @@
   <link rel="stylesheet" href="geo-map.css?v=3">
   <link rel="stylesheet" href="pixel-cats.css?v=1">
   <link rel="stylesheet" href="styles.css?v=9">
-  <script defer src="pixel-cats.js?v=1"></script>
+  <link rel="stylesheet" href="profile-social.css?v=1">
+  <link rel="stylesheet" href="catch.css?v=1">
+  <script defer src="pixel-cats.js?v=2"></script>
   <script defer src="storybook-fallback.js?v=1"></script>
-  <script defer src="geo-map.js?v=6"></script>
-  <script defer src="app.js?v=6"></script>
+  <script defer src="geo-map.js?v=7"></script>
+  <script defer src="catch.js?v=1"></script>
+  <script defer src="profile-social.js?v=1"></script>
+  <script defer src="app.js?v=7"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -101,13 +105,16 @@
     <button class="close" type="button" data-close aria-label="Close">×</button>
     <div class="dialog-body">
       <div class="profile-head">
-        <div class="profile-avatar">
+        <button class="profile-avatar" id="cat-avatar" type="button" data-label="viewProfilePhoto" aria-label="View profile photo" disabled>
           <img id="cat-image" alt="" width="96" height="96" hidden>
           <span id="cat-avatar-fallback" class="paw" aria-hidden="true"></span>
-        </div>
+        </button>
         <div class="profile-identity">
           <span id="cat-category" class="badge"></span>
-          <h2 id="cat-title"></h2>
+          <div class="profile-names">
+            <h2 id="cat-title"></h2>
+            <span id="cat-nickname" class="profile-nickname" hidden></span>
+          </div>
           <dl class="profile-facts">
             <div><dt data-i="age">Age</dt><dd id="cat-age"></dd></div>
             <div><dt data-i="gender">Sex</dt><dd id="cat-gender"></dd></div>
@@ -120,31 +127,64 @@
         <p id="cat-date" class="fine"></p>
         <p id="cat-demo" class="fine" data-i="profileDemo">Sample profile</p>
       </div>
-      <section class="profile-photos" aria-labelledby="photos-heading">
-        <div class="profile-section-head">
-          <h3 id="photos-heading" data-i="photos">Photos</h3>
-          <button class="button secondary" type="button" id="add-profile-photo"><span aria-hidden="true">＋</span><span data-i="addPhoto">Add photo</span></button>
+      <div class="profile-actions">
+        <button class="button primary catch-action" type="button" id="catch-cat"><span class="camera-mark" aria-hidden="true"></span><span data-i="catchIt">Catch it!</span></button>
+        <button class="button secondary" type="button" id="edit-nickname" aria-controls="nickname-form" aria-expanded="false" data-i="editNickname">My nickname</button>
+      </div>
+      <form id="nickname-form" class="nickname-form" hidden>
+        <label><span data-i="personalNickname">Your nickname for this cat</span><input name="nickname" type="text" maxlength="40" aria-describedby="nickname-hint"></label>
+        <p id="nickname-hint" class="fine" data-i="nicknameHint">Visible only to you. Leave blank to remove it.</p>
+        <div class="profile-form-actions">
+          <button type="submit" class="button primary" data-i="saveNickname">Save nickname</button>
+          <button type="button" class="button secondary" id="cancel-nickname" data-i="cancel">Cancel</button>
         </div>
-        <form id="profile-photo-form" hidden>
-          <label><span data-i="photo">Photo</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-          <div class="photo-form-actions">
-            <button class="button primary" type="submit" id="submit-profile-photo" data-i="submit">Submit for review</button>
-            <button class="button secondary" type="button" id="cancel-profile-photo" data-i="cancel">Cancel</button>
-          </div>
-        </form>
-        <p id="profile-photo-status" class="fine" role="status" hidden></p>
+      </form>
+      <p id="profile-status" class="fine profile-status" role="status" hidden></p>
+      <section class="profile-photos own-photos" aria-labelledby="own-photos-heading">
+        <div class="profile-section-head">
+          <h3 id="own-photos-heading" data-i="myCollection">My collection</h3>
+        </div>
+        <ul id="my-cat-photos" class="photo-grid"></ul>
+        <p id="my-cat-photos-empty" class="fine" hidden></p>
+        <button id="more-my-photos" class="button secondary album-more" type="button" aria-controls="my-cat-photos" data-i="loadMorePhotos" data-label="loadMoreOwnPhotos" aria-label="Load more from my collection" hidden>Load more</button>
+      </section>
+      <section class="profile-photos community-photos" aria-labelledby="photos-heading">
+        <div class="profile-section-head">
+          <h3 id="photos-heading" data-i="communityPhotos">Community photos</h3>
+        </div>
         <ul id="cat-photos" class="photo-grid"></ul>
         <p id="cat-photos-empty" class="fine" data-i="noPhotos" hidden>No photos yet.</p>
+        <button id="more-community-photos" class="button secondary album-more" type="button" aria-controls="cat-photos" data-i="loadMorePhotos" data-label="loadMoreCommunityPhotos" aria-label="Load more community photos" hidden>Load more</button>
       </section>
     </div>
   </dialog>
   <dialog id="photo-dialog" class="photo-viewer" aria-labelledby="photo-title">
     <button class="close" type="button" data-close aria-label="Close">×</button>
     <img id="viewer-image" alt="">
-    <div class="dialog-body">
-      <h2 id="photo-title"></h2>
-      <time id="viewer-date" class="fine"></time>
+    <div class="dialog-body photo-story">
+      <div class="photo-meta">
+        <h2 id="photo-title"></h2>
+        <time id="viewer-date" class="fine"></time>
+        <span id="viewer-visibility" class="photo-visibility" hidden></span>
+      </div>
       <p id="viewer-caption"></p>
+      <div class="photo-actions">
+        <button type="button" id="photo-like" class="button secondary photo-like" aria-pressed="false" hidden><span class="heart-mark" aria-hidden="true"></span><span data-i="likePhoto">Like</span><span id="photo-like-count"></span></button>
+        <button type="button" id="photo-share" class="button secondary" data-i="sharePhoto" hidden>Share</button>
+        <button type="button" id="photo-post" class="button primary" data-i="postToCommunity" hidden>Post to community</button>
+      </div>
+      <label id="photo-copy-link" class="photo-copy-link" hidden><span data-i="photoLink">Photo link</span><input type="url" readonly></label>
+      <p id="photo-view-status" class="fine" role="status" hidden></p>
+      <section id="photo-discussion" class="photo-discussion" aria-labelledby="photo-comments-title" hidden>
+        <h3 id="photo-comments-title" data-i="photoComments">Comments</h3>
+        <ul id="photo-comments"></ul>
+        <p id="photo-comments-empty" class="fine" data-i="noComments" hidden>No comments yet.</p>
+        <button type="button" class="text-button" id="comment-login" data-i="commentLogin" hidden>Log in to comment</button>
+        <form id="comment-form" hidden>
+          <label><span data-i="writeComment">Write a comment</span><textarea name="comment" rows="2" maxlength="500" required></textarea></label>
+          <button class="button primary" type="submit" data-i="sendComment">Send</button>
+        </form>
+      </section>
     </div>
   </dialog>
   <dialog id="auth-dialog" class="auth-dialog" aria-labelledby="auth-title">
@@ -191,6 +231,12 @@
       <h2 id="account-title" data-i="account">My account</h2>
       <p id="account-message"></p>
       <div id="account-links" class="dialog-actions"></div>
+      <section id="account-collection" class="account-collection" aria-labelledby="account-collection-title" hidden>
+        <h3 id="account-collection-title" data-i="myCollection">My collection</h3>
+        <p id="account-collection-status" class="fine" role="status" hidden></p>
+        <ul id="account-collection-cats" class="cat-list"></ul>
+        <button id="account-collection-more" class="button secondary album-more" type="button" aria-controls="account-collection-cats" data-i="loadMorePhotos" hidden>Load more</button>
+      </section>
       <ul id="my-sightings" class="my-sightings"></ul>
     </div>
   </dialog>
@@ -221,6 +267,40 @@
         <div class="dialog-actions"><button class="button primary" type="submit" id="submit-sighting" data-i="submit">Submit for review</button></div>
       </form>
     </div>
+  </dialog>
+  <dialog id="catch-dialog" class="catch-dialog" aria-labelledby="catch-title">
+    <header class="catch-heading">
+      <div><h2 id="catch-title">Catch it</h2><p id="catch-subject"></p></div>
+      <button type="button" class="close" id="catch-close" aria-label="Close">×</button>
+    </header>
+    <div class="catch-stage">
+      <video id="catch-video" muted playsinline autoplay hidden></video>
+      <img id="catch-still" alt="" hidden>
+      <div class="catch-guides" id="catch-guides" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
+      <div class="catch-wait" id="catch-wait">
+        <svg width="41" height="39" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 10Q5 8 8 8h5l3-4h8l3 4h5q3 0 3 3v17q0 3-4 3H9q-4 0-4-4Z" stroke-linejoin="round"/><circle cx="20" cy="19" r="6.3"/><path d="M28 12h3" stroke-linecap="round"/></svg>
+        <p id="catch-camera-status" role="status"></p>
+        <button class="button" id="catch-restart" type="button" hidden>Open camera</button>
+        <button class="button" id="catch-native" type="button" hidden>Use device camera</button>
+      </div>
+    </div>
+    <div class="catch-live-tools" id="catch-live-tools">
+      <button class="catch-file-button" id="catch-choose" type="button">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.8" y="3" width="18.4" height="18" rx="4"/><circle cx="8.2" cy="8.7" r="1.6"/><path d="m4 17 5.2-5 3.7 3.6 3.4-4 4.5 4.9" stroke-linejoin="round"/></svg>
+        <span id="catch-choose-label">Photos</span>
+      </button>
+      <button id="catch-shutter" class="catch-shutter" type="button" aria-label="Take photo" disabled></button>
+    </div>
+    <input type="file" id="catch-picker" accept="image/jpeg,image/png,image/webp" hidden>
+    <input type="file" id="catch-device-picker" accept="image/*" capture="environment" hidden>
+    <div id="catch-review" class="catch-review" hidden>
+      <label class="catch-share-option"><input id="catch-public" type="checkbox"><span id="catch-public-label">Also share on this cat’s profile</span></label>
+      <div class="catch-review-tools">
+        <button class="button secondary" id="catch-retake" type="button">Retake</button>
+        <button class="button primary" id="catch-save" type="button">Save to collection</button>
+      </div>
+    </div>
+    <p class="catch-error" id="catch-error" role="alert" hidden></p>
   </dialog>
   <p id="toast" class="toast" role="status" hidden></p>
 </body>

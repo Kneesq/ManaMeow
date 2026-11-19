@@ -10,6 +10,15 @@
   };
   const translations = {
     zh: {
+      catchIt:'抓拍！', viewProfilePhoto:'查看照片', editNickname:'我的昵称', personalNickname:'你给这只猫取的昵称',
+      nicknameHint:'仅自己可见。留空即可移除。', saveNickname:'保存昵称', myCollection:'我的收藏',
+      communityPhotos:'社区照片', collectionEmpty:'拍下你的第一张照片。', collectionGuest:'登录后可以收藏照片。',
+      loadMorePhotos:'加载更多', loadMoreOwnPhotos:'从我的收藏加载更多照片', loadMoreCommunityPhotos:'加载更多社区照片', loadPhotosFailed:'无法加载更多照片，请重试。',
+      collectionIndexEmpty:'抓拍过的猫咪会出现在这里。', collectionCount:'{count} 张照片', collectionIndexError:'无法加载收藏。', collectionRetry:'重试',
+      privatePhoto:'仅自己', publishedPhoto:'已公开', likePhoto:'点赞', sharePhoto:'分享', postToCommunity:'投稿到社区',
+      photoLink:'照片链接', photoComments:'评论', noComments:'还没有评论。', commentLogin:'登录后评论',
+      writeComment:'写评论', sendComment:'发送', commentYou:'你', commentGuest:'猫友', commentSubmitted:'评论已提交审核。',
+      sharedLinkCopied:'已复制照片链接。', photoUnavailable:'这张照片暂不可用。', photoActionFailed:'操作失败，请再试一次。', caughtPrivately:'照片已存到你的收藏。',
       locationTitle:'要使用当前位置吗？', locationHint:'查看你附近的地图。', locationRequest:'使用我的位置', locationSkip:'探索地图',
       locateMap:'我的位置', locationCancel:'取消定位', locationProgress:'正在定位…', locationDenied:'请在浏览器设置中允许定位后重试。', locationFailed:'暂时无法获取位置，请重试。', locationTimedOut:'定位超时，请重试。', locationUnsupported:'此页面无法使用浏览器定位。',
       mapFallbackLoading:'正在加载实时地图…', mapFallbackOverview:'实时地图暂不可用 · 已显示简略地图', mapFallbackDetail:'实时地图暂不可用 · 无法显示街道细节', mapFallbackArea:'当前视图的实时地图暂不可用',
@@ -29,6 +38,15 @@
       submitted:'投稿成功，等待审核。', draftSaved:'已在本机保存草稿。', pending:'待审核', approved:'已通过', rejected:'未通过', review:'审核投稿', spotted:'目击于', loading:'加载中…'
     },
     ms: {
+      catchIt:'Tangkap!', viewProfilePhoto:'Lihat gambar', editNickname:'Nama panggilan saya', personalNickname:'Nama panggilan anda untuk kucing ini',
+      nicknameHint:'Hanya anda boleh melihatnya. Kosongkan untuk memadam.', saveNickname:'Simpan nama panggilan', myCollection:'Koleksi saya',
+      communityPhotos:'Gambar komuniti', collectionEmpty:'Ambil gambar pertama anda.', collectionGuest:'Log masuk untuk menyimpan gambar.',
+      loadMorePhotos:'Muat lagi', loadMoreOwnPhotos:'Muat lagi gambar daripada koleksi saya', loadMoreCommunityPhotos:'Muat lagi gambar komuniti', loadPhotosFailed:'Gambar lain tidak dapat dimuatkan. Cuba lagi.',
+      collectionIndexEmpty:'Gambar yang anda simpan akan muncul di sini.', collectionCount:'{count} gambar', collectionIndexError:'Koleksi tidak dapat dimuatkan.', collectionRetry:'Cuba lagi',
+      privatePhoto:'Peribadi', publishedPhoto:'Disiarkan', likePhoto:'Suka', sharePhoto:'Kongsi', postToCommunity:'Hantar kepada komuniti',
+      photoLink:'Pautan gambar', photoComments:'Komen', noComments:'Belum ada komen.', commentLogin:'Log masuk untuk komen',
+      writeComment:'Tulis komen', sendComment:'Hantar', commentYou:'Anda', commentGuest:'Pencinta kucing', commentSubmitted:'Komen dihantar untuk semakan.',
+      sharedLinkCopied:'Pautan gambar disalin.', photoUnavailable:'Gambar ini tidak tersedia.', photoActionFailed:'Tindakan gagal. Cuba lagi.', caughtPrivately:'Gambar disimpan dalam koleksi anda.',
       locationTitle:'Guna lokasi semasa?', locationHint:'Lihat peta di sekitar anda.', locationRequest:'Guna lokasi saya', locationSkip:'Terokai peta',
       locateMap:'Lokasi saya', locationCancel:'Batal pengesanan lokasi', locationProgress:'Mengesan lokasi…', locationDenied:'Benarkan akses lokasi dalam tetapan pelayar dan cuba lagi.', locationFailed:'Lokasi tidak dapat dikesan. Cuba lagi.', locationTimedOut:'Masa untuk mengesan lokasi tamat. Cuba lagi.', locationUnsupported:'Pelayar tidak dapat mengesan lokasi pada halaman ini.',
       mapFallbackLoading:'Memuatkan peta langsung…', mapFallbackOverview:'Peta langsung tidak tersedia · gambaran anggaran', mapFallbackDetail:'Peta langsung tidak tersedia · butiran jalan tidak tersedia', mapFallbackArea:'Peta langsung tidak tersedia untuk paparan ini',
@@ -48,6 +66,11 @@
       submitted:'Kiriman diterima dan menunggu semakan.', draftSaved:'Draf disimpan pada peranti ini.', pending:'Menunggu', approved:'Diluluskan', rejected:'Ditolak', review:'Semak kiriman', spotted:'Ditemui pada', loading:'Memuatkan…'
     },
     en: {
+      collectionEmpty:'Take your first photo.', collectionGuest:'Log in to save photos.',
+      loadPhotosFailed:'Couldn’t load more photos. Try again.',
+      collectionIndexEmpty:'Cats you photograph will appear here.', collectionCount:'{count} photos', collectionCountOne:'{count} photo', collectionIndexError:'Couldn’t load your collection.', collectionRetry:'Try again',
+      privatePhoto:'Private', publishedPhoto:'Published', commentYou:'You', commentGuest:'Cat lover', commentSubmitted:'Comment sent for review.',
+      sharedLinkCopied:'Photo link copied.', photoUnavailable:'This photo is unavailable.', photoActionFailed:'Something went wrong. Try again.', caughtPrivately:'Photo saved to your collection.',
       locationCancel:'Cancel location lookup', locationProgress:'Finding your location…', locationDenied:'Allow location access in browser settings, then try again.', locationFailed:'Couldn’t find your location. Try again.', locationTimedOut:'Finding your location took too long. Try again.', locationUnsupported:'Location is unavailable on this page.',
       mapFallbackLoading:'Loading the live map…', mapFallbackOverview:'Live map unavailable · approximate overview', mapFallbackDetail:'Live map unavailable · street detail unavailable', mapFallbackArea:'Live map unavailable for this view',
       saveRecovery:'Save your recovery code', emailLogin:'Log in with email', signedInAs:'Signed in as', authFailed:'Something went wrong. Try again.', sessionUnavailable:'This browser didn’t keep the session. Try logging in again.',
@@ -90,9 +113,14 @@
   const searchPanel = $('#search-panel');
   const filterButtons = $$('.filters button');
   const mapElement = $('#map');
-  const catDialog = $('#cat-dialog');
   const upload = $('#upload-dialog');
   const accountDialog = $('#account-dialog');
+  const collectionSection = $('#account-collection');
+  const collectionList = $('#account-collection-cats');
+  const collectionMore = $('#account-collection-more');
+  const collectionStatus = $('#account-collection-status');
+  let accountView = 0;
+  let accountCollection = null;
   const form = $('#sighting-form');
   const submit = $('#submit-sighting');
   const uploadError = $('#upload-error');
@@ -169,6 +197,7 @@
     renderPin();
     renderMapList();
     renderLoginLabel();
+    profiles?.languageChanged();
   }
   $('#lang').value = state.lang;
   $('#lang').addEventListener('change', event => {
@@ -183,169 +212,20 @@
     renderMapList();
   });
 
-  let activeProfile = null;
-  let profileRequest = 0;
-  const photoForm = $('#profile-photo-form');
-  const photoSubmit = $('#submit-profile-photo');
-  const photoViewer = $('#photo-dialog');
-
-  function profileAge(ageMonths) {
-    if (!Number.isInteger(ageMonths) || ageMonths < 0) return t('unknown');
-    const agePart = (value, unit) => new Intl.NumberFormat(state.lang, {
-      style:'unit', unit, unitDisplay:'long'
-    }).format(value);
-    const years = Math.floor(ageMonths / 12);
-    const months = ageMonths % 12;
-    if (!years) return agePart(months,'month');
-    return [agePart(years,'year'), months ? agePart(months,'month') : ''].filter(Boolean).join(' ');
-  }
-
-  function setPhotoStatus(message, error = false) {
-    const status = $('#profile-photo-status');
-    status.classList.toggle('error',error);
-    status.textContent = message;
-    status.hidden = !message;
-  }
-
-  function resetPhotoForm() {
-    photoForm.reset();
-    photoForm.hidden = true;
-  }
-
-  function setPhotoDate(element, value) {
-    const timestamp = Date.parse(value);
-    element.hidden = !Number.isFinite(timestamp);
-    if (element.hidden) {
-      element.removeAttribute('datetime');
-      element.textContent = '';
-      return '';
-    }
-    element.dateTime = value;
-    element.textContent = dateFormat(state.lang).format(timestamp);
-    return element.textContent;
-  }
-
-  function viewPhoto(cat, entry) {
-    const full = $('#viewer-image');
-    full.src = entry.image;
-    full.alt = cat.name;
-    $('#photo-title').textContent = cat.name;
-    $('#viewer-caption').textContent = entry.caption || '';
-    setPhotoDate($('#viewer-date'),entry.createdAt);
-    photoViewer.showModal();
-  }
-
-  function renderPhotos(cat, uploads = []) {
-    const entries = [...uploads];
-    if (cat.image) entries.push({image:cat.image, createdAt:cat.createdAt || cat.observed});
-    entries.sort((left,right) => (Date.parse(right.createdAt) || 0) - (Date.parse(left.createdAt) || 0));
-    const tiles = entries.map(entry => {
-      const tile = node('button','photo-tile');
-      tile.type = 'button';
-      const thumbnail = node('img');
-      thumbnail.src = entry.image;
-      thumbnail.alt = '';
-      thumbnail.loading = 'lazy';
-      thumbnail.decoding = 'async';
-      thumbnail.width = thumbnail.height = 180;
-      const time = node('time');
-      const displayedDate = setPhotoDate(time,entry.createdAt);
-      tile.setAttribute('aria-label',[cat.name, entry.caption, displayedDate].filter(Boolean).join(' · '));
-      tile.append(thumbnail,time);
-      tile.addEventListener('click', () => viewPhoto(cat,entry));
-      const item = node('li');
-      item.append(tile);
-      return item;
-    });
-    $('#cat-photos').replaceChildren(...tiles);
-    $('#cat-photos-empty').hidden = !!tiles.length;
-  }
-
-  const catPhotosRoute = cat => './api/cats/' + encodeURIComponent(cat.id) + '/photos';
-  async function loadProfilePhotos(cat) {
-    const version = ++profileRequest;
-    const result = await request(catPhotosRoute(cat));
-    if (version !== profileRequest || !catDialog.open || !result?.ok) return;
-    if (Array.isArray(result.payload.photos)) renderPhotos(cat,result.payload.photos);
-  }
+  const profiles = window.createManaProfiles?.({
+    t, getLang: () => state.lang, getAccount: () => state.account, waitForAccount: () => accountLoad,
+    request, encodePhoto, toast,
+    openAccount: (refresh = false) => {
+      if (refresh) accountLoad = refreshAccount();
+      return openAccount();
+    },
+    sampleNote: cat => cat.sample && sampleNotes[state.lang]?.[samples.findIndex(item => item.id === cat.id)],
+  });
 
   function openCat(id) {
     const cat = state.cats.find(item => item.id === id);
-    if (!cat) return;
-    activeProfile = cat;
-    resetPhotoForm();
-    setPhotoStatus('');
-    const avatar = $('#cat-image');
-    avatar.hidden = !cat.image;
-    $('#cat-avatar-fallback').hidden = !!cat.image;
-    if (cat.image) {
-      avatar.src = cat.image;
-      avatar.alt = cat.name;
-    } else avatar.removeAttribute('src');
-    $('#cat-category').className = 'badge ' + cat.category;
-    $('#cat-category').textContent = t(cat.category);
-    $('#cat-title').textContent = cat.name;
-    $('#cat-age').textContent = profileAge(cat.ageMonths);
-    $('#cat-gender').textContent = t(cat.gender || 'unknown');
-    $('#cat-location').textContent = [cat.location, cat.city].filter(Boolean).join(' · ');
-    const translatedNote = cat.sample && sampleNotes[state.lang]?.[samples.findIndex(item => item.id === id)];
-    const note = $('#cat-note');
-    note.textContent = translatedNote || cat.note || '';
-    note.hidden = !note.textContent;
-    $('#cat-date').textContent = cat.observed ? t('spotted') + ' · ' + dateFormat(state.lang).format(new Date(cat.observed + 'T12:00:00+08:00')) : '';
-    $('#cat-demo').hidden = !cat.sample;
-    renderPhotos(cat);
-    if (!catDialog.open) catDialog.showModal();
-    loadProfilePhotos(cat);
+    if (cat) profiles?.open(cat);
   }
-
-  catDialog.addEventListener('close', () => {
-    activeProfile = null;
-    profileRequest += 1;
-  });
-
-  $('#add-profile-photo').addEventListener('click', async () => {
-    const cat = activeProfile;
-    await accountLoad;
-    if (!cat || activeProfile !== cat || !catDialog.open) return;
-    if (!state.account.available) return setPhotoStatus(t('photoOffline'));
-    if (!state.account.signedIn) return openAccount();
-    setPhotoStatus('');
-    photoForm.hidden = false;
-    photoForm.elements.image.focus();
-  });
-  $('#cancel-profile-photo').addEventListener('click', () => {
-    resetPhotoForm();
-    $('#add-profile-photo').focus();
-  });
-  photoForm.addEventListener('submit', async event => {
-    event.preventDefault();
-    const cat = activeProfile;
-    if (!cat || photoSubmit.disabled) return;
-    const file = photoForm.elements.image.files[0];
-    if (!file?.size) return setPhotoStatus(t('needPhoto'),true);
-    setPhotoStatus('');
-    photoSubmit.disabled = true;
-    try {
-      const image = await encodePhoto(file);
-      const result = await request(catPhotosRoute(cat), {
-        method:'POST',
-        headers:{ Accept:'application/json', 'Content-Type':'application/json' },
-        signal:AbortSignal.timeout(20000),
-        body:JSON.stringify({image})
-      });
-      if (activeProfile !== cat || !catDialog.open) return;
-      if (!result?.ok) return setPhotoStatus(result?.payload?.message || t('photoFailed'),true);
-      resetPhotoForm();
-      $('#add-profile-photo').focus();
-      setPhotoStatus(t('photoSubmitted'));
-    } catch (error) {
-      if (activeProfile === cat && catDialog.open) setPhotoStatus(error.message || t('photoFailed'),true);
-    } finally {
-      photoSubmit.disabled = false;
-    }
-  });
-
 
   const authDialog = $('#auth-dialog');
   const authForms = $$('[data-auth-form]');
@@ -475,7 +355,15 @@
   }
   async function refreshAccount() {
     const result = await request('./api/account');
-    if (result?.ok) state.account = result.payload;
+    if (result?.ok) {
+      const previous = state.account;
+      state.account = result.payload;
+      if (['available','signedIn','local','email'].some(key => previous[key] !== state.account[key])) {
+        profiles?.accountChanged();
+        if (!state.account.signedIn) clearAccountCollection();
+        else if (accountCollection && accountDialog.open) startAccountCollection();
+      }
+    }
     renderLoginLabel();
   }
   let accountLoad = refreshAccount();
@@ -491,7 +379,107 @@
     item.target = '_top';
     return item;
   }
+
+  function clearAccountCollection() {
+    accountCollection = null;
+    collectionSection.hidden = true;
+    collectionList.replaceChildren();
+    collectionMore.hidden = true;
+    collectionStatus.hidden = true;
+    collectionStatus.textContent = '';
+  }
+
+  function startAccountCollection() {
+    clearAccountCollection();
+    const collection = {cursor:null, busy:false, loaded:false, catIds:new Set()};
+    accountCollection = collection;
+    collectionSection.hidden = false;
+    loadAccountCollection(collection);
+  }
+
+  function collectionRow(entry, collection) {
+    const cat = state.cats.find(item => item.id === entry.catId) || entry.cat;
+    if (!cat?.name) return null;
+    const button = node('button','cat-row collection-row');
+    button.type = 'button';
+    const image = node('img');
+    image.src = entry.latestPhoto?.image || cat.image || 'manameow-logo.png?v=2';
+    image.alt = '';
+    image.width = image.height = 45;
+    image.loading = 'lazy';
+    const count = Number(entry.photoCount) || 0;
+    const countLabel = t(state.lang === 'en' && count === 1 ? 'collectionCountOne' : 'collectionCount')
+      .replace('{count}',new Intl.NumberFormat(state.lang).format(count));
+    const title = node('div','collection-name');
+    title.append(node('strong','',entry.nickname || cat.name));
+    if (entry.nickname && entry.nickname !== cat.name) title.append(node('small','',cat.name));
+    button.append(image,title,node('span','fine collection-count',countLabel));
+    button.addEventListener('click', () => {
+      if (accountCollection !== collection || !state.account.signedIn) return;
+      accountDialog.close();
+      profiles?.open(cat);
+    });
+    const row = node('li');
+    row.append(button);
+    return row;
+  }
+
+  async function loadAccountCollection(collection) {
+    if (!collection || collection.busy || (collection.loaded && !collection.cursor) || !state.account.signedIn) return;
+    collection.busy = true;
+    collectionMore.setAttribute('aria-disabled','true');
+    collectionStatus.textContent = collection.loaded ? '' : t('loading');
+    collectionStatus.hidden = collection.loaded;
+    const query = collection.cursor ? '?' + new URLSearchParams({cursor:collection.cursor}) : '';
+    const result = await request('./api/collection' + query);
+    if (accountCollection !== collection || !accountDialog.open || !state.account.signedIn) return;
+    collection.busy = false;
+    collectionMore.setAttribute('aria-disabled','false');
+    const retry = !result?.ok || !Array.isArray(result.payload.cats);
+    if (retry && result?.payload?.error === 'sign_in_required') {
+      const view = accountView;
+      accountLoad = refreshAccount();
+      await accountLoad;
+      if (view !== accountView || !accountDialog.open) return;
+      if (!state.account.signedIn) {
+        openAccount();
+        return;
+      }
+      if (accountCollection !== collection) return;
+    }
+    const added = [];
+    if (!retry) {
+      for (const entry of result.payload.cats) {
+        if (!entry.catId || collection.catIds.has(entry.catId)) continue;
+        const row = collectionRow(entry,collection);
+        if (!row) continue;
+        collection.catIds.add(entry.catId);
+        added.push(row);
+      }
+      collectionList.append(...added);
+      const next = result.payload.cursor;
+      collection.cursor = typeof next === 'string' && next && next !== collection.cursor ? next : null;
+      collection.loaded = true;
+    }
+    collectionStatus.textContent = retry ? t('collectionIndexError') : collection.catIds.size ? '' : t('collectionIndexEmpty');
+    collectionStatus.hidden = !collectionStatus.textContent;
+    collectionMore.dataset.i = retry ? 'collectionRetry' : 'loadMorePhotos';
+    collectionMore.textContent = t(collectionMore.dataset.i);
+    const moreHadFocus = document.activeElement === collectionMore;
+    collectionMore.hidden = !retry && !collection.cursor;
+    if (moreHadFocus && collectionMore.hidden && added.length) added[0].firstElementChild.focus();
+  }
+
+  collectionMore.addEventListener('click', () => loadAccountCollection(accountCollection));
+  accountDialog.addEventListener('close', () => {
+    if (accountDialog.open) return;
+    accountView += 1;
+    clearAccountCollection();
+  });
+
   async function openAccount() {
+    const view = ++accountView;
+    clearAccountCollection();
     const links = $('#account-links');
     const mine = $('#my-sightings');
     const message = $('#account-message');
@@ -500,6 +488,7 @@
     message.textContent = t('loading');
     if (!accountDialog.open) accountDialog.showModal();
     await accountLoad;
+    if (view !== accountView || !accountDialog.open) return;
     if (!state.account.available) {
       message.textContent = t('accountOffline');
       return;
@@ -516,6 +505,7 @@
     message.textContent = state.account.local && state.account.email
       ? t('signedInAs') + ' ' + state.account.email
       : t('myIntro');
+    startAccountCollection();
     if (state.account.moderator || state.account.platformModerator) links.append(link(t('review'),'./review',false));
     if (state.account.local) {
       const logout = node('button','button secondary',t('signOut'));
@@ -537,6 +527,7 @@
       links.append(link(t('signOut'),state.account.signOutUrl,false));
     }
     const result = await request('./api/sightings/mine');
+    if (view !== accountView || !accountDialog.open || !state.account.signedIn) return;
     if (!result?.ok) {
       mine.replaceChildren(node('li','fine',t('failed')));
       return;
@@ -683,7 +674,7 @@
       submit.disabled = false;
     }
   });
-  async function initializeLocation() {
+  async function initializeLocation(startupEnabled = true) {
     const dialog = $('#location-dialog');
     const control = $('#locate-map');
     const requestButton = $('#location-request');
@@ -755,7 +746,7 @@
       $('#search-toggle').focus({preventScroll:true});
     });
 
-    if (!available) return;
+    if (!available || !startupEnabled) return;
     for (const type of ['pointerdown', 'keydown', 'wheel']) {
       document.addEventListener(type, event => {
         if (!control.contains(event.target)) cancelStartup();
@@ -789,5 +780,6 @@
   restoreDraft();
   renderLanguage();
   refreshCats();
-  initializeLocation();
+  const sharedPhoto = profiles?.openSharedLink(id => state.cats.find(cat => cat.id === id));
+  initializeLocation(!sharedPhoto);
 })();
