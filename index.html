@@ -6,17 +6,17 @@
   <meta name="theme-color" content="#fff7eb">
   <meta name="description" content="Map of cat sightings in Malaysia.">
   <title>ManaMeow · Malaysia’s cat map</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e97a4e'/%3E%3Cg fill='%23fffaf2'%3E%3Cellipse cx='32' cy='39' rx='12' ry='10'/%3E%3Cellipse cx='19' cy='29' rx='5' ry='7' transform='rotate(-25 19 29)'/%3E%3Cellipse cx='28' cy='21' rx='5' ry='7'/%3E%3Cellipse cx='38' cy='22' rx='5' ry='7'/%3E%3Cellipse cx='46' cy='31' rx='5' ry='7' transform='rotate(25 46 31)'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="256x256" href="manameow-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css">
   <link rel="stylesheet" href="geo-map.css?v=3">
   <link rel="stylesheet" href="pixel-cats.css?v=1">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
   <script defer src="pixel-cats.js?v=1"></script>
   <script defer src="geo-map.js?v=5"></script>
-  <script defer src="app.js?v=4"></script>
+  <script defer src="app.js?v=5"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -24,7 +24,10 @@
     <div id="map" tabindex="-1" data-label="mapLabel" aria-label="Cat sightings map"></div>
 
     <header class="map-toolbar">
-      <h1 class="brand">Mana<span class="brand-accent">Meow</span></h1>
+      <h1 class="brand" aria-label="ManaMeow">
+        <img class="brand-logo" src="manameow-logo.png" width="33" height="33" alt="">
+        <span class="wordmark"><span class="balloon-m"><span>M</span></span>ana<span class="brand-accent"><span class="balloon-m"><span>M</span></span>eow</span></span>
+      </h1>
       <button class="map-button search-toggle" type="button" id="search-toggle" popovertarget="search-panel" data-label="findCats" aria-label="Find cats">
         <span class="magnify" aria-hidden="true"></span><span data-i="findCats">Find cats</span>
       </button>
@@ -75,6 +78,15 @@
     </div>
     <noscript><p class="map-instruction">Enable JavaScript to open the map.</p></noscript>
   </main>
+
+  <dialog id="welcome-dialog" class="welcome-dialog" aria-labelledby="welcome-title">
+    <button class="close" type="button" data-close aria-label="Close">×</button>
+    <div class="dialog-body">
+      <img class="welcome-mark" src="manameow-logo.png" width="73" height="73" alt="">
+      <h2 id="welcome-title" data-i="welcomeTitle">Welcome to ManaMeow</h2>
+      <button class="button primary" type="button" id="welcome-explore" data-i="welcomeExplore" autofocus>Explore map</button>
+    </div>
+  </dialog>
 
   <dialog id="cat-dialog" class="cat-profile" aria-labelledby="cat-title">
     <button class="close" type="button" data-close aria-label="Close">×</button>

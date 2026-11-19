@@ -201,3 +201,37 @@ form :is(input, textarea):user-invalid { border-color: #a53625; }
 .auth-options button, .auth-back { padding-inline: 0; font-size: .88rem; font-weight: 700; }
 .auth-back { justify-self: start; }
 #recovery-value { display: block; padding: 12px; margin-top: .75rem; background: #f3ead9; border: 1px solid var(--line); border-radius: 10px; font-size: .94rem; line-height: 1.6; overflow-wrap: anywhere; user-select: all; }
+
+.welcome-dialog { width: min(365px, calc(100% - 24px)); border-radius: 24px; }
+.welcome-dialog .dialog-body { padding: 27px 20px 25px; text-align: center; }
+.welcome-dialog #welcome-title { padding: 0; margin: 0 auto 17px; max-width: 15ch; font: 700 clamp(1.75rem, 7vw, 2.12rem)/1.04 'Fredoka', 'Arial Rounded MT Bold', var(--display); text-wrap: balance; }
+.welcome-dialog #welcome-explore { min-height: 44px; padding-inline: 20px; }
+
+.brand { gap: 7px; padding-inline: 10px 15px; }
+.brand-logo { display: block; flex: none; width: 33px; height: 33px; }
+.wordmark { display: block; padding-top: 2px; }
+.balloon-m { position: relative; display: inline-block; padding-inline: .025em; font-size: 1.12em; letter-spacing: -.062em; }
+.balloon-m > span {
+  position: relative;
+  z-index: 1;
+  color: #c65d43;
+  paint-order: stroke fill;
+  -webkit-text-stroke: .029em #a84633;
+  filter: drop-shadow(0 .038em #ad4b385c);
+}
+@supports (background-clip: text) {
+  .balloon-m > span { color: transparent; background: linear-gradient(145deg, #ffcd9e 12%, #f49d77 42%, #df6d56 70%, #ee9d7a 100%); background-clip: text; }
+}
+.balloon-m::before, .balloon-m::after {
+  content: '';
+  position: absolute;
+  top: .055em;
+  left: .07em;
+  width: .25em;
+  height: .27em;
+  background: linear-gradient(135deg, #ffe0b5, #e78a65 68%, #ca593f);
+  clip-path: polygon(6% 100%, 10% 25%, 24% 4%, 42% 6%, 95% 77%, 93% 100%);
+  transform: rotate(-13deg);
+}
+.balloon-m::after { left: auto; right: .05em; transform: scaleX(-1) rotate(-13deg); }
+.welcome-mark { display: block; width: 73px; height: 73px; margin: 0 auto 10px; }

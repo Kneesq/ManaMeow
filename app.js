@@ -10,6 +10,7 @@
   };
   const translations = {
     zh: {
+      welcomeTitle:'欢迎来到 ManaMeow', welcomeExplore:'探索地图',
       login:'登录', email:'邮箱', password:'密码', forgotPassword:'忘记密码？', register:'注册', resetPassword:'重设密码', newPassword:'新密码', recoveryCode:'恢复码', recoveryPrompt:'请输入注册时保存的恢复码。', saveRecovery:'保存恢复码', saveRecoveryHelp:'请把这段恢复码存到安全的地方。忘记密码时会用到它。', copyCode:'复制恢复码', copied:'已复制', done:'完成', passwordHelp:'至少 10 个字符。', emailLogin:'用邮箱登录', signedInAs:'已登录', authFailed:'操作失败，请重试。', invalid_email:'请输入有效的邮箱。', invalid_password:'密码长度需要为 10 至 128 个字符。', invalid_credentials:'邮箱或密码不正确。', invalid_recovery:'邮箱或恢复码不正确。', registration_unavailable:'这个邮箱暂时无法注册。', auth_unavailable:'邮箱账号服务暂时不可用。', rate_limited:'尝试次数太多，请稍后重试。', sessionUnavailable:'浏览器未保存登录状态，请重试登录。',
       age:'年龄', gender:'性别', ageMonths:'年龄（月）', unknown:'未知', female:'雌性', male:'雄性', photos:'照片', addPhoto:'添加照片', profilePhoto:'头像', animation:'猫咪动画', noPhotos:'还没有照片。', photoOffline:'连接网站后可以上传照片。', photoFailed:'照片上传失败，请再试一次。', photoSubmitted:'照片已提交审核。',
       skip:'跳到地图', account:'我的账号', add:'添加猫咪', findCats:'找猫', menu:'菜单', language:'语言',
@@ -26,6 +27,7 @@
       submitted:'投稿成功，等待审核。', draftSaved:'已在本机保存草稿。', pending:'待审核', approved:'已通过', rejected:'未通过', review:'审核投稿', spotted:'目击于', loading:'加载中…'
     },
     ms: {
+      welcomeTitle:'Selamat datang ke ManaMeow', welcomeExplore:'Terokai peta',
       login:'Log masuk', email:'E-mel', password:'Kata laluan', forgotPassword:'Lupa kata laluan?', register:'Daftar', resetPassword:'Tetapkan semula kata laluan', newPassword:'Kata laluan baharu', recoveryCode:'Kod pemulihan', recoveryPrompt:'Masukkan kod pemulihan yang disimpan semasa mendaftar.', saveRecovery:'Simpan kod pemulihan', saveRecoveryHelp:'Simpan kod ini di tempat selamat untuk menetapkan semula kata laluan.', copyCode:'Salin kod', copied:'Disalin', done:'Selesai', passwordHelp:'Sekurang-kurangnya 10 aksara.', emailLogin:'Log masuk dengan e-mel', signedInAs:'Log masuk sebagai', authFailed:'Tindakan gagal. Cuba lagi.', invalid_email:'Masukkan alamat e-mel yang sah.', invalid_password:'Gunakan kata laluan antara 10 hingga 128 aksara.', invalid_credentials:'E-mel atau kata laluan tidak tepat.', invalid_recovery:'E-mel atau kod pemulihan tidak tepat.', registration_unavailable:'Pendaftaran untuk e-mel ini tidak tersedia.', auth_unavailable:'Akaun e-mel tidak tersedia buat sementara waktu.', rate_limited:'Terlalu banyak percubaan. Cuba lagi kemudian.', sessionUnavailable:'Pelayar tidak menyimpan sesi. Cuba log masuk sekali lagi.',
       age:'Umur', gender:'Jantina', ageMonths:'Umur (bulan)', unknown:'Tidak diketahui', female:'Betina', male:'Jantan', photos:'Gambar', addPhoto:'Tambah gambar', profilePhoto:'Foto profil', animation:'Animasi kucing', noPhotos:'Belum ada gambar.', photoOffline:'Sambung ke laman untuk memuat naik gambar.', photoFailed:'Gambar gagal dimuat naik. Cuba lagi.', photoSubmitted:'Gambar dihantar untuk semakan.',
       skip:'Langkau ke peta', account:'Akaun saya', add:'Tambah kucing', findCats:'Cari kucing', menu:'Menu', language:'Bahasa',
@@ -678,5 +680,12 @@
   restoreDraft();
   renderLanguage();
   refreshCats();
-  if (location.hash === '#account') openAccount();
+  const welcome = $('#welcome-dialog');
+  const welcomeKey = 'manameow-welcome-seen';
+  $('#welcome-explore').addEventListener('click', () => welcome.close());
+  welcome.addEventListener('close', () => {
+    storage.set(welcomeKey, '1');
+    $('#search-toggle').focus({preventScroll:true});
+  });
+  if (storage.get(welcomeKey) !== '1') welcome.showModal();
 })();
