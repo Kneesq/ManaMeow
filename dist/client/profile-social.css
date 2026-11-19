@@ -81,17 +81,26 @@
 }
 .photo-viewer #viewer-image { max-height: min(50dvh, 450px); background: #342720; }
 .photo-viewer .photo-story { padding: clamp(13px, 4vw, 20px); }
-.photo-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px; }
-.photo-meta #photo-title { padding: 0; }
-.photo-story #viewer-caption { margin-top: 6px; overflow-wrap: anywhere; }
-.photo-actions:not(:empty) { margin-top: 10px; }
+.photo-story #photo-title { padding: 0; }
+.photo-title--sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.photo-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 7px 12px; }
+.photo-title:not(.photo-title--sr-only) + .photo-toolbar { margin-top: 8px; }
+.photo-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 8px; margin-inline-start: auto; text-align: end; }
+#viewer-date { white-space: nowrap; }
 .photo-like[aria-pressed=true] { border-color: #cb9c88; background: #f8e8dc; color: #933c2c; }
-.heart-mark { font: 700 17px/1 system-ui, sans-serif; }
-.heart-mark::before { content: '♡'; }
-.photo-like[aria-pressed=true] .heart-mark::before { content: '♥'; }
+.photo-paw { width: 21px; height: 21px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.55; stroke-linejoin: round; }
+.photo-like[aria-pressed=true] .photo-paw { fill: currentColor; }
 #photo-like-count { font-variant-numeric: tabular-nums; color: var(--muted); }
 .photo-discussion { margin-top: 13px; padding-top: 11px; border-top: 1px solid var(--line); }
 .photo-discussion h3 { margin: 0 0 6px; font: 800 19px/1.2 var(--display); }
+.photo-caption { margin-bottom: 7px; padding: 7px 10px; border-inline-start: 2px solid #d9997b; border-radius: 6px; background: var(--paper); white-space: pre-wrap; overflow-wrap: anywhere; }
 .photo-comment { padding: 7px 0; overflow-wrap: anywhere; }
 .photo-comment + .photo-comment { border-top: 1px solid var(--line); }
 .photo-comment header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; }

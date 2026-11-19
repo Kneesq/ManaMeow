@@ -7,6 +7,7 @@
       title:'Catch it', review:'Your catch', close:'Close', photos:'Photos', shutter:'Take photo', retake:'Retake',
       start:'Opening camera…', blocked:'Allow camera access or choose a photo.', unavailable:'Camera unavailable. Choose a photo to continue.',
       paused:'Camera paused.', restart:'Open camera', native:'Use device camera', photo:'Your photo',
+      caption:'Photo caption (optional)', captionLimit:'Keep your caption to 160 characters.',
       also:'Also share on this cat’s profile', save:'Save to collection', share:'Save & submit for sharing', saving:'Saving…',
       failed:'Couldn’t save your catch. Try again.', invalid:'Choose a JPG, PNG or WebP photo under 10 MB.', login:'Sign in to save this catch.'
     },
@@ -14,6 +15,7 @@
       title:'捕捉它', review:'这次的捕捉', close:'关闭', photos:'相册', shutter:'拍照', retake:'重拍',
       start:'正在打开相机…', blocked:'请允许使用相机，也可以从相册选一张。', unavailable:'相机暂时不可用，可以从相册选一张。',
       paused:'相机已暂停。', restart:'开启相机', native:'使用设备相机', photo:'你拍的照片',
+      caption:'照片说明（选填）', captionLimit:'照片说明最多可输入 160 个字符。',
       also:'同时分享到这只猫的档案', save:'存进我的收藏', share:'收藏并提交分享', saving:'正在保存…',
       failed:'照片暂时没存好，请重试。', invalid:'请选择小于 10 MB 的 JPG、PNG 或 WebP 照片。', login:'请先登录，再保存这张照片。'
     },
@@ -21,6 +23,7 @@
       title:'Tangkap gambar', review:'Hasil tangkapan', close:'Tutup', photos:'Galeri', shutter:'Ambil gambar', retake:'Ambil semula',
       start:'Membuka kamera…', blocked:'Benarkan akses kamera atau pilih gambar.', unavailable:'Kamera tidak tersedia. Pilih gambar untuk meneruskan.',
       paused:'Kamera dijeda.', restart:'Buka kamera', native:'Guna kamera peranti', photo:'Gambar anda',
+      caption:'Kapsyen gambar (pilihan)', captionLimit:'Hadkan kapsyen kepada 160 aksara.',
       also:'Kongsi juga pada profil kucing ini', save:'Simpan ke koleksi', share:'Simpan & hantar untuk dikongsi', saving:'Menyimpan…',
       failed:'Gambar gagal disimpan. Cuba lagi.', invalid:'Pilih JPG, PNG atau WebP yang lebih kecil daripada 10 MB.', login:'Log masuk untuk menyimpan gambar ini.'
     }
@@ -62,6 +65,7 @@
     ui.still.removeAttribute('src');
     ui.still.hidden = ui.review.hidden = true;
     ui['live-tools'].hidden = false;
+    ui.caption.value = '';
     ui.public.checked = false;
     ui.title.textContent = words().title;
     message();
@@ -151,16 +155,22 @@
       current.onAuthRequired?.();
       return;
     }
+    const caption = ui.caption.value.trim();
+    if (caption.length > ui.caption.maxLength) {
+      message(words().captionLimit);
+      ui.caption.focus({preventScroll:true});
+      return;
+    }
     message();
     current.saving = true;
-    ui.save.disabled = ui.public.disabled = ui.retake.disabled = ui.close.disabled = true;
+    ui.save.disabled = ui.caption.disabled = ui.public.disabled = ui.retake.disabled = ui.close.disabled = true;
     saveLabel();
     let result;
     try {
       const response = await fetch('/api/cats/' + encodeURIComponent(current.cat.id) + '/photos', {
         method:'POST', credentials:'same-origin', signal:AbortSignal.timeout(25000),
         headers:{Accept:'application/json','Content-Type':'application/json'},
-        body:JSON.stringify({image:current.image,share:ui.public.checked,clientRequestId:current.requestId})
+        body:JSON.stringify({image:current.image,caption,share:ui.public.checked,clientRequestId:current.requestId})
       });
       if (session !== current) return;
       if (response.status === 401) {
@@ -177,7 +187,7 @@
     } finally {
       current.saving = false;
       if (session === current) {
-        ui.save.disabled = ui.public.disabled = ui.retake.disabled = ui.close.disabled = false;
+        ui.save.disabled = ui.caption.disabled = ui.public.disabled = ui.retake.disabled = ui.close.disabled = false;
         saveLabel();
       }
     }
@@ -198,6 +208,7 @@
     ui.restart.textContent = t.restart;
     ui.native.textContent = t.native;
     ui.still.alt = t.photo + ' · ' + session.cat.name;
+    ui['caption-label'].textContent = t.caption;
     ui['public-label'].textContent = t.also;
     ui.dialog.showModal();
     startCamera();
@@ -211,6 +222,7 @@
     if (ui.dialog.open) return;
     stopCamera();
     ui.still.removeAttribute('src');
+    ui.caption.value = '';
     session = null;
   });
   const pause = () => {
