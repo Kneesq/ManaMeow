@@ -359,6 +359,7 @@
       clearTimeout(stampTimer);
       pendingStamp = null;
       stampLayer.replaceChildren();
+      stampLayer.removeAttribute('style');
     }
 
     function canStamp(current) {
