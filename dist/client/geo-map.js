@@ -9,20 +9,14 @@
   const DEGREES = Math.PI / 180;
 
   const colors = {
-    paper: '#fff1db',
-    ink: '#504139',
-    halo: '#fff9eb',
-    ocean: '#b7e1de',
-    river: '#83c1bd',
-    waterInk: '#376b70',
-    wave: '#e5f6ef',
-    woodland: '#b3d39e',
-    grass: '#d3e5aa',
-    park: '#c9e1a8',
-    parkEdge: '#a3bf87',
-    neighborhood: '#f4d9ca',
-    majorRoad: '#f0b37e',
-    road: '#fffbf1',
+    paper: '#f8edcd',
+    ocean: '#a9d8d2',
+    river: '#90c4ba',
+    woodland: '#b5ce8e',
+    grass: '#dfdf9f',
+    park: '#d0df9f',
+    parkEdge: '#abbc7d',
+    neighborhood: '#f4dbb7',
     border: '#b19298',
   };
 
@@ -37,28 +31,44 @@
     park_outline: { 'line-color': colors.parkEdge },
     landcover_wood: { 'fill-color': colors.woodland, 'fill-opacity': .8 },
     landcover_grass: { 'fill-color': colors.grass, 'fill-opacity': .72 },
-    landuse_residential: { 'fill-color': colors.neighborhood },
-    boundary_2: { 'line-color': colors.border },
-    boundary_3: { 'line-color': colors.border },
+    landuse_residential: { 'fill-color': colors.neighborhood, 'fill-opacity': .72 },
+    landcover_sand: { 'fill-color': '#f3dfa5' },
+    landuse_pitch: { 'fill-color': '#c4d798' },
+    landuse_track: { 'fill-color': '#ebc6a8' },
+    landuse_cemetery: { 'fill-color': '#d7d8a3', 'fill-opacity': .66 },
+    landuse_hospital: { 'fill-color': '#f4dbc1', 'fill-opacity': .57 },
+    landuse_school: { 'fill-color': '#e8ddb0', 'fill-opacity': .62 },
+    aeroway_fill: { 'fill-color': '#e9d9c2' },
+    aeroway_runway: { 'line-color': '#d0bca8' },
+    aeroway_taxiway: { 'line-color': '#d0bca8' },
+    boundary_2: { 'line-color': colors.border, 'line-opacity': .48 },
+    boundary_3: { 'line-color': colors.border, 'line-opacity': .22 },
+    boundary_disputed: { 'line-color': colors.border, 'line-opacity': .38 },
   };
   const roadColors = {
-    road_motorway: ['#f3ae87', '#cb9574'],
-    road_motorway_link: ['#f3ae87', '#cb9574'],
-    road_trunk_primary: ['#f9cc9b', '#d4a37e'],
-    road_secondary_tertiary: ['#ffe4b9', '#dbc096'],
-    road_link: ['#ffe4b9', '#dbc096'],
-    road_minor: ['#fff9ee', '#d9c3ac'],
-    road_service_track: ['#fff5e6', '#e0c9b1'],
+    road_motorway: ['#edb684', '#c59671'],
+    road_motorway_link: ['#edb684', '#c59671'],
+    road_trunk_primary: ['#f6ce94', '#c59e76'],
+    road_secondary_tertiary: ['#ffebb9', '#d2b181'],
+    road_link: ['#ffebb9', '#d2b181'],
+    road_minor: ['#fff7e0', '#d4b998'],
+    road_service_track: ['#fff0cf', '#d8bf9c'],
   };
   const walkingPaths = new Set(['road_path_pedestrian', 'bridge_path_pedestrian', 'tunnel_path_pedestrian']);
   const stitchedRoads = new Set(['road_motorway', 'road_trunk_primary']);
   const roundedStroke = { 'line-cap': 'round', 'line-join': 'round' };
 
   function styleRoad(layer) {
-    const id = layer.id.replace(/^(bridge|tunnel)_/, 'road_');
+    const id = layer.id.replace(/^(bridge|tunnel)_/, 'road_').replace('road_street', 'road_minor');
     const casing = id.endsWith('_casing');
     const road = casing ? id.slice(0, -7) : id;
     const tone = roadColors[road];
+    if (/(?:^|_)rail(?:_|$)/.test(layer.id)) {
+      return {
+        ...layer,
+        paint: { ...layer.paint, 'line-color': '#a9978c', 'line-opacity': .46 },
+      };
+    }
     if (!tone && !walkingPaths.has(layer.id)) return layer;
     const paint = tone ? { 'line-color': tone[casing ? 1 : 0] } : {
       'line-color': '#ab8695', 'line-dasharray': [1.3, 2.3],
@@ -74,70 +84,33 @@
     return {
       ...layer,
       id: 'manameow-' + layer.id + '-stitches',
-      minzoom: 12,
+      minzoom: 11,
       paint: {
         'line-color': '#fff8e9',
-        'line-width': ['interpolate', ['linear'], ['zoom'], 12, .7, 16, 1.4],
-        'line-dasharray': [1.7, 3.2],
-        'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 14, .66, 17, .86],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 11, .52, 16, 1.12],
+        'line-dasharray': [1.55, 3.7],
+        'line-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0, 14, .57, 17, .75],
       },
     };
   }
 
-  const buildingColor = ['match',
-    ['%', ['floor', ['abs', ['to-number', ['id'], ['get', 'render_height'], 0]]], 7],
-    0, '#efb6a8', 1, '#f4d292', 2, '#dfbedc',
-    3, '#bdd9c2', 4, '#bcd8de', 5, '#e6a796', '#fad3b1',
-  ];
-
-  function styleBuildings(layer) {
-    // The map is overhead. Draw real building footprints with a small offset shadow and a pastel roof.
-    const { maxzoom, ...footprints } = layer;
-    return [
-      {
-        ...footprints,
-        id: 'manameow-building-shadows',
-        paint: {
-          'fill-color': '#a78586',
-          'fill-translate': [1.7, 2.6],
-          'fill-translate-anchor': 'viewport',
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 14.5, .13, 17, .24],
-        },
-      },
-      {
-        ...footprints,
-        paint: {
-          ...layer.paint,
-          'fill-color': ['interpolate', ['linear'], ['zoom'], 13, '#f5dcc4', 14.45, buildingColor],
-          'fill-outline-color': ['interpolate', ['linear'], ['zoom'], 13, '#e3cbb2', 16.5, '#c8a198'],
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, .78, 14.45, 1],
-        },
-      },
-    ];
-  }
-
   function styleTheMap(_previous, style) {
-    const footprints = style.layers.find(layer => layer.id === 'building' && layer.type === 'fill');
+    const { sprite, glyphs, ...base } = style;
     const layers = style.layers.flatMap(layer => {
-      if (layer === footprints) return styleBuildings(layer);
-      if (footprints && layer.id === 'building-3d') return [];
+      if (layer.type === 'symbol' || layer['source-layer'] === 'building') return [];
       if (layer.type === 'line') {
         const road = styleRoad(layer);
         if (stitchedRoads.has(layer.id)) return [road, roadStitches(road)];
         if (road !== layer) return [road];
       }
 
-      let custom = layerPaint[layer.id];
-      if (layer.type === 'symbol' && layer.layout?.['text-field']) {
-        const waterLabel = /^(water_name|waterway)/.test(layer.id);
-        custom = {
-          'text-color': waterLabel ? colors.waterInk : colors.ink,
-          'text-halo-color': waterLabel ? '#e7f5ed' : colors.halo,
-        };
+      if (layer.id === 'landcover_wetland' || layer.id === 'road_area_pattern') {
+        return [{ ...layer, paint: { 'fill-color': layer.id === 'landcover_wetland' ? '#bfd8a6' : '#f8e6c4' } }];
       }
+      const custom = layerPaint[layer.id];
       return [custom ? { ...layer, paint: { ...layer.paint, ...custom } } : layer];
     });
-    return { ...style, layers };
+    return { ...base, layers };
   }
 
   function drawRipple(context, x, y) {
@@ -150,40 +123,242 @@
     context.stroke();
   }
 
-  function waterTexture() {
-    const tile = document.createElement('canvas');
-    tile.width = tile.height = 128;
-    const context = tile.getContext('2d');
-    if (!context) return null;
-    context.strokeStyle = colors.wave;
-    context.lineWidth = 1.6;
-    context.lineCap = 'round';
-    drawRipple(context, 20, 28);
-    drawRipple(context, 85, 95);
-    return tile;
+  function storyImage(map, id, width, height, paint) {
+    if (map.hasImage(id)) return true;
+    const sheet = document.createElement('canvas');
+    sheet.width = width * 2;
+    sheet.height = height * 2;
+    const brush = sheet.getContext('2d');
+    if (!brush) return false;
+    brush.scale(2, 2);
+    brush.lineCap = brush.lineJoin = 'round';
+    paint(brush);
+    map.addImage(id, brush.getImageData(0, 0, sheet.width, sheet.height), { pixelRatio: 2 });
+    return true;
   }
 
-  function addWaterTexture(map, texture) {
-    if (!texture) return;
-    const layers = map.getStyle().layers;
-    const index = layers.findIndex(layer => layer.id === 'water' && layer.type === 'fill');
-    if (index < 0) return;
-    const { source, 'source-layer': sourceLayer, filter } = layers[index];
-    const context = texture.getContext('2d');
-    if (!context) return;
+  function storyShape(brush, fill, stroke, path) {
+    brush.beginPath();
+    path(brush);
+    brush.closePath();
+    brush.fillStyle = fill;
+    brush.fill();
+    if (stroke) {
+      brush.strokeStyle = stroke;
+      brush.stroke();
+    }
+  }
 
-    map.addImage('manameow-water-texture', context.getImageData(0, 0, texture.width, texture.height));
+  function storyEllipse(brush, x, y, rx, ry, color) {
+    storyShape(brush, color, null, pen => pen.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2));
+  }
+
+  function drawStoryTree(brush, x, y, size, crown, shaded) {
+    brush.save();
+    brush.translate(x, y);
+    brush.scale(size, size);
+    brush.lineWidth = 1.25;
+    storyEllipse(brush, 1, 11, 11, 3, '#57684624');
+    storyShape(brush, '#a18058', '#74674c', pen => {
+      pen.moveTo(-2, 12); pen.lineTo(-2, 3); pen.lineTo(2, 3); pen.lineTo(2, 12);
+    });
+    storyShape(brush, crown, '#667e54', pen => {
+      pen.moveTo(-8, 5); pen.bezierCurveTo(-14, 4, -14, -3, -9, -5);
+      pen.bezierCurveTo(-11, -11, -6, -15, -2, -14);
+      pen.bezierCurveTo(2, -19, 9, -15, 9, -10);
+      pen.bezierCurveTo(17, -9, 17, 1, 11, 5);
+      pen.bezierCurveTo(9, 10, -7, 9, -8, 5);
+    });
+    storyShape(brush, shaded, null, pen => {
+      pen.moveTo(12, -6); pen.bezierCurveTo(12, 1, 6, 4, -1, 4);
+      pen.quadraticCurveTo(-6, 4, -10, 1); pen.bezierCurveTo(-8, 9, 11, 9, 13, 3);
+      pen.quadraticCurveTo(15, -1, 12, -6);
+    });
+    brush.strokeStyle = '#f6eeab99';
+    brush.lineWidth = 1.5;
+    brush.beginPath();
+    brush.moveTo(-7, -7); brush.quadraticCurveTo(-6, -13, -1, -12); brush.stroke();
+    brush.restore();
+  }
+
+  function drawStoryMountain(brush) {
+    brush.lineWidth = 1.5;
+    storyEllipse(brush, 37, 43, 30, 4, '#55684a26');
+    storyShape(brush, '#aebd89', '#738761', pen => {
+      pen.moveTo(4, 43); pen.quadraticCurveTo(12, 36, 17, 25);
+      pen.quadraticCurveTo(21, 18, 25, 19); pen.quadraticCurveTo(35, 30, 40, 43);
+    });
+    storyShape(brush, '#8eb196', '#657f67', pen => {
+      pen.moveTo(19, 43); pen.quadraticCurveTo(29, 31, 39, 12);
+      pen.quadraticCurveTo(42, 7, 45, 10); pen.quadraticCurveTo(54, 28, 69, 43);
+    });
+    storyShape(brush, '#779c87', null, pen => {
+      pen.moveTo(43, 12); pen.quadraticCurveTo(49, 30, 64, 41);
+      pen.lineTo(44, 41); pen.quadraticCurveTo(50, 33, 41, 21);
+    });
+    brush.strokeStyle = '#eee6b8ba';
+    brush.beginPath();
+    brush.moveTo(30, 33); brush.quadraticCurveTo(35, 28, 40, 17); brush.stroke();
+    drawStoryTree(brush, 27, 40, .38, '#9fba79', '#86a36a');
+    drawStoryTree(brush, 51, 41, .34, '#a2bd7f', '#84a371');
+  }
+
+  // These summit coordinates are from OpenFreeMap's zoom-7 mountain_peak source.
+  // Lower-resolution tiles omit them, so reuse a few summits only in the overview.
+  const overviewSummits = [
+    [100.8662, 5.4294], [101.2974, 4.69], [102.2353, 4.6332],
+    [102.0939, 3.8231], [102.6082, 2.3731], [116.5588, 6.075],
+  ];
+
+  function drawStoryCottage(brush, roof, wall) {
+    const ink = '#795a4b';
+    brush.lineWidth = 1.45;
+    storyEllipse(brush, 30, 47, 23, 4, '#84634b30');
+    storyShape(brush, '#c59770', ink, pen => {
+      pen.moveTo(35, 14); pen.lineTo(35, 7); pen.lineTo(42, 7); pen.lineTo(42, 18);
+    });
+    storyShape(brush, wall, ink, pen => {
+      pen.moveTo(12, 22); pen.lineTo(47, 23); pen.lineTo(48, 43);
+      pen.quadraticCurveTo(47, 47, 42, 46); pen.lineTo(14, 46); pen.quadraticCurveTo(11, 45, 11, 41);
+    });
+    storyShape(brush, roof, ink, pen => {
+      pen.moveTo(6, 25); pen.lineTo(27, 8); pen.quadraticCurveTo(29, 6, 33, 9);
+      pen.lineTo(53, 26); pen.quadraticCurveTo(49, 29, 44, 27); pen.lineTo(9, 28);
+      pen.quadraticCurveTo(5, 28, 6, 25);
+    });
+    brush.strokeStyle = '#fff1cd8f';
+    brush.lineWidth = 1.1;
+    brush.beginPath();
+    brush.moveTo(12, 23); brush.lineTo(28, 11); brush.moveTo(19, 22); brush.lineTo(32, 13);
+    brush.moveTo(26, 22); brush.lineTo(35, 16); brush.stroke();
+    brush.lineWidth = 1.1;
+    storyShape(brush, '#aa775c', ink, pen => {
+      pen.moveTo(26, 46); pen.lineTo(26, 37); pen.quadraticCurveTo(31, 29, 35, 37); pen.lineTo(35, 46);
+    });
+    for (const x of [16, 38]) {
+      storyShape(brush, '#fdf0b5', ink, pen => pen.rect(x, 32, 6, 7));
+      brush.strokeStyle = '#a47c54';
+      brush.beginPath(); brush.moveTo(x + 3, 32.5); brush.lineTo(x + 3, 38.5); brush.stroke();
+    }
+    storyEllipse(brush, 33, 41, .7, .8, '#ffdda0');
+    storyEllipse(brush, 11, 45, 5, 2.2, '#9cad72');
+    storyEllipse(brush, 47, 45, 5, 2.3, '#9cad72');
+  }
+
+  function installStorybookArt(map) {
+    const layers = map.getStyle().layers;
+    const next = layer => layers[layers.indexOf(layer) + 1]?.id;
+    const zoom = (values) => ['interpolate', ['linear'], ['zoom'], ...values];
+    const pattern = (id, anchor, alpha, paint, size = 128) => {
+      const layer = layers.find(candidate => candidate.id === anchor);
+      if (!layer || !storyImage(map, id, size, size, paint)) return;
+      map.addLayer({ ...layer, id, paint: { 'fill-pattern': id, 'fill-opacity': alpha } }, next(layer));
+    };
+
+    if (storyImage(map, 'manameow-paper-flecks', 128, 128, brush => {
+      for (let index = 0; index < 48; index++) {
+        const x = (13 + index * 43) % 128;
+        const y = (8 + index * 19 + Math.floor(index / 5) * 7) % 128;
+        storyEllipse(brush, x, y, index % 6 ? .43 : .8, .45, index % 2 ? '#af8b5337' : '#fffdf38a');
+      }
+    })) {
+      map.addLayer({
+        id: 'manameow-paper-flecks', type: 'background',
+        paint: { 'background-pattern': 'manameow-paper-flecks', 'background-opacity': .67 },
+      }, next(layers.find(layer => layer.id === 'background')));
+    }
+
+    pattern('manameow-water-ripples', 'water', zoom([4, .53, 6, .9, 11, .46, 15, .37]), brush => {
+      brush.strokeStyle = '#e8f2dce6';
+      brush.lineWidth = 1.45;
+      drawRipple(brush, 15, 22); drawRipple(brush, 77, 57);
+      drawRipple(brush, 35, 98); drawRipple(brush, 101, 108);
+      storyEllipse(brush, 73, 12, 1.2, .75, '#e1f4e0ab');
+      storyEllipse(brush, 6, 65, 1.2, .75, '#e1f4e0ab');
+    });
+    pattern('manameow-woodland-groves', 'landcover_wood', zoom([4, .57, 7, .69, 15, .72]), brush => {
+      drawStoryTree(brush, 23, 35, .53, '#a4bd78', '#88a864');
+      drawStoryTree(brush, 34, 41, .72, '#98b976', '#7d9c66');
+      drawStoryTree(brush, 95, 70, .7, '#a7c07e', '#85a468');
+      drawStoryTree(brush, 82, 77, .45, '#b8ca84', '#92ac6a');
+      drawStoryTree(brush, 29, 107, .63, '#aac182', '#8aa66d');
+      drawStoryTree(brush, 109, 115, .47, '#a5be78', '#86a367');
+    });
+    pattern('manameow-meadow-sprigs', 'landcover_grass', zoom([4, .32, 10, .43, 16, .72]), brush => {
+      for (const [x, y] of [[17, 29], [65, 99], [99, 47]]) {
+        storyEllipse(brush, x, y, 6.9, 2, '#778b4f36');
+        storyEllipse(brush, x - 3.7, y - 1.9, 3.7, 2.4, '#9eae69');
+        storyEllipse(brush, x + .6, y - 3.1, 3.4, 3.6, '#a6b470');
+        storyEllipse(brush, x + 3.4, y - 1.5, 3.9, 2.25, '#93a466');
+        storyEllipse(brush, x - .6, y - 4.6, 2, .74, '#e8e8b2b8');
+      }
+      brush.lineWidth = .9;
+      brush.strokeStyle = '#8ca15eab';
+      for (const [x, y] of [[50, 55], [111, 111], [91, 12], [23, 87]]) {
+        brush.beginPath();
+        brush.moveTo(x, y); brush.quadraticCurveTo(x - 1, y - 4, x - 3, y - 5);
+        brush.moveTo(x, y); brush.quadraticCurveTo(x + 1, y - 3, x + 3, y - 4);
+        brush.stroke();
+      }
+    });
+    pattern('manameow-park-groves', 'park', zoom([4, .63, 11, .69, 16, .76]), brush => {
+      drawStoryTree(brush, 20, 28, .65, '#acbf7a', '#92a76a');
+      drawStoryTree(brush, 81, 61, .72, '#acbf83', '#8ea774');
+      drawStoryTree(brush, 94, 69, .46, '#bccb89', '#9aae77');
+      drawStoryTree(brush, 39, 104, .52, '#a8b778', '#8e9e62');
+      for (const [x, y] of [[41, 36], [95, 92], [47, 119], [115, 19], [52, 69]]) {
+        storyEllipse(brush, x, y, 2.6, 1.8, '#e6be80');
+        storyEllipse(brush, x - 1, y - 1, 1.25, .9, '#fff1ba');
+      }
+    });
+
+    if (map.getSource('openmaptiles') && storyImage(map, 'manameow-mountain', 72, 51, drawStoryMountain)) {
+      const mountainIcon = {
+        'icon-image': 'manameow-mountain', 'icon-anchor': 'bottom', 'icon-padding': [12],
+        'icon-rotation-alignment': 'viewport',
+      };
+      map.addSource('manameow-overview-summits', {
+        type: 'geojson', data: {
+          type: 'FeatureCollection',
+          features: overviewSummits.map(coordinates => ({
+            type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates },
+          })),
+        },
+      });
+      map.addLayer({
+        id: 'manameow-overview-mountains', type: 'symbol', source: 'manameow-overview-summits', maxzoom: 7,
+        layout: { ...mountainIcon, 'icon-size': zoom([4, .42, 7, .55]) },
+        paint: { 'icon-opacity': .88 },
+      });
+      map.addLayer({
+        id: 'manameow-mountains', type: 'symbol', source: 'openmaptiles', 'source-layer': 'mountain_peak', minzoom: 7,
+        filter: ['>=', ['to-number', ['get', 'ele'], 0], 650],
+        layout: {
+          ...mountainIcon, 'icon-size': zoom([7, .55, 10, .74, 16, .9]),
+          'symbol-sort-key': ['-', ['to-number', ['get', 'ele'], 0]],
+        },
+        paint: { 'icon-opacity': .88 },
+      });
+    }
+
+    if (!map.getSource('openmaptiles')) return;
+    const cottages = [
+      ['manameow-cottage-coral', '#d7896d', '#f8dfae'],
+      ['manameow-cottage-sage', '#8eb09a', '#fae5be'],
+      ['manameow-cottage-lilac', '#ba9cb6', '#f1d3b1'],
+    ];
+    if (!cottages.every(([id, roof, wall]) => storyImage(map, id, 60, 54, brush => drawStoryCottage(brush, roof, wall)))) return;
+    const houseVariant = ['%', ['floor', ['abs', ['to-number', ['id'], ['get', 'render_height'], 0]]], 3];
+    const [coral, sage, lilac] = cottages.map(([id]) => id);
     map.addLayer({
-      id: 'manameow-water-ripples',
-      type: 'fill',
-      source,
-      'source-layer': sourceLayer,
-      ...(filter ? { filter } : {}),
-      paint: {
-        'fill-pattern': 'manameow-water-texture',
-        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 4, .38, 6, .8, 11, .34, 14, .22],
+      id: 'manameow-cottages', type: 'symbol', source: 'openmaptiles', 'source-layer': 'building', minzoom: 14,
+      layout: {
+        'icon-image': ['image', ['match', houseVariant, 0, coral, 1, sage, lilac]],
+        'icon-size': zoom([14, .4, 16, .52, 17, .66]), 'icon-padding': [7],
+        'icon-rotation-alignment': 'viewport', 'symbol-placement': 'point',
       },
-    }, layers[index + 1]?.id);
+      paint: { 'icon-opacity': zoom([14, .78, 15, .96, 17, 1]) },
+    });
   }
 
   // Generalized coastlines for the built-in overview. The streets and boundaries
@@ -226,65 +401,13 @@
       [104.58, .93], [104.47, .87]]
   ];
 
-  const forests = [
-    [[101.08, 5.83], [101.5, 6.07], [102.02, 5.75], [102.27, 5.23], [102.64, 4.91],
-      [102.52, 4.4], [102.15, 4.25], [102.06, 3.73], [101.57, 3.48], [101.69, 3.88],
-      [101.36, 4.24], [101.45, 4.82], [101.13, 5.23]],
-    [[102.62, 4.55], [103.03, 4.43], [103.22, 4.03], [103.16, 3.54], [102.74, 3.37],
-      [102.49, 3.77]],
-    [[102.91, 2.92], [103.37, 2.96], [103.51, 2.69], [103.3, 2.37], [102.99, 2.48]],
-    [[95.66, 5.16], [96.49, 5.1], [97.34, 4.54], [97.69, 4.19], [98.01, 3.24],
-      [98.96, 2.29], [99.3, 1.43], [100.4, 0.4], [100.68, -0.61], [100.1, -.72],
-      [99.21, .62], [98.4, 1.91], [97.56, 2.12], [96.67, 3.37]],
-    [[110.12, 1], [111.05, 1.51], [112.68, 2.2], [113.95, 3.54], [114.43, 3.55],
-      [115.38, 4.9], [117.28, 5.41], [117.72, 4.8], [116.47, 3.7], [115.49, 1.17],
-      [114.82, -.83], [113.42, -.89], [112.19, .18], [110.4, .07]]
-  ];
-
-  const border = [[100.12, 6.47], [100.54, 6.46], [101.07, 6.27], [101.31, 5.82],
-    [101.48, 5.78], [101.72, 5.71], [102.08, 6.28]];
-  const roads = [
-    [[100.41, 6.45], [100.37, 6.13], [100.46, 5.64], [100.44, 5.38], [100.56, 5.1],
-      [100.86, 4.89], [101.09, 4.6], [101.18, 4.26], [101.42, 3.84], [101.63, 3.35],
-      [101.71, 3.14], [101.96, 2.74], [102.23, 2.29], [102.75, 2.23], [103.11, 1.87],
-      [103.68, 1.49]],
-    [[101.68, 3.18], [101.86, 3.4], [102.08, 3.53], [102.42, 3.48],
-      [102.66, 3.59], [103.08, 3.72], [103.29, 3.81]],
-    [[103.29, 3.81], [103.27, 4.18], [103.21, 4.68], [103.10, 5.19],
-      [102.71, 5.67], [102.43, 5.88], [102.25, 6.12]],
-    [[101.23, 4.38], [101.64, 4.48], [101.95, 4.68], [102.22, 5.11],
-      [102.43, 5.41], [102.43, 5.88]],
-    [[102.94, 2.39], [103.09, 2.56], [103.33, 2.54], [103.56, 2.49],
-      [103.82, 2.41], [103.97, 2.31]]
-  ];
-  const places = [
-    [102.23, 4.36, 'PENINSULAR MALAYSIA', 4, 8, 'region'],
-    [100.87, 6.94, 'THAILAND', 4, 8, 'region'],
-    [98.55, 2.05, 'SUMATRA', 4, 8, 'region'],
-    [112.78, 2.13, 'SARAWAK', 4, 8, 'region'],
-    [117.12, 5.67, 'SABAH', 4, 8, 'region'],
-    [99.2, 3.15, 'Strait of Malacca', 4, 8, 'sea'],
-    [105.85, 5.45, 'South China Sea', 4, 8, 'sea'],
-    [100.32, 5.42, 'George Town', 4, 17, 'city'],
-    [101.69, 3.14, 'Kuala Lumpur', 4, 17, 'city'],
-    [103.73, 1.49, 'Johor Bahru', 4, 17, 'city'],
-    [102.25, 6.12, 'Kota Bharu', 5, 17, 'city'],
-    [103.13, 5.34, 'Kuala Terengganu', 5, 17, 'city'],
-    [103.33, 3.82, 'Kuantan', 5, 17, 'city'],
-    [101.09, 4.60, 'Ipoh', 5, 17, 'city'],
-    [102.25, 2.2, 'Melaka', 6, 17, 'city'],
-    [103.82, 1.27, 'Singapore', 6, 17, 'city'],
-    [116.07, 5.98, 'Kota Kinabalu', 5, 17, 'city'],
-    [110.36, 1.55, 'Kuching', 5, 17, 'city']
-  ];
-
   const clamp = (value, lower, upper) => Math.max(lower, Math.min(upper, value));
   const mercatorY = lat => Math.log(Math.tan(Math.PI / 4 + lat * DEGREES / 2)) / DEGREES;
   const geographicY = y => (2 * Math.atan(Math.exp(y * DEGREES)) - Math.PI / 2) / DEGREES;
   const factorFor = zoom => 512 * 2 ** zoom / 360;
   const normaliseCenter = coords => ({
-    lng: clamp(coords.lng, 92, 124),
-    lat: clamp(coords.lat, -5.5, 12)
+    lng: clamp(coords.lng, -180, 180),
+    lat: clamp(coords.lat, -85.051129, 85.051129)
   });
 
   function fallbackCamera(width, height) {
@@ -299,14 +422,14 @@
     };
   }
 
-  function createManaMap(container, { cards = [], select: selectCard, onPick } = {}) {
+  function createManaMap(container, { cards = [], select: selectCard, onPick, translate } = {}) {
     const canvas = document.createElement('canvas');
     const engine = document.createElement('div');
     const pinLayer = document.createElement('div');
     const fallbackCredit = document.createElement('span');
     const context = canvas.getContext('2d');
-    const texture = waterTexture();
-    const waterPattern = texture && context?.createPattern(texture, 'repeat');
+    const storybookFallback = context && window.createStorybookFallback?.(context);
+    let fallbackLoading = false;
     let map = null;
     let loaded = false;
     let picking = false;
@@ -328,7 +451,7 @@
     engine.inert = true;
     pinLayer.className = 'mana-map__pins';
     fallbackCredit.className = 'mana-map__schematic-credit';
-    fallbackCredit.textContent = 'Simplified map · approximate locations';
+    fallbackCredit.setAttribute('role', 'status');
     container.prepend(canvas, engine, pinLayer, fallbackCredit);
 
     function project(lng, lat) {
@@ -348,84 +471,24 @@
       };
     }
 
-    function path(points, closed = false) {
-      context.beginPath();
-      points.forEach(([lng, lat], index) => {
-        const { x, y } = project(lng, lat);
-        if (index) context.lineTo(x, y);
-        else context.moveTo(x, y);
-      });
-      if (closed) context.closePath();
-    }
-
     function drawSchematic() {
-      if (!context) return;
-      const water = context.createLinearGradient(0, 0, width, height);
-      water.addColorStop(0, '#c8eae4');
-      water.addColorStop(1, colors.ocean);
-      context.fillStyle = water;
-      context.fillRect(0, 0, width, height);
-      if (waterPattern) {
-        context.fillStyle = waterPattern;
+      let mode = 'area';
+      if (storybookFallback) {
+        mode = storybookFallback({ width, height, camera, project, land });
+      } else if (context) {
+        context.fillStyle = '#f3e7d7';
         context.fillRect(0, 0, width, height);
       }
 
-      context.lineJoin = 'round';
-      context.lineCap = 'round';
-      context.fillStyle = colors.paper;
-      context.strokeStyle = '#a1c9bb';
-      context.lineWidth = 1.5;
-      land.forEach(points => {
-        path(points, true);
-        context.fill();
-        context.stroke();
-      });
-
-      context.fillStyle = colors.woodland;
-      forests.forEach(points => {
-        path(points, true);
-        context.fill();
-      });
-
-      context.strokeStyle = colors.border;
-      context.lineWidth = 1.2;
-      context.setLineDash([3, 5]);
-      path(border);
-      context.stroke();
-      context.setLineDash([]);
-
-      if (camera.zoom >= 5) {
-        roads.forEach(points => {
-          path(points);
-          context.strokeStyle = colors.majorRoad;
-          context.lineWidth = 2.7;
-          context.stroke();
-          context.strokeStyle = colors.road;
-          context.lineWidth = 1.25;
-          context.stroke();
-        });
-      }
-
-      places.forEach(([lng, lat, name, min, max, type]) => {
-        if (camera.zoom < min || camera.zoom > max) return;
-        const { x, y } = project(lng, lat);
-        if (type === 'city') {
-          context.fillStyle = '#987f69';
-          context.beginPath();
-          context.arc(x, y, 2, 0, Math.PI * 2);
-          context.fill();
-        }
-        context.textAlign = type === 'city' ? 'left' : 'center';
-        context.font = type === 'sea' ? 'italic 12px Georgia, serif' :
-          type === 'region' ? '700 10px system-ui, sans-serif' : '550 11px system-ui, sans-serif';
-        context.fillStyle = type === 'sea' ? colors.waterInk : type === 'region' ? '#4e6651' : colors.ink;
-        if (type === 'city') {
-          context.lineWidth = 3;
-          context.strokeStyle = colors.halo;
-          context.strokeText(name, x + 5, y + 4);
-        }
-        context.fillText(name, x + (type === 'city' ? 5 : 0), y + 4);
-      });
+      const [key, defaultLabel] = fallbackLoading
+        ? ['mapFallbackLoading', 'Loading the live map…']
+        : {
+          overview: ['mapFallbackOverview', 'Live map unavailable · approximate overview'],
+          detail: ['mapFallbackDetail', 'Live map unavailable · street detail unavailable'],
+          area: ['mapFallbackArea', 'Live map unavailable for this view'],
+        }[mode];
+      const label = translate?.(key) ?? defaultLabel;
+      if (fallbackCredit.textContent !== label) fallbackCredit.textContent = label;
     }
 
     function drawPins() {
@@ -501,6 +564,7 @@
         const { lng, lat } = map.getCenter();
         return { lng, lat, zoom: map.getZoom() };
       }
+      if (!Number.isFinite(coords.lng) || !Number.isFinite(coords.lat)) return center();
       atHome = false;
       camera = {
         ...normaliseCenter(coords),
@@ -509,6 +573,9 @@
       if (loaded) {
         const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
         map.easeTo({ center: [camera.lng, camera.lat], zoom: camera.zoom, duration: reduceMotion ? 0 : 350 });
+      } else if (map) {
+        // Ask for the nearby tiles even if the initial overview is still loading.
+        map.jumpTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
       }
       scheduleRender();
       return { ...camera };
@@ -590,7 +657,7 @@
       canvas.classList.remove('mana-map__schematic--dragging');
     });
     canvas.addEventListener('wheel', event => {
-        event.preventDefault();
+      event.preventDefault();
       zoomBy(event.deltaY < 0 ? 1.25 : .8);
     }, { passive: false });
     canvas.addEventListener('keydown', event => {
@@ -609,6 +676,7 @@
     sizeMap();
 
     function showFallback() {
+      fallbackLoading = false;
       if (loaded) camera = center();
       loaded = false;
       container.classList.remove('mana-map--online');
@@ -619,8 +687,27 @@
       scheduleRender();
     }
 
-    // The schematic stays interactive while the online map loads or when it is unavailable.
-    if (navigator.onLine) import(LIBRARY).then(({ Map, AttributionControl }) => {
+    // Preserve the current camera when a connection returns after an offline launch.
+    let connecting = false;
+    async function connectMap() {
+      if (connecting || loaded || !navigator.onLine) return;
+      connecting = true;
+      fallbackLoading = true;
+      scheduleRender();
+      try {
+        const library = await import(LIBRARY);
+        if (!navigator.onLine) return;
+        map?.remove();
+        map = null;
+        attachMap(library);
+      } catch {
+        showFallback();
+      } finally {
+        connecting = false;
+      }
+    }
+
+    function attachMap({ Map, AttributionControl }) {
       map = new Map({
         container: engine, style: STYLE, center: [camera.lng, camera.lat], zoom: camera.zoom,
         minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: 0, dragRotate: false,
@@ -629,8 +716,13 @@
       });
       map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
       map.once('load', () => {
-        addWaterTexture(map, texture);
+        if (!navigator.onLine) {
+          showFallback();
+          return;
+        }
+        fallbackLoading = false;
         map.jumpTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
+        installStorybookArt(map);
         loaded = true;
         container.classList.add('mana-map--online');
         engine.removeAttribute('aria-hidden');
@@ -643,6 +735,7 @@
         if (!loaded) showFallback();
       });
       map.on('webglcontextlost', showFallback);
+      map.on('webglcontextrestored', () => requestAnimationFrame(connectMap));
       map.on('move', scheduleRender);
       map.on('movestart', event => { if (event.originalEvent) atHome = false; });
       map.on('click', ({ lngLat }) => { if (picking) onPick?.({ lng: lngLat.lng, lat: lngLat.lat }); });
@@ -651,7 +744,11 @@
         const { lng, lat } = center();
         onPick?.({ lng, lat });
       });
-    }).catch(showFallback);
+    }
+
+    window.addEventListener('online', connectMap);
+    window.addEventListener('offline', showFallback);
+    connectMap();
 
     return { setCards, select, zoomBy, reset, setPicking, center };
   }
