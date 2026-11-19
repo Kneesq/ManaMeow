@@ -19,6 +19,8 @@
       photoLink:'照片链接', photoComments:'评论', noComments:'还没有评论。', commentLogin:'登录后评论',
       writeComment:'写评论', sendComment:'发送', commentYou:'你', commentGuest:'猫友', commentSubmitted:'评论已提交审核。',
       sharedLinkCopied:'已复制照片链接。', photoUnavailable:'这张照片暂不可用。', photoActionFailed:'操作失败，请再试一次。', caughtPrivately:'照片已存到你的收藏。',
+      shareReady:'请再次点击分享。',
+      profileUnavailable:'暂时无法打开这只猫的档案。',
       locationTitle:'要使用当前位置吗？', locationHint:'查看你附近的地图。', locationRequest:'使用我的位置', locationSkip:'探索地图',
       locateMap:'我的位置', locationCancel:'取消定位', locationProgress:'正在定位…', locationDenied:'请在浏览器设置中允许定位后重试。', locationFailed:'暂时无法获取位置，请重试。', locationTimedOut:'定位超时，请重试。', locationUnsupported:'此页面无法使用浏览器定位。',
       mapFallbackLoading:'正在加载实时地图…', mapFallbackOverview:'实时地图暂不可用 · 已显示简略地图', mapFallbackDetail:'实时地图暂不可用 · 无法显示街道细节', mapFallbackArea:'当前视图的实时地图暂不可用',
@@ -47,6 +49,8 @@
       photoLink:'Pautan gambar', photoComments:'Komen', noComments:'Belum ada komen.', commentLogin:'Log masuk untuk komen',
       writeComment:'Tulis komen', sendComment:'Hantar', commentYou:'Anda', commentGuest:'Pencinta kucing', commentSubmitted:'Komen dihantar untuk semakan.',
       sharedLinkCopied:'Pautan gambar disalin.', photoUnavailable:'Gambar ini tidak tersedia.', photoActionFailed:'Tindakan gagal. Cuba lagi.', caughtPrivately:'Gambar disimpan dalam koleksi anda.',
+      shareReady:'Ketik Kongsi sekali lagi.',
+      profileUnavailable:'Profil kucing ini tidak tersedia.',
       locationTitle:'Guna lokasi semasa?', locationHint:'Lihat peta di sekitar anda.', locationRequest:'Guna lokasi saya', locationSkip:'Terokai peta',
       locateMap:'Lokasi saya', locationCancel:'Batal pengesanan lokasi', locationProgress:'Mengesan lokasi…', locationDenied:'Benarkan akses lokasi dalam tetapan pelayar dan cuba lagi.', locationFailed:'Lokasi tidak dapat dikesan. Cuba lagi.', locationTimedOut:'Masa untuk mengesan lokasi tamat. Cuba lagi.', locationUnsupported:'Pelayar tidak dapat mengesan lokasi pada halaman ini.',
       mapFallbackLoading:'Memuatkan peta langsung…', mapFallbackOverview:'Peta langsung tidak tersedia · gambaran anggaran', mapFallbackDetail:'Peta langsung tidak tersedia · butiran jalan tidak tersedia', mapFallbackArea:'Peta langsung tidak tersedia untuk paparan ini',
@@ -71,6 +75,8 @@
       collectionIndexEmpty:'Cats you photograph will appear here.', collectionCount:'{count} photos', collectionCountOne:'{count} photo', collectionIndexError:'Couldn’t load your collection.', collectionRetry:'Try again',
       privatePhoto:'Private', publishedPhoto:'Published', commentYou:'You', commentGuest:'Cat lover', commentSubmitted:'Comment sent for review.',
       sharedLinkCopied:'Photo link copied.', photoUnavailable:'This photo is unavailable.', photoActionFailed:'Something went wrong. Try again.', caughtPrivately:'Photo saved to your collection.',
+      shareReady:'Tap Share again.',
+      profileUnavailable:'This cat profile is unavailable.',
       locationCancel:'Cancel location lookup', locationProgress:'Finding your location…', locationDenied:'Allow location access in browser settings, then try again.', locationFailed:'Couldn’t find your location. Try again.', locationTimedOut:'Finding your location took too long. Try again.', locationUnsupported:'Location is unavailable on this page.',
       mapFallbackLoading:'Loading the live map…', mapFallbackOverview:'Live map unavailable · approximate overview', mapFallbackDetail:'Live map unavailable · street detail unavailable', mapFallbackArea:'Live map unavailable for this view',
       saveRecovery:'Save your recovery code', emailLogin:'Log in with email', signedInAs:'Signed in as', authFailed:'Something went wrong. Try again.', sessionUnavailable:'This browser didn’t keep the session. Try logging in again.',
@@ -215,10 +221,7 @@
   const profiles = window.createManaProfiles?.({
     t, getLang: () => state.lang, getAccount: () => state.account, waitForAccount: () => accountLoad,
     request, encodePhoto, toast,
-    openAccount: (refresh = false) => {
-      if (refresh) accountLoad = refreshAccount();
-      return openAccount();
-    },
+    requestLogin: showEmailLogin,
     sampleNote: cat => cat.sample && sampleNotes[state.lang]?.[samples.findIndex(item => item.id === cat.id)],
   });
 
@@ -228,10 +231,13 @@
   }
 
   const authDialog = $('#auth-dialog');
+  const authDone = $('#auth-done');
   const authForms = $$('[data-auth-form]');
   const authHeadings = {login:'login',register:'register',reset:'resetPassword',recovery:'saveRecovery'};
   const authErrors = new Set(['invalid_email','invalid_password','invalid_credentials','invalid_recovery','registration_unavailable','auth_unavailable','rate_limited']);
   let authBusy = false;
+  let authVerified = false;
+  let afterEmailLogin = null;
 
   function authMessage(message = '') {
     const error = $('#auth-error');
@@ -252,20 +258,32 @@
     if (mode !== 'recovery') $('#recovery-value').textContent = '';
   }
 
-  function openEmailLogin() {
-    if (state.account.local) return openAccount();
+  function showEmailLogin(onSuccess = null) {
     if (authDialog.open) return;
     if (accountDialog.open) accountDialog.close();
+    afterEmailLogin = onSuccess;
+    authVerified = false;
+    authDialog.returnValue = '';
     setAuthMode('login');
     authDialog.showModal();
     $('#auth-login').elements.email.focus();
   }
 
+  function openEmailLogin() {
+    if (state.account.signedIn) return openAccount();
+    showEmailLogin();
+  }
+
   $('#login-toggle').addEventListener('click',openEmailLogin);
   authDialog.addEventListener('cancel',event => { if (authBusy) event.preventDefault(); });
   authDialog.addEventListener('close',() => {
+    if (authDialog.open) return;
+    const resume = authVerified && authDialog.returnValue === 'signed-in' ? afterEmailLogin : null;
+    afterEmailLogin = null;
+    authVerified = false;
     for (const form of authForms) form.reset();
     $('#recovery-value').textContent = '';
+    resume?.();
   });
   for (const button of $$('[data-auth-open]')) {
     button.addEventListener('click',() => {
@@ -275,7 +293,9 @@
     });
   }
 
-  $('#auth-done').addEventListener('click',() => authDialog.close());
+  authDone.addEventListener('click',() => {
+    if (!authBusy) authDialog.close(authVerified ? 'signed-in' : '');
+  });
   $('#copy-code').addEventListener('click',async () => {
     const code = $('#recovery-value');
     try {
@@ -298,7 +318,7 @@
       fields.email = String(fields.email).trim();
       authMessage();
       authBusy = true;
-      submitButton.disabled = closeButton.disabled = true;
+      submitButton.disabled = closeButton.disabled = authDone.disabled = true;
       switches.forEach(button => { button.disabled = true; });
       try {
         const result = await request('./api/auth/' + form.dataset.authForm,{
@@ -319,20 +339,21 @@
           $('#copy-code').focus();
         }
         accountLoad = refreshAccount();
-        await accountLoad;
+        const account = await accountLoad;
         if (!authDialog.open) return;
-        if (!state.account.local) authMessage(t('sessionUnavailable'));
-        else if (!recoveryCode) authDialog.close();
+        authVerified = Boolean(account?.signedIn && account.local);
+        if (!authVerified) authMessage(t('sessionUnavailable'));
+        else if (!recoveryCode) authDialog.close('signed-in');
       } finally {
         authBusy = false;
-        submitButton.disabled = closeButton.disabled = false;
+        submitButton.disabled = closeButton.disabled = authDone.disabled = false;
         switches.forEach(button => { button.disabled = false; });
       }
     });
   }
 
   function renderLoginLabel() {
-    $('#login-toggle').setAttribute('aria-label',t(state.account.local ? 'account' : 'login'));
+    $('#login-toggle').setAttribute('aria-label',t(state.account.signedIn ? 'account' : 'login'));
   }
 
   for (const close of $$('[data-close]')) close.addEventListener('click', () => close.closest('dialog').close());
@@ -365,6 +386,7 @@
       }
     }
     renderLoginLabel();
+    return result?.ok ? result.payload : null;
   }
   let accountLoad = refreshAccount();
   async function refreshCats() {
@@ -780,6 +802,6 @@
   restoreDraft();
   renderLanguage();
   refreshCats();
-  const sharedPhoto = profiles?.openSharedLink(id => state.cats.find(cat => cat.id === id));
-  initializeLocation(!sharedPhoto);
+  const sharedLink = profiles?.openSharedLink(id => state.cats.find(cat => cat.id === id));
+  initializeLocation(!sharedLink);
 })();
