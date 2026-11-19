@@ -30,6 +30,7 @@
     const likeButton = $('#photo-like');
     const postButton = $('#photo-post');
     const shareFallback = $('#photo-copy-link');
+    const profileShareFallback = $('#profile-copy-link');
     const photoImage = $('#viewer-image');
     const catchButton = $('#catch-cat');
     const albums = [
@@ -216,6 +217,7 @@
     function openProfile(cat, {directLink} = {}) {
       const current = {cat, directLink, version:0, loading:true, paging:new Set(), gallery:{original:originalFallback(cat), photos:[], myPhotos:[]}};
       profile = current;
+      resetShareField(profileShareFallback);
       nicknameSave.disabled = false;
       setNicknameForm(false);
       setStatus('#profile-status');
@@ -260,7 +262,7 @@
 
     for (const album of albums) album.more.addEventListener('click', () => loadMore(album));
 
-    function renderComments(comments) {
+    function renderComments(comments, isPublic) {
       const items = comments.map(comment => {
         const item = element('li','photo-comment');
         const heading = element('header');
@@ -272,16 +274,18 @@
         return item;
       });
       $('#photo-comments').replaceChildren(...items);
-      $('#photo-comments-empty').hidden = Boolean(items.length);
+      $('#photo-comments-empty').hidden = !isPublic || Boolean(items.length);
     }
 
     function renderViewer(current) {
       const {cat, entry, busy, loading} = current;
       if (photoImage.getAttribute('src') !== entry.image) photoImage.src = entry.image;
       photoImage.alt = cat.name;
-      $('#photo-title').textContent = cat.name;
+      const title = $('#photo-title');
+      title.textContent = cat.name;
+      title.classList.toggle('photo-title--sr-only', !entry.mine || entry.shareable);
       const caption = $('#viewer-caption');
-      caption.textContent = entry.caption || '';
+      caption.textContent = typeof entry.caption === 'string' ? entry.caption.trim() : '';
       caption.hidden = !caption.textContent;
       setTime($('#viewer-date'),entry.createdAt);
       const status = $('#viewer-visibility');
@@ -295,11 +299,12 @@
       $('#photo-share').hidden = !isPublic;
       postButton.hidden = !(entry.mine && entry.status === 'private' && !loading);
       postButton.disabled = busy.has('post');
-      $('#photo-discussion').hidden = !isPublic;
+      $('#photo-discussion').hidden = !isPublic && caption.hidden;
+      $('#photo-comments-title').textContent = t(entry.shareable ? 'photoComments' : 'photoCaption');
       commentForm.hidden = !isPublic || !getAccount().signedIn;
       commentSend.disabled = busy.has('comment');
       $('#comment-login').hidden = !isPublic || Boolean(getAccount().signedIn);
-      renderComments(current.comments);
+      renderComments(isPublic ? current.comments : [],isPublic);
       if (current.focusComment && !commentForm.hidden && photoDialog.open) {
         current.focusComment = false;
         commentForm.elements.comment.focus();
@@ -424,45 +429,59 @@
       if (await requireSession(isCurrent,key => setStatus('#photo-view-status',key,true),focusComposer)) focusComposer();
     });
 
-    function photoUrl(catId, photoId) {
-      const url = new URL(location.pathname,location.origin);
-      url.searchParams.set('cat',catId);
-      url.searchParams.set('photo',photoId);
-      return url.href;
+    function resetShareField(field) {
+      field.hidden = true;
+      field.querySelector('input').value = '';
     }
 
-    $('#photo-share').addEventListener('click', async () => {
-      const current = viewer;
-      if (!current?.entry.shareable) return;
-      if (!getAccount().signedIn) {
-        const isCurrent = () => viewStillOpen(current);
-        const hint = () => { if (isCurrent()) setStatus('#photo-view-status','shareReady'); };
-        if (await requireSession(isCurrent,key => setStatus('#photo-view-status',key,true),hint)) hint();
-        return;
-      }
-      setStatus('#photo-view-status');
-      const url = photoUrl(current.cat.id,current.entry.id);
+    async function shareLink({cat, photoId, field, status, copied, isCurrent}) {
+      const link = new URL('/', location.origin);
+      link.searchParams.set('cat',cat.id);
+      if (photoId) link.searchParams.set('photo',photoId);
+      const url = link.href;
+      resetShareField(field);
+      setStatus(status);
       if (typeof navigator.share === 'function') {
         try {
-          await navigator.share({title:current.cat.name + ' · ManaMeow',url});
+          await navigator.share({title:cat.name + ' · ManaMeow',url});
           return;
         } catch (error) {
           if (error.name === 'AbortError') return;
         }
       }
-      if (!viewStillOpen(current)) return;
+      if (!isCurrent()) return;
       try {
         if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(url);
-        if (viewStillOpen(current)) setStatus('#photo-view-status','sharedLinkCopied');
+        if (isCurrent()) setStatus(status,copied);
       } catch {
-        if (!viewStillOpen(current)) return;
-        const input = shareFallback.querySelector('input');
+        if (!isCurrent()) return;
+        const input = field.querySelector('input');
         input.value = url;
-        shareFallback.hidden = false;
+        field.hidden = false;
         input.focus();
         input.select();
       }
+    }
+
+    $('#share-cat').addEventListener('click', () => {
+      const current = profile;
+      if (!current) return;
+      shareLink({cat:current.cat, field:profileShareFallback, status:'#profile-status', copied:'profileLinkCopied',
+        isCurrent:() => profile === current && profileDialog.open && !photoDialog.open});
+    });
+
+    $('#photo-share').addEventListener('click', async () => {
+      const current = viewer;
+      if (!current?.entry.shareable) return;
+      const isCurrent = () => viewStillOpen(current);
+      if (!getAccount().signedIn) {
+        const hint = () => { if (isCurrent()) setStatus('#photo-view-status','shareReady'); };
+        if (await requireSession(isCurrent,key => setStatus('#photo-view-status',key,true),hint)) hint();
+        return;
+      }
+      shareLink({cat:current.cat, photoId:current.entry.id, field:shareFallback,
+        status:'#photo-view-status', copied:'sharedLinkCopied', isCurrent});
     });
 
     $('#cat-avatar').addEventListener('click', event => {
@@ -557,6 +576,7 @@
       if (profileDialog.open) return;
       clearSharedAddress(profile);
       profile = null;
+      resetShareField(profileShareFallback);
       setNicknameForm(false);
       $('#my-cat-photos').replaceChildren();
       $('#cat-nickname').textContent = '';

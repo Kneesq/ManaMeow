@@ -24,6 +24,8 @@
 .catch-shutter:disabled { opacity: .48; }
 .catch-shutter:active:enabled { background: #cd7154; }
 .catch-review { padding: 12px 16px 16px; }
+.catch-caption { display: grid; gap: 4px; margin-bottom: 4px; color: var(--ink); font-size: .9rem; font-weight: 650; }
+.catch-caption textarea { width: 100%; max-height: 9rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: inherit; font-size: 1rem; font-weight: 400; resize: vertical; }
 .catch-share-option { display: flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 650; }
 .catch-share-option input { accent-color: var(--orange); width: 19px; height: 19px; flex: none; }
 .catch-review-tools { display: flex; flex-wrap: wrap; gap: 8px; }

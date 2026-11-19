@@ -162,21 +162,32 @@
     <button class="close" type="button" data-close aria-label="Close">×</button>
     <img id="viewer-image" alt="">
     <div class="dialog-body photo-story">
-      <div class="photo-meta">
-        <h2 id="photo-title"></h2>
-        <time id="viewer-date" class="fine"></time>
-        <span id="viewer-visibility" class="photo-visibility" hidden></span>
-      </div>
-      <p id="viewer-caption"></p>
-      <div class="photo-actions">
-        <button type="button" id="photo-like" class="button secondary photo-like" aria-pressed="false" hidden><span class="heart-mark" aria-hidden="true"></span><span data-i="likePhoto">Like</span><span id="photo-like-count"></span></button>
-        <button type="button" id="photo-share" class="button secondary" data-i="sharePhoto" hidden>Share</button>
-        <button type="button" id="photo-post" class="button primary" data-i="postToCommunity" hidden>Post to community</button>
+      <h2 id="photo-title" class="photo-title photo-title--sr-only"></h2>
+      <div class="photo-toolbar">
+        <div class="photo-actions">
+          <button type="button" id="photo-like" class="button secondary photo-like" aria-pressed="false" aria-label="Like" data-label="likePhoto" aria-describedby="photo-like-count" hidden>
+            <svg class="photo-paw" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <ellipse cx="4.8" cy="10.2" rx="1.8" ry="2.6" transform="rotate(-23 4.8 10.2)"/>
+              <ellipse cx="9.2" cy="6.6" rx="1.85" ry="2.7" transform="rotate(-9 9.2 6.6)"/>
+              <ellipse cx="14.8" cy="6.6" rx="1.85" ry="2.7" transform="rotate(9 14.8 6.6)"/>
+              <ellipse cx="19.2" cy="10.2" rx="1.8" ry="2.6" transform="rotate(23 19.2 10.2)"/>
+              <path d="M6.7 17.6c0-1.3.8-2.4 2.2-3.4.7-.5 1.2-1 1.7-1.6a1.8 1.8 0 0 1 2.8 0c.5.6 1 1.1 1.7 1.6 1.4 1 2.2 2.1 2.2 3.4 0 1.4-1 2.3-2.4 2.3-1.1 0-2.2-.5-2.9-.5s-1.8.5-2.9.5c-1.4 0-2.4-.9-2.4-2.3Z"/>
+            </svg>
+            <span data-i="likePhoto">Like</span><span id="photo-like-count"></span>
+          </button>
+          <button type="button" id="photo-share" class="button secondary" data-i="sharePhoto" hidden>Share</button>
+          <button type="button" id="photo-post" class="button primary" data-i="postToCommunity" hidden>Post to community</button>
+        </div>
+        <div class="photo-meta">
+          <span id="viewer-visibility" class="photo-visibility" hidden></span>
+          <time id="viewer-date" class="fine"></time>
+        </div>
       </div>
       <label id="photo-copy-link" class="photo-copy-link" hidden><span data-i="photoLink">Photo link</span><input type="url" readonly></label>
       <p id="photo-view-status" class="fine" role="status" hidden></p>
       <section id="photo-discussion" class="photo-discussion" aria-labelledby="photo-comments-title" hidden>
         <h3 id="photo-comments-title" data-i="photoComments">Comments</h3>
+        <p id="viewer-caption" class="photo-caption" hidden></p>
         <ul id="photo-comments"></ul>
         <p id="photo-comments-empty" class="fine" data-i="noComments" hidden>No comments yet.</p>
         <button type="button" class="text-button" id="comment-login" data-i="commentLogin" hidden>Log in to comment</button>
@@ -294,6 +305,10 @@
     <input type="file" id="catch-picker" accept="image/jpeg,image/png,image/webp" hidden>
     <input type="file" id="catch-device-picker" accept="image/*" capture="environment" hidden>
     <div id="catch-review" class="catch-review" hidden>
+      <label class="catch-caption">
+        <span id="catch-caption-label">Photo caption (optional)</span>
+        <textarea id="catch-caption" rows="2" maxlength="160"></textarea>
+      </label>
       <label class="catch-share-option"><input id="catch-public" type="checkbox"><span id="catch-public-label">Also share on this cat’s profile</span></label>
       <div class="catch-review-tools">
         <button class="button secondary" id="catch-retake" type="button">Retake</button>
