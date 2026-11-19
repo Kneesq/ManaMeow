@@ -131,7 +131,7 @@
   .profile-actions { gap: 6px; }
 }
 
-.photo-media { position: relative; isolation: isolate; }
+.photo-media { position: relative; isolation: isolate; overflow: hidden; }
 .photo-media #viewer-image { object-position: center; }
 .photo-stamp-layer {
   position: absolute;
