@@ -510,6 +510,7 @@
         button.style.left = `${x + offset}px`;
         button.style.top = `${y}px`;
         button.classList.toggle('mana-map__pin--active', card.id === selectedId);
+        if (x + offset >= 0 && x + offset <= width && y >= 0 && y <= height) window.loadManaPixelCatCoat?.(button);
       });
     }
 
@@ -538,7 +539,6 @@
             paw.setAttribute('aria-hidden', 'true');
             label.className = 'mana-map__pin-name';
             button.append(paw, label);
-            window.attachManaPixelCat?.(button, card.id ?? card.name);
             pin = { card, button, label };
             button.addEventListener('click', () => {
               const { id, lat, lng } = pin.card;
@@ -548,6 +548,7 @@
             pinLayer.append(button);
           }
           pin.card = card;
+          window.attachManaPixelCat?.(pin.button, card);
           pin.button.dataset.category = String(card.category ?? '').toLowerCase();
           pin.button.setAttribute('aria-label', card.name);
           pin.label.textContent = card.name;

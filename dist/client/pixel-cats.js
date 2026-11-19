@@ -3,7 +3,12 @@
 
   const frameWidth = 24;
   const frameHeight = 16;
-  const cache = new Map();
+  const fallbackAtlases = new Map();
+  const photoAtlases = new Map();
+  const sprites = new WeakMap();
+  const pending = [];
+  const sampleSize = 40;
+  let active = 0;
 
   const coats = [
     { // Ginger tabby
@@ -104,14 +109,13 @@
     }
   }
 
-  function createAtlas(coatIndex) {
+  function createAtlas(coat) {
     const canvas = document.createElement('canvas');
     canvas.width = frameWidth * steps.length;
     canvas.height = frameHeight;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    const coat = coats[coatIndex];
     for (let frame = 0; frame < steps.length; frame++) {
       ctx.save();
       ctx.translate(frame * frameWidth, 0);
@@ -133,12 +137,158 @@
     return (hash ^ (hash >>> 16)) >>> 0;
   }
 
-  window.attachManaPixelCat = function attachManaPixelCat(button, id) {
-    if (button.classList.contains('mana-map__pin--pixel')) return;
+  const rgb = (red, green, blue) => [red, green, blue];
+  const luminance = ([r, g, b]) => .2126 * r + .7152 * g + .0722 * b;
+  const mix = (left, right, amount) => left.map((channel, index) => channel + (right[index] - channel) * amount);
+  const hex = (color) => '#' + color.map(value => Math.round(Math.min(255, Math.max(0, value))).toString(16).padStart(2, '0')).join('');
+  const contrast = (color, amount) => mix([luminance(color), luminance(color), luminance(color)], color, amount);
+
+  function averageBand(sorted, start, end) {
+    const band = sorted.slice(Math.floor(sorted.length * start), Math.max(1, Math.ceil(sorted.length * end)));
+    return band.reduce((total, color) => total.map((channel, index) => channel + color[index] / band.length), [0, 0, 0]);
+  }
+
+  function sampleCoat(data) {
+    const face = [];
+    const chest = [];
+    for (let y = 0; y < sampleSize; y++) {
+      const row = (y + .5) / sampleSize;
+      for (let x = 0; x < sampleSize; x++) {
+        const col = (x + .5) / sampleSize;
+        const central = ((col - .51) / .30) ** 2 + ((row - .48) / .32) ** 2 < 1;
+        const fur = central && row > .25 && row < .71 && !(row > .37 && row < .48 && Math.abs(col - .52) > .095);
+        const bib = row > .63 && row < .94 && Math.abs(col - .52) < .17;
+        if (!fur && !bib) continue;
+
+        const start = (y * sampleSize + x) * 4;
+        const [r, g, b, a] = data.subarray(start, start + 4);
+        // Ignore transparent edges and saturated foliage/sky in the portrait crop.
+        if (a < 220 || (g > r + 9 && g > b + 13) || b > r + 27) continue;
+        const color = rgb(r, g, b);
+        if (fur) face.push(color);
+        if (bib) chest.push(color);
+      }
+    }
+    if (face.length < 42) return null;
+    face.sort((a, b) => luminance(a) - luminance(b));
+    chest.sort((a, b) => luminance(a) - luminance(b));
+
+    const low = averageBand(face, .09, .24);
+    const mid = averageBand(face, .36, .72);
+    const high = averageBand(face, .75, .96);
+    const bib = chest.length >= 20 ? averageBand(chest, .62, .94) : high;
+    const brightness = luminance(mid);
+    const shadowGap = brightness - luminance(low);
+    const faceContrast = luminance(high) - luminance(low);
+    const bibIsPale = luminance(bib) > 150 && luminance(bib) - brightness > 32 && bib[0] - bib[2] < 65;
+    const charcoal = brightness < 108 && mid[0] - mid[2] < 42;
+    const ginger = mid[0] - mid[1] > 36 && mid[0] - mid[2] > 75;
+    const light = rgb(255, 241, 218);
+    const ink = rgb(53, 43, 47);
+    const broadTone = charcoal
+      ? mix(mid, rgb(brightness - 2, brightness + 1, brightness + 8), .78)
+      : contrast(mix(mid, high, .32), ginger ? 1.25 : 1.06);
+    const base = mix(broadTone, light, charcoal ? .075 : brightness > 151 ? .29 : .13);
+    const shade = mix(broadTone, ink, charcoal ? .21 : .27);
+    const stripe = mix(contrast(low, ginger ? 1.18 : 1), ink, .19);
+    const cream = bibIsPale ? mix(bib, light, .45) : mix(base, light, charcoal ? .12 : .31);
+
+    let markings = [];
+    if (!charcoal && shadowGap > 30 && brightness < 160) {
+      markings = [[9, 7, 'TT'], [10, 8, 'T'], [11, 7, 'TT'], [12, 8, 'T'], [15, 4, 'T'], [15, 5, 'T'], [17, 4, 'T']];
+      if (faceContrast > 75) markings.push([8, 9, 'T'], [11, 9, 'T'], [13, 7, 'T'], [14, 8, 'T'], [15, 6, 'T']);
+    }
+    if (bibIsPale) {
+      markings.push([16, 8, 'FF'], [15, 9, 'MF'], [15, 10, 'FM']);
+      if (faceContrast > 75) markings.push([16, 5, 'M'], [16, 6, 'M'], [16, 7, 'MF']);
+    }
+
+    return {
+      O: hex(mix(shade, ink, .68)), B: hex(base), H: hex(mix(base, light, charcoal ? .23 : .32)),
+      S: hex(shade), T: hex(stripe), M: hex(mix(base, cream, .67)), F: hex(cream),
+      I: hex(mix(base, rgb(231, 160, 151), .47)), W: '#f6e9b7', E: '#3b302e', P: '#a46760', markings,
+    };
+  }
+
+  function portraitFor(card) {
+    if (!card.image) return null;
+    try {
+      const url = new URL(card.image, document.baseURI);
+      if (!['https:', 'http:', 'file:', 'data:', 'blob:'].includes(url.protocol)) return null;
+      const version = card.avatarUpdatedAt ?? card.updatedAt;
+      if (version && url.origin === location.origin && /^https?:$/.test(url.protocol)) {
+        url.searchParams.set('avatar', String(version));
+      }
+      return { url: url.href, crossOrigin: /^https?:$/.test(url.protocol) && url.origin !== location.origin };
+    } catch {
+      return null;
+    }
+  }
+
+  function readPortrait({ url, crossOrigin }) {
+    return new Promise(resolve => {
+      const image = new Image();
+      if (crossOrigin) image.crossOrigin = 'anonymous';
+      image.decoding = 'async';
+      image.fetchPriority = 'low';
+      image.onerror = () => resolve(null);
+      image.onload = () => {
+        try {
+          const size = Math.min(image.naturalWidth, image.naturalHeight);
+          if (!size) return resolve(null);
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = sampleSize;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) return resolve(null);
+          ctx.drawImage(image, (image.naturalWidth - size) / 2, (image.naturalHeight - size) / 2, size, size, 0, 0, sampleSize, sampleSize);
+          const coat = sampleCoat(ctx.getImageData(0, 0, sampleSize, sampleSize).data);
+          resolve(coat ? createAtlas(coat) : null);
+        } catch {
+          resolve(null);
+        }
+      };
+      image.src = url;
+    });
+  }
+
+  function atlasFor(portrait) {
+    const { url } = portrait;
+    const cached = photoAtlases.get(url);
+    if (cached) {
+      photoAtlases.delete(url);
+      photoAtlases.set(url, cached);
+      return cached;
+    }
+    const result = readPortrait(portrait);
+    photoAtlases.set(url, result);
+    if (photoAtlases.size > 100) photoAtlases.delete(photoAtlases.keys().next().value);
+    return result;
+  }
+
+  function loadPendingPortraits() {
+    while (active < 3 && pending.length) {
+      const { button, portrait } = pending.shift();
+      const sprite = sprites.get(button);
+      if (sprite.portrait !== portrait) continue;
+      if (!button.isConnected || button.hidden) {
+        sprite.started = false;
+        continue;
+      }
+      active++;
+      atlasFor(portrait).then(atlas => {
+        if (atlas && sprite.portrait === portrait) sprite.body.style.backgroundImage = `url("${atlas}")`;
+      }).finally(() => {
+        active--;
+        loadPendingPortraits();
+      });
+    }
+  }
+
+  function addSprite(button, id) {
     const hash = stableHash(id);
     const coatIndex = hash % coats.length;
-    if (!cache.has(coatIndex)) cache.set(coatIndex, createAtlas(coatIndex));
-    const atlas = cache.get(coatIndex);
+    if (!fallbackAtlases.has(coatIndex)) fallbackAtlases.set(coatIndex, createAtlas(coats[coatIndex]));
+    const atlas = fallbackAtlases.get(coatIndex);
     if (!atlas) return;
 
     const sprite = document.createElement('span');
@@ -162,5 +312,26 @@
     sprite.append(body);
     button.prepend(sprite);
     button.classList.add('mana-map__pin--pixel');
+    const state = { body, fallback: body.style.backgroundImage, portrait: null, started: false };
+    sprites.set(button, state);
+    return state;
+  }
+
+  window.attachManaPixelCat = function attachManaPixelCat(button, card) {
+    const sprite = sprites.get(button) ?? addSprite(button, card.id ?? card.name);
+    if (!sprite) return;
+    const portrait = portraitFor(card);
+    if (sprite.portrait?.url === portrait?.url) return;
+    sprite.portrait = portrait;
+    sprite.started = false;
+    sprite.body.style.backgroundImage = sprite.fallback;
+  };
+
+  window.loadManaPixelCatCoat = function loadManaPixelCatCoat(button) {
+    const sprite = sprites.get(button);
+    if (!sprite?.portrait || sprite.started) return;
+    sprite.started = true;
+    pending.push({ button, portrait: sprite.portrait });
+    loadPendingPortraits();
   };
 })();
