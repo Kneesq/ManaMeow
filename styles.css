@@ -238,22 +238,24 @@ form :is(input, textarea):user-invalid { border-color: #a53625; }
   --cap-height: clamp(28px, 3.5vw, 34px);
   display: inline-flex;
   align-items: flex-end;
-  gap: 1px;
+  gap: 0;
 }
+.wordmark > * + * { margin-inline-start: calc(var(--cap-height) * -.055); }
 .balloon-m {
   display: block;
-  width: var(--cap-height);
+  width: calc(var(--cap-height) * 1.045);
   height: var(--cap-height);
 }
 .balloon-letters {
   display: block;
-  height: calc(var(--cap-height) * .76);
-  background: url("balloon-letters.svg") left bottom / auto 100% no-repeat;
+  height: calc(var(--cap-height) * .80);
+  background: url("balloon-letters.svg?v=2") left bottom / auto 100% no-repeat;
   margin-bottom: .5px;
 }
-.balloon-ana { aspect-ratio: 146 / 55; }
+.balloon-m--ink, .balloon-ana { filter: grayscale(1) brightness(.74) contrast(2.25); }
+.balloon-ana { aspect-ratio: 136 / 58; }
 .balloon-eow {
-  aspect-ratio: 155 / 55;
+  aspect-ratio: 147 / 58;
   background-position-x: right;
 }
 .location-mark { display: block; width: 54px; height: 54px; margin: 0 auto 8px; }
