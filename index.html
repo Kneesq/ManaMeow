@@ -9,14 +9,14 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e97a4e'/%3E%3Cg fill='%23fffaf2'%3E%3Cellipse cx='32' cy='39' rx='12' ry='10'/%3E%3Cellipse cx='19' cy='29' rx='5' ry='7' transform='rotate(-25 19 29)'/%3E%3Cellipse cx='28' cy='21' rx='5' ry='7'/%3E%3Cellipse cx='38' cy='22' rx='5' ry='7'/%3E%3Cellipse cx='46' cy='31' rx='5' ry='7' transform='rotate(25 46 31)'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css">
   <link rel="stylesheet" href="geo-map.css?v=3">
   <link rel="stylesheet" href="pixel-cats.css?v=1">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=6">
   <script defer src="pixel-cats.js?v=1"></script>
   <script defer src="geo-map.js?v=5"></script>
-  <script defer src="app.js?v=3"></script>
+  <script defer src="app.js?v=4"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -24,18 +24,16 @@
     <div id="map" tabindex="-1" data-label="mapLabel" aria-label="Cat sightings map"></div>
 
     <header class="map-toolbar">
-      <div class="toolbar-group">
-        <div class="brand" aria-label="ManaMeow">
-          <span class="brand-mark"><span class="paw" aria-hidden="true"></span></span>
-          <span class="wordmark">Mana<span class="brand-accent">Meow</span></span>
-        </div>
-        <button class="map-button search-toggle" type="button" id="search-toggle" popovertarget="search-panel" data-label="findCats" aria-label="Find cats">
-          <span class="magnify" aria-hidden="true"></span><span class="search-label" data-i="findCats">Find cats</span>
-        </button>
-      </div>
-      <div class="toolbar-group">
+      <h1 class="brand">Mana<span class="brand-accent">Meow</span></h1>
+      <button class="map-button search-toggle" type="button" id="search-toggle" popovertarget="search-panel" data-label="findCats" aria-label="Find cats">
+        <span class="magnify" aria-hidden="true"></span><span data-i="findCats">Find cats</span>
+      </button>
+      <div class="toolbar-actions">
         <button type="button" class="map-button primary add-cat" id="add-cat" data-label="add" aria-label="Add a cat">
           <span class="add-icon" aria-hidden="true">+</span><span class="add-label" data-i="add">Add a cat</span>
+        </button>
+        <button class="map-button icon-button login-toggle" type="button" id="login-toggle" data-label="login" aria-label="Log in">
+          <span class="person-icon" aria-hidden="true"></span>
         </button>
         <button class="map-button icon-button settings-toggle" type="button" popovertarget="settings-panel" data-label="menu" aria-label="Menu"><span aria-hidden="true"></span></button>
       </div>
@@ -126,6 +124,44 @@
       <h2 id="photo-title"></h2>
       <time id="viewer-date" class="fine"></time>
       <p id="viewer-caption"></p>
+    </div>
+  </dialog>
+  <dialog id="auth-dialog" class="auth-dialog" aria-labelledby="auth-title">
+    <button class="close" type="button" data-close aria-label="Close">×</button>
+    <div class="dialog-body">
+      <h2 id="auth-title">Log in</h2>
+      <p id="auth-error" class="error" role="alert" hidden></p>
+      <form id="auth-login" data-auth-form="login" method="post" action="./api/auth/login">
+        <label><span data-i="email">Email</span><input name="email" type="email" autocomplete="username" maxlength="254" required autofocus></label>
+        <label><span data-i="password">Password</span><input name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <button class="button primary auth-submit" type="submit" data-i="login">Log in</button>
+        <div class="auth-options">
+          <button class="text-button" type="button" data-auth-open="reset" data-i="forgotPassword">Forgot password?</button>
+          <button class="text-button" type="button" data-auth-open="register" data-i="register">Register</button>
+        </div>
+      </form>
+      <form id="auth-register" data-auth-form="register" method="post" action="./api/auth/register" hidden>
+        <label><span data-i="email">Email</span><input name="email" type="email" autocomplete="username" maxlength="254" required></label>
+        <label><span data-i="password">Password</span><input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" aria-describedby="register-password-help" required><small id="register-password-help" data-i="passwordHelp">At least 10 characters.</small></label>
+        <button class="button primary auth-submit" type="submit" data-i="register">Register</button>
+        <button class="text-button auth-back" type="button" data-auth-open="login" data-i="login">Log in</button>
+      </form>
+      <form id="auth-reset" data-auth-form="reset" method="post" action="./api/auth/reset" hidden>
+        <p class="fine" data-i="recoveryPrompt">Enter the recovery code you saved when you registered.</p>
+        <label><span data-i="email">Email</span><input name="email" type="email" autocomplete="username" maxlength="254" required></label>
+        <label><span data-i="recoveryCode">Recovery code</span><input name="recoveryCode" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="100" required></label>
+        <label><span data-i="newPassword">New password</span><input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" aria-describedby="reset-password-help" required><small id="reset-password-help" data-i="passwordHelp">At least 10 characters.</small></label>
+        <button class="button primary auth-submit" type="submit" data-i="resetPassword">Reset password</button>
+        <button class="text-button auth-back" type="button" data-auth-open="login" data-i="login">Log in</button>
+      </form>
+      <section id="auth-recovery" hidden>
+        <p class="fine" data-i="saveRecoveryHelp">Keep this code somewhere safe. You’ll need it to reset your password.</p>
+        <code id="recovery-value" tabindex="0"></code>
+        <div class="dialog-actions">
+          <button type="button" id="copy-code" class="button secondary" data-i="copyCode">Copy code</button>
+          <button type="button" id="auth-done" class="button primary" data-i="done">Done</button>
+        </div>
+      </section>
     </div>
   </dialog>
   <dialog id="account-dialog" aria-labelledby="account-title">
