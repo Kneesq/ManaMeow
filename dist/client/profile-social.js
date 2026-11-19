@@ -18,7 +18,7 @@
   }
 
   window.createManaProfiles = function createManaProfiles({
-    t, getLang, getAccount, waitForAccount, openAccount, request, encodePhoto, sampleNote, toast
+    t, getLang, getAccount, waitForAccount, requestLogin, request, encodePhoto, sampleNote, toast
   }) {
     const profileDialog = $('#cat-dialog');
     const photoDialog = $('#photo-dialog');
@@ -213,8 +213,8 @@
       renderAlbums(current);
     }
 
-    function openProfile(cat) {
-      const current = {cat, version:0, loading:true, paging:new Set(), gallery:{original:originalFallback(cat), photos:[], myPhotos:[]}};
+    function openProfile(cat, {directLink} = {}) {
+      const current = {cat, directLink, version:0, loading:true, paging:new Set(), gallery:{original:originalFallback(cat), photos:[], myPhotos:[]}};
       profile = current;
       nicknameSave.disabled = false;
       setNicknameForm(false);
@@ -241,7 +241,7 @@
       const page = result?.payload?.[album.photos];
       if (!result?.ok || !Array.isArray(page)) {
         renderAlbumButtons(current);
-        if (result?.payload?.error === 'sign_in_required') openAccount(true);
+        if (result?.payload?.error === 'sign_in_required') requestLogin();
         else setStatus('#profile-status','loadPhotosFailed',true);
         return;
       }
@@ -300,6 +300,10 @@
       commentSend.disabled = busy.has('comment');
       $('#comment-login').hidden = !isPublic || Boolean(getAccount().signedIn);
       renderComments(current.comments);
+      if (current.focusComment && !commentForm.hidden && photoDialog.open) {
+        current.focusComment = false;
+        commentForm.elements.comment.focus();
+      }
     }
 
     async function loadViewer(current) {
@@ -338,18 +342,18 @@
       return viewer === current && photoDialog.open;
     }
 
-    async function requireSession(isCurrent, onError) {
+    async function requireSession(isCurrent, onError, onSuccess) {
       await waitForAccount();
       if (!isCurrent()) return false;
       const account = getAccount();
       if (account.signedIn) return true;
-      if (account.available) openAccount();
+      if (account.available) requestLogin(onSuccess);
       else onError('photoOffline');
       return false;
     }
 
     function failedMutation(result, error) {
-      if (result?.payload?.error === 'sign_in_required') openAccount(true);
+      if (result?.payload?.error === 'sign_in_required') requestLogin();
       else error('photoActionFailed');
     }
 
@@ -363,7 +367,7 @@
       renderViewer(current);
       setStatus('#photo-view-status');
       try {
-        if (!await requireSession(isCurrent,feedback)) return;
+        if (!await requireSession(() => viewStillOpen(current),feedback) || !isCurrent() || current.loading) return;
         await modify(current, isCurrent, feedback);
       } finally {
         if (revision === accountRevision) {
@@ -408,7 +412,17 @@
         setStatus('#photo-view-status','commentSubmitted');
       });
     });
-    $('#comment-login').addEventListener('click', () => openAccount());
+    $('#comment-login').addEventListener('click', async () => {
+      const current = viewer;
+      if (!current?.entry.shareable) return;
+      const isCurrent = () => viewStillOpen(current);
+      const focusComposer = () => {
+        if (!isCurrent()) return;
+        current.focusComment = true;
+        renderViewer(current);
+      };
+      if (await requireSession(isCurrent,key => setStatus('#photo-view-status',key,true),focusComposer)) focusComposer();
+    });
 
     function photoUrl(catId, photoId) {
       const url = new URL(location.pathname,location.origin);
@@ -420,6 +434,13 @@
     $('#photo-share').addEventListener('click', async () => {
       const current = viewer;
       if (!current?.entry.shareable) return;
+      if (!getAccount().signedIn) {
+        const isCurrent = () => viewStillOpen(current);
+        const hint = () => { if (isCurrent()) setStatus('#photo-view-status','shareReady'); };
+        if (await requireSession(isCurrent,key => setStatus('#photo-view-status',key,true),hint)) hint();
+        return;
+      }
+      setStatus('#photo-view-status');
       const url = photoUrl(current.cat.id,current.entry.id);
       if (typeof navigator.share === 'function') {
         try {
@@ -487,21 +508,26 @@
       }
     });
 
-    catchButton.addEventListener('click', () => {
+    catchButton.addEventListener('click', async () => {
       const current = profile;
       if (!current) return;
       if (!window.ManaCatch?.open) return setStatus('#profile-status','photoOffline',true);
-      setStatus('#profile-status');
-      window.ManaCatch.open({
-        cat:current.cat, lang:getLang(), encodePhoto,
-        isSignedIn:() => Boolean(getAccount().signedIn),
-        onAuthRequired:() => openAccount(true),
-        onSaved: photo => {
-          if (profile !== current || !profileDialog.open) return;
-          setStatus('#profile-status',photo?.status === 'private' ? 'caughtPrivately' : 'photoSubmitted');
-          loadGallery(current);
-        },
-      });
+      const isCurrent = () => profile === current && profileDialog.open;
+      const openCamera = () => {
+        if (!isCurrent() || !getAccount().signedIn) return;
+        setStatus('#profile-status');
+        window.ManaCatch.open({
+          cat:current.cat, lang:getLang(), encodePhoto,
+          isSignedIn:() => Boolean(getAccount().signedIn),
+          onAuthRequired:() => requestLogin(),
+          onSaved: photo => {
+            if (!isCurrent()) return;
+            setStatus('#profile-status',photo?.status === 'private' ? 'caughtPrivately' : 'photoSubmitted');
+            loadGallery(current);
+          },
+        });
+      };
+      if (await requireSession(isCurrent,key => setStatus('#profile-status',key,true),openCamera)) openCamera();
     });
 
     function clearSharedAddress(current) {
@@ -528,6 +554,8 @@
     });
 
     profileDialog.addEventListener('close', () => {
+      if (profileDialog.open) return;
+      clearSharedAddress(profile);
       profile = null;
       setNicknameForm(false);
       $('#my-cat-photos').replaceChildren();
@@ -535,21 +563,32 @@
     });
 
     async function loadSharedLink(catId, photoId, href, findCat) {
-      const result = await request(photoRoute(catId,photoId));
+      let cat = findCat(catId);
+      let details;
+      if (photoId || !cat) {
+        const result = await request(photoRoute(catId,photoId || 'original'));
+        if (result?.ok && result.payload.photo?.shareable) {
+          details = result.payload;
+          cat ||= details.cat;
+        }
+      }
       if (location.href !== href || document.querySelector('dialog[open]')) return;
-      if (!result?.ok || !result.payload.photo?.shareable) return toast(t('photoUnavailable'));
-      const payload = result.payload;
-      const cat = findCat(catId) || payload.cat;
-      if (!cat?.name) return toast(t('photoUnavailable'));
+      if (photoId && (!details || !cat?.name)) return toast(t('photoUnavailable'));
+      if (!cat?.name) return toast(t('profileUnavailable'));
+      if (!photoId) {
+        openProfile(cat,{directLink:href});
+        return;
+      }
       openProfile(cat);
-      openViewer(cat,payload.photo,{details:payload,directLink:href});
+      openViewer(cat,details.photo,{details,directLink:href});
     }
 
     function openSharedLink(findCat) {
       const url = new URL(location.href);
       const catId = url.searchParams.get('cat');
       const photoId = url.searchParams.get('photo');
-      if (!/^[a-z0-9-]{1,36}$/.test(catId || '') || !/^(original|[a-f0-9-]{36})$/.test(photoId || '')) return false;
+      if (!/^[a-z0-9-]{1,36}$/.test(catId || '')) return false;
+      if (photoId !== null && !/^(original|[a-f0-9-]{36})$/.test(photoId)) return false;
       loadSharedLink(catId,photoId,url.href,findCat);
       return true;
     }
