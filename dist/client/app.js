@@ -10,6 +10,7 @@
   };
   const translations = {
     zh: {
+      login:'登录', email:'邮箱', password:'密码', forgotPassword:'忘记密码？', register:'注册', resetPassword:'重设密码', newPassword:'新密码', recoveryCode:'恢复码', recoveryPrompt:'请输入注册时保存的恢复码。', saveRecovery:'保存恢复码', saveRecoveryHelp:'请把这段恢复码存到安全的地方。忘记密码时会用到它。', copyCode:'复制恢复码', copied:'已复制', done:'完成', passwordHelp:'至少 10 个字符。', emailLogin:'用邮箱登录', signedInAs:'已登录', authFailed:'操作失败，请重试。', invalid_email:'请输入有效的邮箱。', invalid_password:'密码长度需要为 10 至 128 个字符。', invalid_credentials:'邮箱或密码不正确。', invalid_recovery:'邮箱或恢复码不正确。', registration_unavailable:'这个邮箱暂时无法注册。', auth_unavailable:'邮箱账号服务暂时不可用。', rate_limited:'尝试次数太多，请稍后重试。', sessionUnavailable:'浏览器未保存登录状态，请重试登录。',
       age:'年龄', gender:'性别', ageMonths:'年龄（月）', unknown:'未知', female:'雌性', male:'雄性', photos:'照片', addPhoto:'添加照片', profilePhoto:'头像', animation:'猫咪动画', noPhotos:'还没有照片。', photoOffline:'连接网站后可以上传照片。', photoFailed:'照片上传失败，请再试一次。', photoSubmitted:'照片已提交审核。',
       skip:'跳到地图', account:'我的账号', add:'添加猫咪', findCats:'找猫', menu:'菜单', language:'语言',
       mapLabel:'猫咪地图', mapControls:'地图控件', filter:'猫咪分类', pick:'点击地图放置标记。', cancel:'取消',
@@ -25,6 +26,7 @@
       submitted:'投稿成功，等待审核。', draftSaved:'已在本机保存草稿。', pending:'待审核', approved:'已通过', rejected:'未通过', review:'审核投稿', spotted:'目击于', loading:'加载中…'
     },
     ms: {
+      login:'Log masuk', email:'E-mel', password:'Kata laluan', forgotPassword:'Lupa kata laluan?', register:'Daftar', resetPassword:'Tetapkan semula kata laluan', newPassword:'Kata laluan baharu', recoveryCode:'Kod pemulihan', recoveryPrompt:'Masukkan kod pemulihan yang disimpan semasa mendaftar.', saveRecovery:'Simpan kod pemulihan', saveRecoveryHelp:'Simpan kod ini di tempat selamat untuk menetapkan semula kata laluan.', copyCode:'Salin kod', copied:'Disalin', done:'Selesai', passwordHelp:'Sekurang-kurangnya 10 aksara.', emailLogin:'Log masuk dengan e-mel', signedInAs:'Log masuk sebagai', authFailed:'Tindakan gagal. Cuba lagi.', invalid_email:'Masukkan alamat e-mel yang sah.', invalid_password:'Gunakan kata laluan antara 10 hingga 128 aksara.', invalid_credentials:'E-mel atau kata laluan tidak tepat.', invalid_recovery:'E-mel atau kod pemulihan tidak tepat.', registration_unavailable:'Pendaftaran untuk e-mel ini tidak tersedia.', auth_unavailable:'Akaun e-mel tidak tersedia buat sementara waktu.', rate_limited:'Terlalu banyak percubaan. Cuba lagi kemudian.', sessionUnavailable:'Pelayar tidak menyimpan sesi. Cuba log masuk sekali lagi.',
       age:'Umur', gender:'Jantina', ageMonths:'Umur (bulan)', unknown:'Tidak diketahui', female:'Betina', male:'Jantan', photos:'Gambar', addPhoto:'Tambah gambar', profilePhoto:'Foto profil', animation:'Animasi kucing', noPhotos:'Belum ada gambar.', photoOffline:'Sambung ke laman untuk memuat naik gambar.', photoFailed:'Gambar gagal dimuat naik. Cuba lagi.', photoSubmitted:'Gambar dihantar untuk semakan.',
       skip:'Langkau ke peta', account:'Akaun saya', add:'Tambah kucing', findCats:'Cari kucing', menu:'Menu', language:'Bahasa',
       mapLabel:'Peta penampakan kucing', mapControls:'Kawalan peta', filter:'Kategori kucing', pick:'Ketik peta untuk meletakkan penanda.', cancel:'Batal',
@@ -40,6 +42,7 @@
       submitted:'Kiriman diterima dan menunggu semakan.', draftSaved:'Draf disimpan pada peranti ini.', pending:'Menunggu', approved:'Diluluskan', rejected:'Ditolak', review:'Semak kiriman', spotted:'Ditemui pada', loading:'Memuatkan…'
     },
     en: {
+      saveRecovery:'Save your recovery code', emailLogin:'Log in with email', signedInAs:'Signed in as', authFailed:'Something went wrong. Try again.', sessionUnavailable:'This browser didn’t keep the session. Try logging in again.',
       photoOffline:'Connect to the site to upload a photo.', photoFailed:'Couldn’t upload this photo. Try again.', photoSubmitted:'Photo sent for review.',
       close:'Close', zoomIn:'Zoom in', zoomOut:'Zoom out', resetMap:'Reset map view', pinSet:'Approximate pin selected',
       signIn:'Sign in with ChatGPT', signOut:'Sign out', signPrompt:'Sign in to submit sightings and check their status.',
@@ -157,6 +160,7 @@
     for (const el of $$('[data-close]')) el.setAttribute('aria-label',t('close'));
     renderPin();
     renderMapList();
+    renderLoginLabel();
   }
   $('#lang').value = state.lang;
   $('#lang').addEventListener('change', event => {
@@ -334,9 +338,118 @@
     }
   });
 
+
+  const authDialog = $('#auth-dialog');
+  const authForms = $$('[data-auth-form]');
+  const authHeadings = {login:'login',register:'register',reset:'resetPassword',recovery:'saveRecovery'};
+  const authErrors = new Set(['invalid_email','invalid_password','invalid_credentials','invalid_recovery','registration_unavailable','auth_unavailable','rate_limited']);
+  let authBusy = false;
+
+  function authMessage(message = '') {
+    const error = $('#auth-error');
+    error.textContent = message;
+    error.hidden = !message;
+  }
+
+  function setAuthMode(mode, email = '') {
+    $('#auth-title').textContent = t(authHeadings[mode]);
+    $('#auth-recovery').hidden = mode !== 'recovery';
+    $('#copy-code').textContent = t('copyCode');
+    authMessage();
+    for (const form of authForms) {
+      form.reset();
+      form.hidden = form.dataset.authForm !== mode;
+      if (!form.hidden) form.elements.email.value = email;
+    }
+    if (mode !== 'recovery') $('#recovery-value').textContent = '';
+  }
+
+  function openEmailLogin() {
+    if (state.account.local) return openAccount();
+    if (authDialog.open) return;
+    if (accountDialog.open) accountDialog.close();
+    setAuthMode('login');
+    authDialog.showModal();
+    $('#auth-login').elements.email.focus();
+  }
+
+  $('#login-toggle').addEventListener('click',openEmailLogin);
+  authDialog.addEventListener('cancel',event => { if (authBusy) event.preventDefault(); });
+  authDialog.addEventListener('close',() => {
+    for (const form of authForms) form.reset();
+    $('#recovery-value').textContent = '';
+  });
+  for (const button of $$('[data-auth-open]')) {
+    button.addEventListener('click',() => {
+      const email = authForms.find(form => !form.hidden)?.elements.email.value || '';
+      setAuthMode(button.dataset.authOpen,email);
+      authForms.find(form => !form.hidden)?.elements.email.focus();
+    });
+  }
+
+  $('#auth-done').addEventListener('click',() => authDialog.close());
+  $('#copy-code').addEventListener('click',async () => {
+    const code = $('#recovery-value');
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      $('#copy-code').textContent = t('copied');
+    } catch {
+      code.focus();
+      window.getSelection()?.selectAllChildren(code);
+    }
+  });
+
+  for (const form of authForms) {
+    form.addEventListener('submit',async event => {
+      event.preventDefault();
+      if (authBusy) return;
+      const submitButton = form.querySelector('button[type=submit]');
+      const closeButton = authDialog.querySelector('[data-close]');
+      const switches = $$('[data-auth-open]');
+      const fields = Object.fromEntries(new FormData(form));
+      fields.email = String(fields.email).trim();
+      authMessage();
+      authBusy = true;
+      submitButton.disabled = closeButton.disabled = true;
+      switches.forEach(button => { button.disabled = true; });
+      try {
+        const result = await request('./api/auth/' + form.dataset.authForm,{
+          method:'POST', headers:{Accept:'application/json','Content-Type':'application/json'},
+          body:JSON.stringify(fields), signal:AbortSignal.timeout(15000)
+        });
+        form.elements.password.value = '';
+        if (!result?.ok) {
+          const key = result?.payload?.error;
+          const message = state.lang !== 'en' && authErrors.has(key) ? t(key) : result?.payload?.message;
+          authMessage(message || t('authFailed'));
+          return;
+        }
+        const recoveryCode = result.payload.recoveryCode;
+        if (recoveryCode) {
+          setAuthMode('recovery');
+          $('#recovery-value').textContent = recoveryCode;
+          $('#copy-code').focus();
+        }
+        accountLoad = refreshAccount();
+        await accountLoad;
+        if (!authDialog.open) return;
+        if (!state.account.local) authMessage(t('sessionUnavailable'));
+        else if (!recoveryCode) authDialog.close();
+      } finally {
+        authBusy = false;
+        submitButton.disabled = closeButton.disabled = false;
+        switches.forEach(button => { button.disabled = false; });
+      }
+    });
+  }
+
+  function renderLoginLabel() {
+    $('#login-toggle').setAttribute('aria-label',t(state.account.local ? 'account' : 'login'));
+  }
+
   for (const close of $$('[data-close]')) close.addEventListener('click', () => close.closest('dialog').close());
   for (const dialog of $$('dialog')) dialog.addEventListener('click', event => {
-    if (event.target !== dialog) return;
+    if (event.target !== dialog || (dialog === authDialog && authBusy)) return;
     const rect = dialog.getBoundingClientRect();
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
   });
@@ -352,9 +465,12 @@
       return null;
     }
   }
-  const accountLoad = request('./api/account').then(result => {
+  async function refreshAccount() {
+    const result = await request('./api/account');
     if (result?.ok) state.account = result.payload;
-  });
+    renderLoginLabel();
+  }
+  let accountLoad = refreshAccount();
   async function refreshCats() {
     const result = await request('./api/sightings');
     if (!result?.ok || !Array.isArray(result.payload.sightings)) return;
@@ -382,12 +498,36 @@
     }
     if (!state.account.signedIn) {
       message.textContent = t('signPrompt');
-      if (state.account.signInUrl) links.append(link(t('signIn'),state.account.signInUrl,true));
+      const email = node('button','button primary',t('emailLogin'));
+      email.type = 'button';
+      email.addEventListener('click',openEmailLogin);
+      links.append(email);
+      if (state.account.signInUrl) links.append(link(t('signIn'),state.account.signInUrl,false));
       return;
     }
-    message.textContent = t('myIntro');
-    if (state.account.moderator) links.append(link(t('review'),'./review',false));
-    if (state.account.signOutUrl) links.append(link(t('signOut'),state.account.signOutUrl,false));
+    message.textContent = state.account.local && state.account.email
+      ? t('signedInAs') + ' ' + state.account.email
+      : t('myIntro');
+    if (state.account.moderator || state.account.platformModerator) links.append(link(t('review'),'./review',false));
+    if (state.account.local) {
+      const logout = node('button','button secondary',t('signOut'));
+      logout.type = 'button';
+      logout.addEventListener('click',async () => {
+        logout.disabled = true;
+        const result = await request('./api/auth/logout',{method:'POST'});
+        if (result?.ok) {
+          accountLoad = refreshAccount();
+          await accountLoad;
+          accountDialog.close();
+        } else {
+          message.textContent = result?.payload?.message || t('authFailed');
+          logout.disabled = false;
+        }
+      });
+      links.append(logout);
+    } else if (state.account.signOutUrl) {
+      links.append(link(t('signOut'),state.account.signOutUrl,false));
+    }
     const result = await request('./api/sightings/mine');
     if (!result?.ok) {
       mine.replaceChildren(node('li','fine',t('failed')));
