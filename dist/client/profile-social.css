@@ -91,9 +91,15 @@
   white-space: nowrap;
 }
 .photo-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 7px 12px; }
+.photo-toolbar .photo-actions { gap: 6px; }
 .photo-title:not(.photo-title--sr-only) + .photo-toolbar { margin-top: 8px; }
 .photo-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 8px; margin-inline-start: auto; text-align: end; }
 #viewer-date { white-space: nowrap; }
+.photo-icon-button { min-width: 44px; min-height: 44px; padding: 0 10px; gap: 4px; }
+#photo-share.photo-icon-button { width: 44px; padding: 0; }
+.photo-icon-button:not(:disabled):hover { background: #f9ede1; border-color: #cb9c88; color: #933c2c; }
+.photo-icon-button:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+.photo-share-icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .photo-like[aria-pressed=true] { border-color: #cb9c88; background: #f8e8dc; color: #933c2c; }
 .photo-paw { width: 21px; height: 21px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.55; stroke-linejoin: round; }
 .photo-like[aria-pressed=true] .photo-paw { fill: currentColor; }
@@ -123,4 +129,37 @@
   .own-photos { padding: 9px; }
   .photo-grid { gap: 5px; }
   .profile-actions { gap: 6px; }
+}
+
+.photo-media { position: relative; isolation: isolate; }
+.photo-media #viewer-image { object-position: center; }
+.photo-stamp-layer {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+.photo-paw-stamp {
+  position: absolute;
+  display: block;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) rotate(var(--paw-tilt));
+  animation: photo-paw-pop 860ms ease-out both;
+}
+.photo-paw-stamp .photo-paw {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #df7654;
+  stroke: #fff4e1;
+  stroke-width: 1.15;
+  filter: drop-shadow(0 1px 2px #58362591);
+}
+@keyframes photo-paw-pop {
+  0% { transform: translate(-50%, -50%) rotate(var(--paw-tilt)) scale(.24); opacity: 0; }
+  24% { transform: translate(-50%, -50%) rotate(var(--paw-tilt)) scale(1.18); opacity: 1; }
+  44%, 68% { transform: translate(-50%, -50%) rotate(var(--paw-tilt)) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--paw-tilt)) scale(.92); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-paw-stamp { animation: none; }
 }

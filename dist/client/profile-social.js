@@ -32,6 +32,7 @@
     const shareFallback = $('#photo-copy-link');
     const profileShareFallback = $('#profile-copy-link');
     const photoImage = $('#viewer-image');
+    const stampLayer = $('#photo-stamp-layer');
     const catchButton = $('#catch-cat');
     const albums = [
       {name:'mine', photos:'myPhotos', cursor:'myPhotosCursor', list:$('#my-cat-photos'), more:$('#more-my-photos')},
@@ -42,6 +43,8 @@
     let accountRevision = 0;
     let dateLocale;
     let dateFormatter;
+    let pendingStamp = null;
+    let stampTimer;
 
     function date(value) {
       const lang = getLang();
@@ -215,6 +218,7 @@
     }
 
     function openProfile(cat, {directLink} = {}) {
+      clearPhotoStamp();
       const current = {cat, directLink, version:0, loading:true, paging:new Set(), gallery:{original:originalFallback(cat), photos:[], myPhotos:[]}};
       profile = current;
       resetShareField(profileShareFallback);
@@ -279,7 +283,10 @@
 
     function renderViewer(current) {
       const {cat, entry, busy, loading} = current;
-      if (photoImage.getAttribute('src') !== entry.image) photoImage.src = entry.image;
+      if (photoImage.getAttribute('src') !== entry.image) {
+        clearPhotoStamp();
+        photoImage.src = entry.image;
+      }
       photoImage.alt = cat.name;
       const title = $('#photo-title');
       title.textContent = cat.name;
@@ -330,6 +337,7 @@
     }
 
     function openViewer(cat, entry, {origin, details, directLink} = {}) {
+      clearPhotoStamp();
       viewer = {
         cat, entry, origin, directLink, version:0, busy:new Set(),
         loading:!details, comments:details?.comments || [],
@@ -346,6 +354,70 @@
     function viewStillOpen(current) {
       return viewer === current && photoDialog.open;
     }
+
+    function clearPhotoStamp() {
+      clearTimeout(stampTimer);
+      pendingStamp = null;
+      stampLayer.replaceChildren();
+    }
+
+    function canStamp(current) {
+      return viewStillOpen(current) && profileDialog.open && profile?.cat.id === current.cat.id;
+    }
+
+    function paintPhotoStamp() {
+      const current = pendingStamp;
+      if (!current) return;
+      clearPhotoStamp();
+      if (!canStamp(current) || !photoImage.naturalWidth || !photoImage.naturalHeight) return;
+
+      const imageBox = photoImage.getBoundingClientRect();
+      const dialogBox = photoDialog.getBoundingClientRect();
+      const dialogLeft = dialogBox.left + photoDialog.clientLeft;
+      const dialogTop = dialogBox.top + photoDialog.clientTop;
+      // The image is centered and contained, so only the fitted pixels are stampable.
+      const fit = Math.min(imageBox.width / photoImage.naturalWidth, imageBox.height / photoImage.naturalHeight);
+      const photoWidth = photoImage.naturalWidth * fit;
+      const photoHeight = photoImage.naturalHeight * fit;
+      const photoLeft = imageBox.left + (imageBox.width - photoWidth) / 2;
+      const photoTop = imageBox.top + (imageBox.height - photoHeight) / 2;
+      const left = Math.max(photoLeft, dialogLeft, 0);
+      const top = Math.max(photoTop, dialogTop, 0);
+      const width = Math.min(photoLeft + photoWidth, dialogLeft + photoDialog.clientWidth, window.innerWidth) - left;
+      const height = Math.min(photoTop + photoHeight, dialogTop + photoDialog.clientHeight, window.innerHeight) - top;
+      const size = Math.min(66, width * .54, height * .54);
+      const shape = likeButton.querySelector('.photo-paw');
+      if (!(size >= 19) || !shape) return;
+
+      const host = stampLayer.parentElement.getBoundingClientRect();
+      Object.assign(stampLayer.style, {
+        left:`${left - host.left}px`, top:`${top - host.top}px`, width:`${width}px`, height:`${height}px`,
+      });
+      const stamp = element('span','photo-paw-stamp');
+      const margin = size * .8;
+      stamp.style.width = `${size}px`;
+      stamp.style.left = `${margin + Math.random() * (width - 2 * margin)}px`;
+      stamp.style.top = `${margin + Math.random() * (height - 2 * margin)}px`;
+      stamp.style.setProperty('--paw-tilt',`${Math.random() * 40 - 20}deg`);
+      stamp.append(shape.cloneNode(true));
+      stampLayer.append(stamp);
+      stamp.addEventListener('animationend', () => {
+        if (stamp.parentElement === stampLayer) clearPhotoStamp();
+      }, {once:true});
+      stampTimer = setTimeout(clearPhotoStamp,1100);
+    }
+
+    function queuePhotoStamp(current) {
+      if (!canStamp(current)) return;
+      clearPhotoStamp();
+      pendingStamp = current;
+      if (photoImage.complete) paintPhotoStamp();
+      else stampTimer = setTimeout(clearPhotoStamp,1400);
+    }
+
+    photoImage.addEventListener('load', paintPhotoStamp);
+    photoImage.addEventListener('error', clearPhotoStamp);
+    window.addEventListener('resize', clearPhotoStamp);
 
     async function requireSession(isCurrent, onError, onSuccess) {
       await waitForAccount();
@@ -384,10 +456,13 @@
 
     likeButton.addEventListener('click', () => modifyViewer('like', async (current,isCurrent,feedback) => {
       if (!current.entry.shareable) return;
-      const result = await request(photoRoute(current.cat.id,current.entry.id) + '/like', json('PUT',{liked:!current.entry.liked}));
+      const liked = !current.entry.liked;
+      const result = await request(photoRoute(current.cat.id,current.entry.id) + '/like', json('PUT',{liked}));
       if (!isCurrent()) return;
       if (!result?.ok) return failedMutation(result,feedback);
       current.entry = {...current.entry, liked:result.payload.liked, likeCount:result.payload.likeCount};
+      if (liked && result.payload.liked === true) queuePhotoStamp(current);
+      if (!result.payload.liked) clearPhotoStamp();
     }));
 
     postButton.addEventListener('click', () => modifyViewer('post', async (current,isCurrent,feedback) => {
@@ -560,6 +635,7 @@
     photoDialog.addEventListener('close', () => {
       const previous = viewer;
       viewer = null;
+      clearPhotoStamp();
       photoImage.removeAttribute('src');
       photoImage.alt = '';
       $('#photo-comments').replaceChildren();
@@ -574,6 +650,7 @@
 
     profileDialog.addEventListener('close', () => {
       if (profileDialog.open) return;
+      clearPhotoStamp();
       clearSharedAddress(profile);
       profile = null;
       resetShareField(profileShareFallback);
@@ -615,6 +692,7 @@
 
     function accountChanged() {
       accountRevision += 1;
+      clearPhotoStamp();
       if (profile && profileDialog.open) {
         const current = profile;
         current.gallery = {original:originalFallback(current.cat), photos:[], myPhotos:[]};
