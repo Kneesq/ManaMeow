@@ -10,7 +10,9 @@
   };
   const translations = {
     zh: {
-      welcomeTitle:'欢迎来到 ManaMeow', welcomeExplore:'探索地图',
+      locationTitle:'要使用当前位置吗？', locationHint:'查看你附近的地图。', locationRequest:'使用我的位置', locationSkip:'探索地图',
+      locateMap:'我的位置', locationCancel:'取消定位', locationProgress:'正在定位…', locationDenied:'请在浏览器设置中允许定位后重试。', locationFailed:'暂时无法获取位置，请重试。', locationTimedOut:'定位超时，请重试。', locationUnsupported:'此页面无法使用浏览器定位。',
+      mapFallbackLoading:'正在加载实时地图…', mapFallbackOverview:'实时地图暂不可用 · 已显示简略地图', mapFallbackDetail:'实时地图暂不可用 · 无法显示街道细节', mapFallbackArea:'当前视图的实时地图暂不可用',
       login:'登录', email:'邮箱', password:'密码', forgotPassword:'忘记密码？', register:'注册', resetPassword:'重设密码', newPassword:'新密码', recoveryCode:'恢复码', recoveryPrompt:'请输入注册时保存的恢复码。', saveRecovery:'保存恢复码', saveRecoveryHelp:'请把这段恢复码存到安全的地方。忘记密码时会用到它。', copyCode:'复制恢复码', copied:'已复制', done:'完成', passwordHelp:'至少 10 个字符。', emailLogin:'用邮箱登录', signedInAs:'已登录', authFailed:'操作失败，请重试。', invalid_email:'请输入有效的邮箱。', invalid_password:'密码长度需要为 10 至 128 个字符。', invalid_credentials:'邮箱或密码不正确。', invalid_recovery:'邮箱或恢复码不正确。', registration_unavailable:'这个邮箱暂时无法注册。', auth_unavailable:'邮箱账号服务暂时不可用。', rate_limited:'尝试次数太多，请稍后重试。', sessionUnavailable:'浏览器未保存登录状态，请重试登录。',
       age:'年龄', gender:'性别', ageMonths:'年龄（月）', unknown:'未知', female:'雌性', male:'雄性', photos:'照片', addPhoto:'添加照片', profilePhoto:'头像', animation:'猫咪动画', noPhotos:'还没有照片。', photoOffline:'连接网站后可以上传照片。', photoFailed:'照片上传失败，请再试一次。', photoSubmitted:'照片已提交审核。',
       skip:'跳到地图', account:'我的账号', add:'添加猫咪', findCats:'找猫', menu:'菜单', language:'语言',
@@ -27,7 +29,9 @@
       submitted:'投稿成功，等待审核。', draftSaved:'已在本机保存草稿。', pending:'待审核', approved:'已通过', rejected:'未通过', review:'审核投稿', spotted:'目击于', loading:'加载中…'
     },
     ms: {
-      welcomeTitle:'Selamat datang ke ManaMeow', welcomeExplore:'Terokai peta',
+      locationTitle:'Guna lokasi semasa?', locationHint:'Lihat peta di sekitar anda.', locationRequest:'Guna lokasi saya', locationSkip:'Terokai peta',
+      locateMap:'Lokasi saya', locationCancel:'Batal pengesanan lokasi', locationProgress:'Mengesan lokasi…', locationDenied:'Benarkan akses lokasi dalam tetapan pelayar dan cuba lagi.', locationFailed:'Lokasi tidak dapat dikesan. Cuba lagi.', locationTimedOut:'Masa untuk mengesan lokasi tamat. Cuba lagi.', locationUnsupported:'Pelayar tidak dapat mengesan lokasi pada halaman ini.',
+      mapFallbackLoading:'Memuatkan peta langsung…', mapFallbackOverview:'Peta langsung tidak tersedia · gambaran anggaran', mapFallbackDetail:'Peta langsung tidak tersedia · butiran jalan tidak tersedia', mapFallbackArea:'Peta langsung tidak tersedia untuk paparan ini',
       login:'Log masuk', email:'E-mel', password:'Kata laluan', forgotPassword:'Lupa kata laluan?', register:'Daftar', resetPassword:'Tetapkan semula kata laluan', newPassword:'Kata laluan baharu', recoveryCode:'Kod pemulihan', recoveryPrompt:'Masukkan kod pemulihan yang disimpan semasa mendaftar.', saveRecovery:'Simpan kod pemulihan', saveRecoveryHelp:'Simpan kod ini di tempat selamat untuk menetapkan semula kata laluan.', copyCode:'Salin kod', copied:'Disalin', done:'Selesai', passwordHelp:'Sekurang-kurangnya 10 aksara.', emailLogin:'Log masuk dengan e-mel', signedInAs:'Log masuk sebagai', authFailed:'Tindakan gagal. Cuba lagi.', invalid_email:'Masukkan alamat e-mel yang sah.', invalid_password:'Gunakan kata laluan antara 10 hingga 128 aksara.', invalid_credentials:'E-mel atau kata laluan tidak tepat.', invalid_recovery:'E-mel atau kod pemulihan tidak tepat.', registration_unavailable:'Pendaftaran untuk e-mel ini tidak tersedia.', auth_unavailable:'Akaun e-mel tidak tersedia buat sementara waktu.', rate_limited:'Terlalu banyak percubaan. Cuba lagi kemudian.', sessionUnavailable:'Pelayar tidak menyimpan sesi. Cuba log masuk sekali lagi.',
       age:'Umur', gender:'Jantina', ageMonths:'Umur (bulan)', unknown:'Tidak diketahui', female:'Betina', male:'Jantan', photos:'Gambar', addPhoto:'Tambah gambar', profilePhoto:'Foto profil', animation:'Animasi kucing', noPhotos:'Belum ada gambar.', photoOffline:'Sambung ke laman untuk memuat naik gambar.', photoFailed:'Gambar gagal dimuat naik. Cuba lagi.', photoSubmitted:'Gambar dihantar untuk semakan.',
       skip:'Langkau ke peta', account:'Akaun saya', add:'Tambah kucing', findCats:'Cari kucing', menu:'Menu', language:'Bahasa',
@@ -44,6 +48,8 @@
       submitted:'Kiriman diterima dan menunggu semakan.', draftSaved:'Draf disimpan pada peranti ini.', pending:'Menunggu', approved:'Diluluskan', rejected:'Ditolak', review:'Semak kiriman', spotted:'Ditemui pada', loading:'Memuatkan…'
     },
     en: {
+      locationCancel:'Cancel location lookup', locationProgress:'Finding your location…', locationDenied:'Allow location access in browser settings, then try again.', locationFailed:'Couldn’t find your location. Try again.', locationTimedOut:'Finding your location took too long. Try again.', locationUnsupported:'Location is unavailable on this page.',
+      mapFallbackLoading:'Loading the live map…', mapFallbackOverview:'Live map unavailable · approximate overview', mapFallbackDetail:'Live map unavailable · street detail unavailable', mapFallbackArea:'Live map unavailable for this view',
       saveRecovery:'Save your recovery code', emailLogin:'Log in with email', signedInAs:'Signed in as', authFailed:'Something went wrong. Try again.', sessionUnavailable:'This browser didn’t keep the session. Try logging in again.',
       photoOffline:'Connect to the site to upload a photo.', photoFailed:'Couldn’t upload this photo. Try again.', photoSubmitted:'Photo sent for review.',
       close:'Close', zoomIn:'Zoom in', zoomOut:'Zoom out', resetMap:'Reset map view', pinSet:'Approximate pin selected',
@@ -96,7 +102,7 @@
   dateInput.value = today;
 
   const map = window.createManaMap?.(mapElement, {
-    cards: state.cats, select: id => { if (!state.picking) openCat(id); }, onPick: acceptPin
+    cards: state.cats, select: id => { if (!state.picking) openCat(id); }, onPick: acceptPin, translate: t
   });
   $('#zoom-in').addEventListener('click', () => map?.zoomBy(1.6));
   $('#zoom-out').addEventListener('click', () => map?.zoomBy(1/1.6));
@@ -677,15 +683,111 @@
       submit.disabled = false;
     }
   });
+  async function initializeLocation() {
+    const dialog = $('#location-dialog');
+    const control = $('#locate-map');
+    const requestButton = $('#location-request');
+    const skipButton = $('#location-skip');
+    const progress = $('#location-status');
+    const geolocation = window.isSecureContext && navigator.geolocation;
+    const available = Boolean(map && typeof geolocation?.getCurrentPosition === 'function');
+    const startup = new AbortController();
+    let lookup = null;
+
+    function setLookup(next) {
+      lookup = next;
+      const inDialog = next?.source === 'dialog';
+      requestButton.disabled = inDialog;
+      progress.hidden = !inDialog;
+      progress.textContent = inDialog ? t('locationProgress') : '';
+      control.setAttribute('aria-busy', String(Boolean(next)));
+      control.dataset.label = next ? 'locationCancel' : 'locateMap';
+      control.setAttribute('aria-label', t(control.dataset.label));
+    }
+
+    function cancelStartup() {
+      startup.abort();
+      if (lookup?.source === 'startup') setLookup(null);
+    }
+
+    function startLookup(source) {
+      if (!available) return toast(t('locationUnsupported'));
+      if (lookup) return;
+      const current = {source};
+      setLookup(current);
+      if (source === 'dialog') skipButton.focus({preventScroll:true});
+
+      function settle({latitude: lat, longitude: lng} = {}, errorKey = 'locationFailed') {
+        // getCurrentPosition cannot be cancelled, so only the newest active request may move the map.
+        if (lookup !== current || (source === 'dialog' && !dialog.open)) return;
+        setLookup(null);
+        if (source === 'startup') cancelStartup();
+        if (source === 'dialog') dialog.close();
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return toast(t(errorKey));
+        map.center({lat, lng}, 16);
+      }
+
+      const errors = {1:'locationDenied', 3:'locationTimedOut'};
+      try {
+        geolocation.getCurrentPosition(
+          position => settle(position.coords),
+          error => settle(undefined, errors[error.code]),
+          {enableHighAccuracy:true, timeout:12000, maximumAge:30000}
+        );
+      } catch {
+        settle();
+      }
+    }
+
+    control.addEventListener('click', () => {
+      if (lookup) {
+        setLookup(null);
+        cancelStartup();
+        return;
+      }
+      cancelStartup();
+      startLookup('control');
+    });
+    requestButton.addEventListener('click', () => startLookup('dialog'));
+    skipButton.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+      if (lookup?.source === 'dialog') setLookup(null);
+      $('#search-toggle').focus({preventScroll:true});
+    });
+
+    if (!available) return;
+    for (const type of ['pointerdown', 'keydown', 'wheel']) {
+      document.addEventListener(type, event => {
+        if (!control.contains(event.target)) cancelStartup();
+      }, {capture:true, passive:true, signal:startup.signal});
+    }
+
+    let timer;
+    let permission = 'prompt';
+    try {
+      if (navigator.permissions?.query) {
+        const pending = navigator.permissions.query({name:'geolocation'});
+        permission = await Promise.race([
+          pending.then(status => status.state),
+          new Promise(resolve => { timer = setTimeout(() => resolve('prompt'), 250); }),
+        ]);
+      }
+    } catch {
+      // Some browsers support location without exposing its permission state.
+    } finally {
+      clearTimeout(timer);
+    }
+    if (startup.signal.aborted) return;
+    if (permission === 'granted') {
+      startLookup('startup');
+      return;
+    }
+    cancelStartup();
+    if (permission !== 'denied') dialog.showModal();
+  }
+
   restoreDraft();
   renderLanguage();
   refreshCats();
-  const welcome = $('#welcome-dialog');
-  const welcomeKey = 'manameow-welcome-seen';
-  $('#welcome-explore').addEventListener('click', () => welcome.close());
-  welcome.addEventListener('close', () => {
-    storage.set(welcomeKey, '1');
-    $('#search-toggle').focus({preventScroll:true});
-  });
-  if (storage.get(welcomeKey) !== '1') welcome.showModal();
+  initializeLocation();
 })();

@@ -13,10 +13,11 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css">
   <link rel="stylesheet" href="geo-map.css?v=3">
   <link rel="stylesheet" href="pixel-cats.css?v=1">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
   <script defer src="pixel-cats.js?v=1"></script>
-  <script defer src="geo-map.js?v=5"></script>
-  <script defer src="app.js?v=5"></script>
+  <script defer src="storybook-fallback.js?v=1"></script>
+  <script defer src="geo-map.js?v=6"></script>
+  <script defer src="app.js?v=6"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -72,6 +73,9 @@
       <button type="button" class="text-button" id="cancel-pick" data-i="cancel">Cancel</button>
     </div>
     <div class="map-tools" data-label="mapControls" aria-label="Map controls">
+      <button type="button" id="locate-map" data-label="locateMap" aria-label="My location">
+        <span class="locate-icon" aria-hidden="true"></span>
+      </button>
       <button type="button" id="zoom-in" data-label="zoomIn" aria-label="Zoom in">+</button>
       <button type="button" id="zoom-out" data-label="zoomOut" aria-label="Zoom out">−</button>
       <button type="button" id="reset-map" data-label="resetMap" aria-label="Reset map view">◎</button>
@@ -79,12 +83,17 @@
     <noscript><p class="map-instruction">Enable JavaScript to open the map.</p></noscript>
   </main>
 
-  <dialog id="welcome-dialog" class="welcome-dialog" aria-labelledby="welcome-title">
+  <dialog id="location-dialog" class="location-dialog" aria-labelledby="location-title" aria-describedby="location-hint">
     <button class="close" type="button" data-close aria-label="Close">×</button>
     <div class="dialog-body">
-      <img class="welcome-mark" src="manameow-logo.png?v=2" width="73" height="73" alt="">
-      <h2 id="welcome-title" data-i="welcomeTitle">Welcome to ManaMeow</h2>
-      <button class="button primary" type="button" id="welcome-explore" data-i="welcomeExplore" autofocus>Explore map</button>
+      <img class="location-mark" src="manameow-logo.png?v=2" width="54" height="54" alt="">
+      <h2 id="location-title" data-i="locationTitle">Use your current location?</h2>
+      <p id="location-hint" data-i="locationHint">See the map around you.</p>
+      <p id="location-status" role="status" class="fine" hidden></p>
+      <div class="dialog-actions">
+        <button class="button primary" type="button" id="location-request" data-i="locationRequest" autofocus>Use my location</button>
+        <button class="button secondary" type="button" id="location-skip" data-i="locationSkip">Explore map</button>
+      </div>
     </div>
   </dialog>
 
