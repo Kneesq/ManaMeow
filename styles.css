@@ -59,7 +59,6 @@ ul { list-style: none; padding: 0; }
   letter-spacing: -.017em;
   white-space: nowrap;
 }
-.brand-accent { color: var(--orange); }
 .paw { display: block; position: relative; width: 24px; height: 24px; transform: scale(.78); }
 .paw::before { content: ''; position: absolute; width: 13px; height: 10px; border-radius: 53% 53% 45% 45%; background: currentColor; bottom: 2px; left: 5.5px; }
 .paw::after { content: ''; position: absolute; width: 5px; height: 7px; border-radius: 55%; left: 1px; top: 7px; background: currentColor; box-shadow: 5px -5px currentColor, 12px -5px currentColor, 17px 0 currentColor; }
@@ -235,12 +234,26 @@ form :is(input, textarea):user-invalid { border-color: #a53625; }
 
 .brand { gap: 7px; padding-inline: 10px 15px; }
 .brand-logo { display: block; flex: none; width: 33px; height: 33px; }
-.wordmark { display: block; padding-top: 2px; }
+.wordmark {
+  --cap-height: clamp(28px, 3.5vw, 34px);
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+}
 .balloon-m {
-  display: inline-block;
-  width: .94em;
-  height: .94em;
-  margin-inline-end: .012em;
-  vertical-align: -.035em;
+  display: block;
+  width: var(--cap-height);
+  height: var(--cap-height);
+}
+.balloon-letters {
+  display: block;
+  height: calc(var(--cap-height) * .76);
+  background: url("balloon-letters.svg") left bottom / auto 100% no-repeat;
+  margin-bottom: .5px;
+}
+.balloon-ana { aspect-ratio: 146 / 55; }
+.balloon-eow {
+  aspect-ratio: 155 / 55;
+  background-position-x: right;
 }
 .location-mark { display: block; width: 54px; height: 54px; margin: 0 auto 8px; }
