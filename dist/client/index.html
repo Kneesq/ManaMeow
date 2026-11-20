@@ -16,13 +16,13 @@
   <link rel="stylesheet" href="styles.css?v=11">
   <link rel="stylesheet" href="profile-social.css?v=3">
   <link rel="stylesheet" href="catch.css?v=2">
-  <script defer src="demo-api.js?v=1"></script>
+  <script defer src="demo-api.js?v=2"></script>
   <script defer src="pixel-cats.js?v=2"></script>
   <script defer src="storybook-fallback.js?v=1"></script>
   <script defer src="geo-map.js?v=7"></script>
   <script defer src="catch.js?v=2"></script>
   <script defer src="profile-social.js?v=4"></script>
-  <script defer src="app.js?v=10"></script>
+  <script defer src="app.js?v=11"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -290,7 +290,7 @@
           <span id="pin-status" class="fine" data-i="pinNone">No pin selected</span>
         </div>
         <label><span data-i="observed">Date spotted</span><input name="observed" type="date" required></label>
-        <label><span data-i="profilePhoto">Profile photo</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
+        <label><span data-i="profilePhoto">Profile photo</span><input name="image" type="file" accept="image/*"><img id="upload-photo-preview" alt="" hidden style="max-width:100%;max-height:180px;border-radius:12px;margin-top:8px;object-fit:cover;"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
         <label><span data-i="note">Notes (optional)</span><textarea name="note" rows="3" maxlength="450" data-placeholder="noteExample" placeholder="What would help others recognise this cat?"></textarea></label>
         <p id="upload-error" class="error" role="alert" hidden></p>
         <div class="dialog-actions"><button class="button primary" type="submit" id="submit-sighting" data-i="submit">Submit for review</button></div>
@@ -320,7 +320,7 @@
       </button>
       <button id="catch-shutter" class="catch-shutter" type="button" aria-label="Take photo" disabled></button>
     </div>
-    <input type="file" id="catch-picker" accept="image/jpeg,image/png,image/webp" hidden>
+    <input type="file" id="catch-picker" accept="image/*" hidden>
     <input type="file" id="catch-device-picker" accept="image/*" capture="environment" hidden>
     <div id="catch-review" class="catch-review" hidden>
       <label class="catch-caption">

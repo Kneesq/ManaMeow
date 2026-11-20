@@ -590,40 +590,72 @@
     renderPin();
     if (!upload.open) upload.showModal();
   }
-  $('#add-cat').addEventListener('click', openUpload);
+  let pickingFromDialog = false;
+  function startPicking(fromDialog = false) {
+    if (!map) {
+      openUpload().then(() => showError(t('failed')));
+      return;
+    }
+    if (upload.open) upload.close();
+    pickingFromDialog = fromDialog;
+    state.picking = true;
+    map.setPicking(true);
+    $('#map-instruction').hidden = false;
+    $('#cancel-pick').focus({preventScroll:true});
+  }
+  async function startAddCat() {
+    await accountLoad;
+    if (state.account.available && !state.account.signedIn) {
+      showEmailLogin(() => startPicking(false));
+      return;
+    }
+    startPicking(false);
+  }
+  $('#add-cat').addEventListener('click', startAddCat);
   function renderPin() {
-    $('#pin-status').textContent = t(state.pin ? 'pinSet' : 'pinNone');
+    $('#pin-status').textContent = state.pin
+      ? `${t('pinSet')} (${state.pin.lat.toFixed(4)}, ${state.pin.lng.toFixed(4)})`
+      : t('pinNone');
   }
   function stopPicking() {
     state.picking = false;
     map?.setPicking(false);
     $('#map-instruction').hidden = true;
   }
+  function cancelPicking() {
+    const reopen = pickingFromDialog;
+    pickingFromDialog = false;
+    stopPicking();
+    if (reopen) openUpload();
+  }
   function acceptPin(coords) {
     if (!state.picking) return;
     const {lat,lng} = coords;
+    pickingFromDialog = false;
     stopPicking();
-    if (lat < .8 || lat > 7.6 || lng < 99 || lng > 120) {
-      openUpload().then(() => showError(t('useMalaysia')));
-      return;
-    }
-    state.pin = {lat: Math.round(lat*100)/100,lng: Math.round(lng*100)/100};
+    state.pin = {lat: Math.round(lat*100000)/100000, lng: Math.round(lng*100000)/100000};
     openUpload();
   }
-  $('#pick-location').addEventListener('click', () => {
-    if (!map) {
-      showError(t('failed'));
-      return;
-    }
-    upload.close();
-    state.picking = true;
-    map.setPicking(true);
-    $('#map-instruction').hidden = false;
-    $('#cancel-pick').focus({preventScroll:true});
-  });
-  $('#cancel-pick').addEventListener('click', openUpload);
+  $('#pick-location').addEventListener('click', () => startPicking(true));
+  $('#cancel-pick').addEventListener('click', cancelPicking);
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && state.picking) openUpload();
+    if (event.key === 'Escape' && state.picking) cancelPicking();
+  });
+
+  const photoInput = form.elements.image;
+  const photoPreview = $('#upload-photo-preview');
+  let previewObjectUrl = null;
+  function clearPhotoPreview() {
+    if (previewObjectUrl) { URL.revokeObjectURL(previewObjectUrl); previewObjectUrl = null; }
+    if (photoPreview) { photoPreview.removeAttribute('src'); photoPreview.hidden = true; }
+  }
+  photoInput?.addEventListener('change', () => {
+    clearPhotoPreview();
+    const file = photoInput.files?.[0];
+    if (!file || !photoPreview) return;
+    previewObjectUrl = URL.createObjectURL(file);
+    photoPreview.src = previewObjectUrl;
+    photoPreview.hidden = false;
   });
 
   function showError(message) {
@@ -631,14 +663,15 @@
     uploadError.textContent = message;
   }
   async function encodePhoto(file) {
-    if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 10*1024*1024) throw new Error(t('badPhoto'));
+    const isImage = Boolean(file && ((file.type && file.type.startsWith('image/')) || /\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(file.name || '')));
+    if (!isImage || file.size > 20*1024*1024) throw new Error(t('badPhoto'));
     const url = URL.createObjectURL(file);
     try {
       const photo = new Image();
       photo.src = url;
       await photo.decode();
       if (!photo.naturalWidth || !photo.naturalHeight) throw new Error(t('badPhoto'));
-      const scale = Math.min(1, 850 / Math.max(photo.naturalWidth, photo.naturalHeight));
+      const scale = Math.min(1, 720 / Math.max(photo.naturalWidth, photo.naturalHeight));
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1,Math.round(photo.naturalWidth * scale));
       canvas.height = Math.max(1,Math.round(photo.naturalHeight * scale));
@@ -646,9 +679,9 @@
       ctx.fillStyle = '#fffaf2';
       ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(photo,0,0,canvas.width,canvas.height);
-      let encoded = canvas.toDataURL('image/jpeg', .75);
-      if (encoded.length > 640000) encoded = canvas.toDataURL('image/jpeg', .55);
-      if (encoded.length > 640000) throw new Error(t('badPhoto'));
+      let encoded = canvas.toDataURL('image/jpeg', .72);
+      if (encoded.length > 480000) encoded = canvas.toDataURL('image/jpeg', .52);
+      if (encoded.length > 640000) encoded = canvas.toDataURL('image/jpeg', .38);
       return encoded;
     } catch {
       throw new Error(t('badPhoto'));
@@ -693,10 +726,12 @@
       storage.remove('manameow-draft');
       state.pin = null;
       form.reset();
+      clearPhotoPreview();
       dateInput.value = today;
       upload.close();
       toast(t('submitted'));
-      refreshCats();
+      await refreshCats();
+      if (result.payload?.sighting?.id) map?.select?.(result.payload.sighting.id);
     } catch (error) {
       showError(error.message || t('failed'));
     } finally {
