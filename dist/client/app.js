@@ -696,6 +696,7 @@
       dateInput.value = today;
       upload.close();
       toast(t('submitted'));
+      refreshCats();
     } catch (error) {
       showError(error.message || t('failed'));
     } finally {

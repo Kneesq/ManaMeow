@@ -16,12 +16,13 @@
   <link rel="stylesheet" href="styles.css?v=11">
   <link rel="stylesheet" href="profile-social.css?v=3">
   <link rel="stylesheet" href="catch.css?v=2">
+  <script defer src="demo-api.js?v=1"></script>
   <script defer src="pixel-cats.js?v=2"></script>
   <script defer src="storybook-fallback.js?v=1"></script>
   <script defer src="geo-map.js?v=7"></script>
   <script defer src="catch.js?v=2"></script>
   <script defer src="profile-social.js?v=4"></script>
-  <script defer src="app.js?v=9"></script>
+  <script defer src="app.js?v=10"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -221,7 +222,7 @@
       <h2 id="auth-title">Log in</h2>
       <p id="auth-error" class="error" role="alert" hidden></p>
       <form id="auth-login" data-auth-form="login" method="post" action="./api/auth/login">
-        <label><span data-i="email">Email</span><input name="email" type="email" autocomplete="username" maxlength="254" required autofocus></label>
+        <label><span data-i="email">Email</span><input name="email" type="text" autocomplete="username" maxlength="254" required autofocus></label>
         <label><span data-i="password">Password</span><input name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
         <button class="button primary auth-submit" type="submit" data-i="login">Log in</button>
         <div class="auth-options">
