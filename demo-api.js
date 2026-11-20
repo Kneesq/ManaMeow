@@ -35,7 +35,10 @@
   function saveDB(db) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    } catch {}
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function getSession() {
@@ -92,10 +95,10 @@
     const key = photoKey(catId, 'original');
     const likers = Array.isArray(db.likes[key]) ? db.likes[key] : [];
     const sampleImages = {
-      'sample-mochi': 'mochi.jpg',
-      'sample-pudding': 'pudding.jpg',
-      'sample-shadow': 'shadow.jpg',
-      'sample-biscuit': 'biscuit.jpg',
+      mochi: 'mochi.jpg',
+      pudding: 'pudding.jpg',
+      shadow: 'shadow.jpg',
+      biscuit: 'biscuit.jpg',
     };
     const image = sighting?.image || sampleImages[catId] || null;
     if (!image) return null;
@@ -235,7 +238,10 @@
         createdAt: new Date().toISOString(),
       };
       db.sightings.unshift(sighting);
-      saveDB(db);
+      if (!saveDB(db)) {
+        db.sightings.shift();
+        return jsonResponse({ error: 'storage_full', message: 'Browser storage is full. Try a smaller photo or clear old demo data.' }, 507);
+      }
       return jsonResponse({ sighting }, 201);
     }
 
@@ -256,7 +262,7 @@
           cats.push({
             catId,
             photoCount: userPhotos.length,
-            latestPhoto: userPhotos[0].image,
+            latestPhoto: { image: userPhotos[0].image },
             nickname: db.nicknames[`${user}::${catId}`] || null,
           });
         }
@@ -310,7 +316,10 @@
         };
         if (!Array.isArray(db.photos[catId])) db.photos[catId] = [];
         db.photos[catId].unshift(raw);
-        saveDB(db);
+        if (!saveDB(db)) {
+          db.photos[catId].shift();
+          return jsonResponse({ error: 'storage_full', message: 'Browser storage is full. Try a smaller photo.' }, 507);
+        }
         return jsonResponse({ photo: formatPhoto(db, catId, raw, user) }, 201);
       }
     }
