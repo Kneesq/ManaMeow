@@ -146,9 +146,7 @@
     cards: state.cats,
     select: id => {
       if (state.picking) return;
-      const currentZoom = map?.center?.()?.zoom ?? 0;
-      map?.select(id);
-      if (currentZoom >= 16) openCat(id);
+      map?.select(id, { onArrive: () => openCat(id) });
     },
     onPick: acceptPin,
     onTiltChange: tilted => {

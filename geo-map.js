@@ -663,19 +663,36 @@
       return nextTilted;
     }
 
-    function select(id) {
+    function select(id, { onArrive } = {}) {
       selectedId = id;
       const match = pins.find(({ card }) => card.id === id);
       if (match) {
-        const targetZoom = clamp(Math.max(center().zoom, FOCUS_ZOOM), MIN_ZOOM, MAX_ZOOM);
+        const current = center();
+        const targetZoom = clamp(Math.max(current.zoom, FOCUS_ZOOM), MIN_ZOOM, MAX_ZOOM);
         atHome = false;
         camera = { ...normaliseCenter(match.card), zoom: targetZoom };
         if (loaded) {
           const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const alreadyClose = current.zoom >= FOCUS_ZOOM - 0.5;
+          const duration = reduceMotion ? 0 : (alreadyClose ? 350 : 850);
+          if (onArrive) {
+            if (duration === 0) {
+              queueMicrotask(() => { if (selectedId === id) onArrive(); });
+            } else {
+              let settled = false;
+              const finish = () => {
+                if (settled) return;
+                settled = true;
+                if (selectedId === id) onArrive();
+              };
+              map.once('moveend', finish);
+              setTimeout(finish, duration + 150);
+            }
+          }
           map.flyTo({
             center: [camera.lng, camera.lat],
             zoom: camera.zoom,
-            duration: reduceMotion ? 0 : 850,
+            duration,
             essential: true,
           });
         } else if (map) {
@@ -683,6 +700,9 @@
             center: [camera.lng, camera.lat],
             zoom: camera.zoom,
           });
+          onArrive?.();
+        } else {
+          onArrive?.();
         }
       }
       scheduleRender();
