@@ -10,12 +10,37 @@
   const SESSION_KEY = 'manameow_demo_session_v1';
 
   const DEFAULT_ACCOUNTS = {
-    test1: { email: 'test1', password: 'test1', recoveryCode: 'DEMO-TEST1-REC' },
-    test2: { email: 'test2', password: 'test2', recoveryCode: 'DEMO-TEST2-REC' },
-    test3: { email: 'test3', password: 'test3', recoveryCode: 'DEMO-TEST3-REC' },
-    test4: { email: 'test4', password: 'test4', recoveryCode: 'DEMO-TEST4-REC' },
-    test5: { email: 'test5', password: 'test5', recoveryCode: 'DEMO-TEST5-REC' },
+    test1: { email: 'test1', username: 'test1', password: 'test1', recoveryCode: 'DEMO-TEST1-REC' },
+    test2: { email: 'test2', username: 'test2', password: 'test2', recoveryCode: 'DEMO-TEST2-REC' },
+    test3: { email: 'test3', username: 'test3', password: 'test3', recoveryCode: 'DEMO-TEST3-REC' },
+    test4: { email: 'test4', username: 'test4', password: 'test4', recoveryCode: 'DEMO-TEST4-REC' },
+    test5: { email: 'test5', username: 'test5', password: 'test5', recoveryCode: 'DEMO-TEST5-REC' },
   };
+
+  function fuzzCoordinate(lat, lng) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return { lat, lng };
+    const distM = 200 + Math.random() * 300;
+    const angle = Math.random() * 2 * Math.PI;
+    const dLat = (distM * Math.cos(angle)) / 111320;
+    const cosLat = Math.max(Math.cos((lat * Math.PI) / 180), 0.01);
+    const dLng = (distM * Math.sin(angle)) / (111320 * cosLat);
+    return {
+      lat: Math.round((lat + dLat) * 100000) / 100000,
+      lng: Math.round((lng + dLng) * 100000) / 100000,
+    };
+  }
+
+  function findAccount(db, identifier) {
+    const key = String(identifier || '').trim().toLowerCase();
+    if (!key) return null;
+    if (db.accounts[key]) return { key, account: db.accounts[key] };
+    for (const [k, acc] of Object.entries(db.accounts)) {
+      if ((acc.username || '').toLowerCase() === key || (acc.email || '').toLowerCase() === key) {
+        return { key: k, account: acc };
+      }
+    }
+    return null;
+  }
 
   function loadDB() {
     let db = null;
@@ -29,6 +54,11 @@
     if (!db.comments || typeof db.comments !== 'object') db.comments = {};
     if (!db.likes || typeof db.likes !== 'object') db.likes = {};
     if (!db.nicknames || typeof db.nicknames !== 'object') db.nicknames = {};
+    if (!db.publicNames || typeof db.publicNames !== 'object') db.publicNames = {};
+    if (!db.videos || typeof db.videos !== 'object') db.videos = {};
+    if (!db.relations || typeof db.relations !== 'object') db.relations = {};
+    if (!Array.isArray(db.mergeRequests)) db.mergeRequests = [];
+    if (!db.privateLocations || typeof db.privateLocations !== 'object') db.privateLocations = {};
     return db;
   }
 
@@ -150,57 +180,61 @@
     // 1. Account status
     if (apiPath === '/api/account' && method === 'GET') {
       if (user && db.accounts[user]) {
-        return jsonResponse({ available: true, signedIn: true, local: true, email: user });
+        const acc = db.accounts[user];
+        return jsonResponse({ available: true, signedIn: true, local: true, email: acc.email || user, username: acc.username || user });
       }
       return jsonResponse({ available: true, signedIn: false, local: true });
     }
 
-    // 2. Auth: Login
+    // 2. Auth: Login (by username or email)
     if (apiPath === '/api/auth/login' && method === 'POST') {
       const body = await readBody(options);
-      const email = String(body.email || '').trim().toLowerCase();
+      const found = findAccount(db, body.username || body.email);
       const password = String(body.password || '');
-      const account = db.accounts[email];
-      if (!account || account.password !== password) {
+      if (!found || found.account.password !== password) {
         return jsonResponse({ error: 'invalid_credentials', message: 'Invalid username/email or password.' }, 401);
       }
-      setSession(email);
-      return jsonResponse({ ok: true, email });
+      setSession(found.key);
+      return jsonResponse({ ok: true, email: found.account.email, username: found.account.username || found.key });
     }
 
-    // 3. Auth: Register
+    // 3. Auth: Register (requires unique username + email)
     if (apiPath === '/api/auth/register' && method === 'POST') {
       const body = await readBody(options);
       const email = String(body.email || '').trim().toLowerCase();
+      const username = String(body.username || '').trim() || email.split('@')[0];
       const password = String(body.password || '');
-      if (!email) return jsonResponse({ error: 'invalid_email', message: 'Enter a valid email or username.' }, 400);
+      if (!email) return jsonResponse({ error: 'invalid_email', message: 'Enter a valid email.' }, 400);
+      if (username.length < 2 || username.length > 32) {
+        return jsonResponse({ error: 'invalid_username', message: 'Username must be 2 to 32 characters.' }, 400);
+      }
       if (password.length < 4 || password.length > 128) {
         return jsonResponse({ error: 'invalid_password', message: 'Password must be between 4 and 128 characters.' }, 400);
       }
-      if (db.accounts[email]) {
-        return jsonResponse({ error: 'registration_unavailable', message: 'This account already exists.' }, 409);
+      if (findAccount(db, email) || findAccount(db, username)) {
+        return jsonResponse({ error: 'registration_unavailable', message: 'This email or username already exists.' }, 409);
       }
+      const key = username.toLowerCase();
       const recoveryCode = 'MM-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-      db.accounts[email] = { email, password, recoveryCode };
+      db.accounts[key] = { email, username, password, recoveryCode };
       saveDB(db);
-      setSession(email);
-      return jsonResponse({ ok: true, email, recoveryCode });
+      setSession(key);
+      return jsonResponse({ ok: true, email, username, recoveryCode });
     }
 
     // 4. Auth: Reset password
     if (apiPath === '/api/auth/reset' && method === 'POST') {
       const body = await readBody(options);
-      const email = String(body.email || '').trim().toLowerCase();
+      const found = findAccount(db, body.email || body.username);
       const recoveryCode = String(body.recoveryCode || '').trim();
       const password = String(body.password || '');
-      const account = db.accounts[email];
-      if (!account || account.recoveryCode !== recoveryCode) {
+      if (!found || found.account.recoveryCode !== recoveryCode) {
         return jsonResponse({ error: 'invalid_recovery', message: 'Invalid account or recovery code.' }, 401);
       }
-      account.password = password;
+      found.account.password = password;
       saveDB(db);
-      setSession(email);
-      return jsonResponse({ ok: true, email });
+      setSession(found.key);
+      return jsonResponse({ ok: true, email: found.account.email, username: found.account.username || found.key });
     }
 
     // 5. Auth: Logout
@@ -209,19 +243,30 @@
       return jsonResponse({ ok: true });
     }
 
-    // 6. Sightings list
+    // 6. Sightings list (hide merged source cats)
     if (apiPath === '/api/sightings' && method === 'GET') {
-      return jsonResponse({ sightings: db.sightings });
+      const active = db.sightings.filter((s) => !s.mergedIntoCatId);
+      return jsonResponse({ sightings: active });
     }
 
-    // 7. Create sighting
+    // 7. Create sighting (supports guest upload + pet fuzzy location)
     if (apiPath === '/api/sightings' && method === 'POST') {
-      if (!user) return jsonResponse({ error: 'sign_in_required', message: 'Please log in first.' }, 401);
       const body = await readBody(options);
+      const name = String(body.name || '').trim();
+      if (!name) return jsonResponse({ error: 'invalid_name', message: 'Please enter the cat name.' }, 400);
+      if (!body.image) return jsonResponse({ error: 'need_photo', message: 'Please attach a cat photo.' }, 400);
+      const category = body.category || 'stray';
+      const hideLocation = Boolean(category === 'pet' && body.hideLocation);
+      const rawLat = Number(body.lat);
+      const rawLng = Number(body.lng);
+      const hasCoords = Number.isFinite(rawLat) && Number.isFinite(rawLng);
+      const pubCoords = hasCoords && hideLocation ? fuzzCoordinate(rawLat, rawLng) : { lat: rawLat, lng: rawLng };
+      const id = makeId('cat');
+      const acc = user ? db.accounts[user] : null;
       const sighting = {
-        id: makeId('cat'),
-        name: String(body.name || 'Unnamed Cat').trim(),
-        category: body.category || 'stray',
+        id,
+        name,
+        category,
         city: String(body.city || '').trim(),
         location: String(body.location || '').trim(),
         ageMonths: body.ageMonths ?? null,
@@ -229,14 +274,20 @@
         observed: body.observed || new Date().toISOString().slice(0, 10),
         note: String(body.note || '').trim(),
         image: body.image || '',
-        lat: Number(body.lat),
-        lng: Number(body.lng),
+        lat: hasCoords ? pubCoords.lat : 3.139,
+        lng: hasCoords ? pubCoords.lng : 101.6869,
         x: body.x,
         y: body.y,
         status: 'approved',
-        owner: user,
+        owner: user || null,
+        creatorName: acc ? (acc.username || user) : null,
+        guestName: user ? null : (String(body.guestName || '').trim() || 'Anonymous'),
+        isLocationHidden: hideLocation,
         createdAt: new Date().toISOString(),
       };
+      if (hideLocation && hasCoords && user) {
+        db.privateLocations[id] = { creatorId: user, exactLat: rawLat, exactLng: rawLng };
+      }
       db.sightings.unshift(sighting);
       if (!saveDB(db)) {
         db.sightings.shift();
@@ -382,6 +433,206 @@
           comment: { id: entry.id, text: entry.text, createdAt: entry.createdAt, status: 'approved', mine: true },
         }, 201);
       }
+    }
+
+    // 13. SPEC: Cat extended profile data (public names, relations, videos, timeline, merge requests)
+    const specMatch = apiPath.match(/^\/api\/cats\/([^/]+)\/spec$/);
+    if (specMatch && method === 'GET') {
+      const catId = decodeURIComponent(specMatch[1]);
+      const sighting = db.sightings.find((s) => s.id === catId);
+      const isPet = sighting?.category === 'pet';
+      const isOwner = Boolean(user && sighting && sighting.owner === user);
+      const creatorLabel = sighting
+        ? (sighting.creatorName ? '@' + sighting.creatorName : (sighting.owner ? '@' + sighting.owner : (sighting.guestName || 'Anonymous')))
+        : '@ManaMeow';
+      const publicNames = Array.isArray(db.publicNames[catId]) ? db.publicNames[catId] : [];
+      const videos = Array.isArray(db.videos[catId]) ? db.videos[catId] : [];
+      const userRel = user ? (db.relations[user] || { favorite: [], following: [] }) : { favorite: [], following: [] };
+      const photos = (Array.isArray(db.photos[catId]) ? db.photos[catId] : []).filter((p) => (p.status || 'approved') === 'approved');
+      const orig = originalPhoto(db, catId, user);
+      const timeline = [
+        ...(orig ? [{ id: 'orig', type: 'sighting', mediaUrl: orig.image, caption: orig.caption || 'First discovered', uploader: creatorLabel, createdAt: orig.createdAt || '' }] : []),
+        ...photos.map((p) => ({ id: p.id, type: 'photo', mediaUrl: p.image, caption: p.caption || '', uploader: p.owner ? '@' + p.owner : 'Anonymous', createdAt: p.createdAt || '' })),
+        ...videos.map((v) => ({ id: v.id, type: 'video', mediaUrl: v.url, caption: v.caption || '', uploader: v.owner ? '@' + v.owner : (v.guestName || 'Anonymous'), createdAt: v.createdAt || '' })),
+      ].sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
+      const mergeRequests = db.mergeRequests.filter((r) => r.status === 'pending' && (r.targetCatId === catId || r.sourceCatId === catId));
+      return jsonResponse({
+        catId,
+        isPet,
+        isOwner,
+        isLocationHidden: Boolean(sighting?.isLocationHidden),
+        creatorLabel,
+        publicNames,
+        relations: {
+          favorite: userRel.favorite.includes(catId),
+          following: userRel.following.includes(catId),
+        },
+        videos,
+        timeline,
+        mergeRequests,
+      });
+    }
+
+    // 14. SPEC: Public multi-names (3-5 slots)
+    const pubNameMatch = apiPath.match(/^\/api\/cats\/([^/]+)\/public-names(?:\/([^/]+))?$/);
+    if (pubNameMatch) {
+      const catId = decodeURIComponent(pubNameMatch[1]);
+      const nameId = pubNameMatch[2] ? decodeURIComponent(pubNameMatch[2]) : null;
+      const sighting = db.sightings.find((s) => s.id === catId);
+      const isPet = sighting?.category === 'pet';
+      const isOwner = Boolean(user && sighting && sighting.owner === user);
+
+      if (method === 'POST') {
+        if (!user) return jsonResponse({ error: 'sign_in_required', message: 'Please log in to add a name.' }, 401);
+        if (isPet && !isOwner) return jsonResponse({ error: 'forbidden', message: 'Only the pet owner can edit public names.' }, 403);
+        const body = await readBody(options);
+        const name = String(body.name || '').trim();
+        if (!name || name.length > 40) return jsonResponse({ error: 'invalid_name', message: 'Enter a name (1–40 chars).' }, 400);
+        if (!Array.isArray(db.publicNames[catId])) db.publicNames[catId] = [];
+        if (db.publicNames[catId].length >= 5) return jsonResponse({ error: 'limit_reached', message: 'Maximum 5 public names reached.' }, 400);
+        if (db.publicNames[catId].some((n) => n.name.toLowerCase() === name.toLowerCase())) {
+          return jsonResponse({ error: 'duplicate', message: 'This name already exists.' }, 409);
+        }
+        const entry = { id: makeId('name'), name, createdBy: user, createdAt: new Date().toISOString() };
+        db.publicNames[catId].push(entry);
+        saveDB(db);
+        return jsonResponse({ publicNames: db.publicNames[catId] }, 201);
+      }
+      if (method === 'DELETE' && nameId) {
+        if (!user) return jsonResponse({ error: 'sign_in_required' }, 401);
+        const list = Array.isArray(db.publicNames[catId]) ? db.publicNames[catId] : [];
+        const target = list.find((n) => n.id === nameId);
+        if (!target) return jsonResponse({ error: 'not_found' }, 404);
+        if (isPet && !isOwner) return jsonResponse({ error: 'forbidden' }, 403);
+        if (!isOwner && target.createdBy !== user) return jsonResponse({ error: 'forbidden' }, 403);
+        db.publicNames[catId] = list.filter((n) => n.id !== nameId);
+        saveDB(db);
+        return jsonResponse({ publicNames: db.publicNames[catId] });
+      }
+    }
+
+    // 15. SPEC: Favorite / Following toggle
+    const relMatch = apiPath.match(/^\/api\/cats\/([^/]+)\/relation$/);
+    if (relMatch && method === 'PUT') {
+      if (!user) return jsonResponse({ error: 'sign_in_required', message: 'Please log in first.' }, 401);
+      const catId = decodeURIComponent(relMatch[1]);
+      const body = await readBody(options);
+      const type = body.type === 'following' ? 'following' : 'favorite';
+      if (!db.relations[user]) db.relations[user] = { favorite: [], following: [] };
+      const set = new Set(db.relations[user][type]);
+      if (body.active) set.add(catId);
+      else set.delete(catId);
+      db.relations[user][type] = [...set];
+      saveDB(db);
+      return jsonResponse({
+        favorite: db.relations[user].favorite.includes(catId),
+        following: db.relations[user].following.includes(catId),
+      });
+    }
+
+    // 16. SPEC: Videos upload
+    const vidMatch = apiPath.match(/^\/api\/cats\/([^/]+)\/videos$/);
+    if (vidMatch && method === 'POST') {
+      const catId = decodeURIComponent(vidMatch[1]);
+      const body = await readBody(options);
+      if (!body.url) return jsonResponse({ error: 'invalid_video', message: 'Please choose a video.' }, 400);
+      if (!Array.isArray(db.videos[catId])) db.videos[catId] = [];
+      const entry = {
+        id: makeId('vid'),
+        url: body.url,
+        caption: String(body.caption || '').trim(),
+        owner: user || null,
+        guestName: user ? null : 'Anonymous',
+        createdAt: new Date().toISOString(),
+      };
+      db.videos[catId].unshift(entry);
+      if (!saveDB(db)) {
+        db.videos[catId].shift();
+        return jsonResponse({ error: 'storage_full', message: 'Video too large for local demo storage (try a short clip < 2MB).' }, 507);
+      }
+      return jsonResponse({ video: entry }, 201);
+    }
+
+    // 17. SPEC: Account Pawprints Library (Favorites, Following, Discovered, Pending Merges)
+    if (apiPath === '/api/account/pawprints' && method === 'GET') {
+      if (!user) return jsonResponse({ error: 'sign_in_required' }, 401);
+      const userRel = db.relations[user] || { favorite: [], following: [] };
+      const discovered = db.sightings.filter((s) => s.owner === user && !s.mergedIntoCatId);
+      const pendingMerges = db.mergeRequests.filter((r) => r.status === 'pending');
+      return jsonResponse({
+        favorites: userRel.favorite,
+        following: userRel.following,
+        discovered,
+        pendingMerges,
+      });
+    }
+
+    // 18. SPEC: Duplicate Cat Merge Requests (Two-party mutual consent)
+    if (apiPath === '/api/merge-requests' && method === 'POST') {
+      if (!user) return jsonResponse({ error: 'sign_in_required', message: 'Please log in to request a merge.' }, 401);
+      const body = await readBody(options);
+      const targetCatId = String(body.targetCatId || '').trim();
+      const sourceCatId = String(body.sourceCatId || '').trim();
+      if (!targetCatId || !sourceCatId || targetCatId === sourceCatId) {
+        return jsonResponse({ error: 'invalid_merge', message: 'Select two different cats.' }, 400);
+      }
+      const targetCat = db.sightings.find((s) => s.id === targetCatId);
+      const sourceCat = db.sightings.find((s) => s.id === sourceCatId);
+      const req = {
+        id: makeId('merge'),
+        targetCatId,
+        sourceCatId,
+        targetName: body.targetName || targetCat?.name || targetCatId,
+        sourceName: body.sourceName || sourceCat?.name || sourceCatId,
+        targetCreator: targetCat?.owner || null,
+        sourceCreator: sourceCat?.owner || null,
+        requestedBy: user,
+        targetApproved: Boolean(targetCat?.owner === user),
+        sourceApproved: Boolean(sourceCat?.owner === user),
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+      db.mergeRequests.unshift(req);
+      saveDB(db);
+      return jsonResponse({ request: req }, 201);
+    }
+
+    const mergeConfirmMatch = apiPath.match(/^\/api\/merge-requests\/([^/]+)\/confirm$/);
+    if (mergeConfirmMatch && method === 'POST') {
+      if (!user) return jsonResponse({ error: 'sign_in_required' }, 401);
+      const reqId = decodeURIComponent(mergeConfirmMatch[1]);
+      const body = await readBody(options);
+      const req = db.mergeRequests.find((r) => r.id === reqId);
+      if (!req) return jsonResponse({ error: 'not_found' }, 404);
+      if (body.approve === false) {
+        req.status = 'rejected';
+        saveDB(db);
+        return jsonResponse({ request: req });
+      }
+      // In demo mode, allow approving the side matching current user, or if a cat has no owner (sample/guest), allow approving that side
+      if (!req.targetApproved && (!req.targetCreator || req.targetCreator === user)) req.targetApproved = true;
+      if (!req.sourceApproved && (!req.sourceCreator || req.sourceCreator === user)) req.sourceApproved = true;
+      if (req.targetApproved && req.sourceApproved) {
+        // Execute merge: move photos, videos, public names from source -> target
+        if (Array.isArray(db.photos[req.sourceCatId])) {
+          db.photos[req.targetCatId] = [...(db.photos[req.targetCatId] || []), ...db.photos[req.sourceCatId]];
+        }
+        if (Array.isArray(db.videos[req.sourceCatId])) {
+          db.videos[req.targetCatId] = [...(db.videos[req.targetCatId] || []), ...db.videos[req.sourceCatId]];
+        }
+        if (Array.isArray(db.publicNames[req.sourceCatId])) {
+          const cur = db.publicNames[req.targetCatId] || [];
+          for (const n of db.publicNames[req.sourceCatId]) {
+            if (cur.length < 5 && !cur.some((x) => x.name.toLowerCase() === n.name.toLowerCase())) cur.push(n);
+          }
+          db.publicNames[req.targetCatId] = cur;
+        }
+        const src = db.sightings.find((s) => s.id === req.sourceCatId);
+        if (src) src.mergedIntoCatId = req.targetCatId;
+        req.status = 'merged';
+      }
+      saveDB(db);
+      return jsonResponse({ request: req });
     }
 
     return jsonResponse({ error: 'not_found' }, 404);

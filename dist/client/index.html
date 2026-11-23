@@ -16,15 +16,17 @@
   <link rel="stylesheet" href="styles.css?v=12">
   <link rel="stylesheet" href="profile-social.css?v=3">
   <link rel="stylesheet" href="catch.css?v=2">
+  <link rel="stylesheet" href="spec-features.css?v=1">
   <script defer src="supabase-config.js?v=1"></script>
-  <script defer src="demo-api.js?v=2"></script>
+  <script defer src="demo-api.js?v=3"></script>
   <script defer src="pixel-cats.js?v=2"></script>
   <script defer src="storybook-fallback.js?v=1"></script>
   <script defer src="geo-map.js?v=13"></script>
   <script defer src="diorama.js?v=2"></script>
   <script defer src="catch.js?v=2"></script>
   <script defer src="profile-social.js?v=4"></script>
-  <script defer src="app.js?v=14"></script>
+  <script defer src="spec-features.js?v=1"></script>
+  <script defer src="app.js?v=15"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -124,11 +126,29 @@
             <h2 id="cat-title"></h2>
             <span id="cat-nickname" class="profile-nickname" hidden></span>
           </div>
+          <div class="profile-credit-row">
+            <span id="cat-credit"></span>
+            <span id="cat-privacy-badge" class="privacy-badge" hidden>🔒 模糊位置保护中</span>
+          </div>
           <dl class="profile-facts">
             <div><dt data-i="age">Age</dt><dd id="cat-age"></dd></div>
             <div><dt data-i="gender">Sex</dt><dd id="cat-gender"></dd></div>
           </dl>
         </div>
+      </div>
+      <div id="cat-public-names" class="public-names-box">
+        <div class="public-names-head">
+          <span id="public-name-hint">街猫多元命名（0/5）</span>
+        </div>
+        <div id="public-names-slots" class="public-names-slots"></div>
+        <form id="public-name-form" class="public-name-form">
+          <input name="publicName" type="text" maxlength="40" placeholder="添加社区常用称呼…">
+          <button type="submit" class="button secondary">+ 添加</button>
+        </form>
+      </div>
+      <div class="profile-rel-actions">
+        <button type="button" id="fav-cat-btn" class="rel-btn" data-rel="favorite" aria-pressed="false">♡ 收藏</button>
+        <button type="button" id="follow-cat-btn" class="rel-btn" data-rel="following" aria-pressed="false">☆ 追踪</button>
       </div>
       <div class="profile-bio">
         <p id="cat-note"></p>
@@ -151,6 +171,11 @@
         </div>
       </form>
       <p id="profile-status" class="fine profile-status" role="status" hidden></p>
+      <div class="spec-tabs" role="tablist" aria-label="Cat profile sections">
+        <button type="button" class="spec-tab" role="tab" data-profile-tab="photos" aria-selected="true">照片 Photos</button>
+        <button type="button" class="spec-tab" role="tab" data-profile-tab="videos" aria-selected="false">影片 Videos</button>
+        <button type="button" class="spec-tab" role="tab" data-profile-tab="timeline" aria-selected="false">时间轴 Timeline</button>
+      </div>
       <section class="profile-photos own-photos" aria-labelledby="own-photos-heading">
         <div class="profile-section-head">
           <h3 id="own-photos-heading" data-i="myCollection">My collection</h3>
@@ -166,6 +191,27 @@
         <ul id="cat-photos" class="photo-grid"></ul>
         <p id="cat-photos-empty" class="fine" data-i="noPhotos" hidden>No photos yet.</p>
         <button id="more-community-photos" class="button secondary album-more" type="button" aria-controls="cat-photos" data-i="loadMorePhotos" data-label="loadMoreCommunityPhotos" aria-label="Load more community photos" hidden>Load more</button>
+      </section>
+      <section id="cat-videos-panel" class="spec-panel" hidden>
+        <form id="cat-video-form" class="public-name-form" style="flex-wrap:wrap;">
+          <input name="video" type="file" accept="video/mp4,video/webm,video/quicktime">
+          <input name="caption" type="text" maxlength="120" placeholder="影片备注（选填）">
+          <button type="submit" class="button primary">上传影片</button>
+        </form>
+        <ul id="cat-video-list" class="spec-video-list"></ul>
+        <p id="cat-videos-empty" class="fine">还没有上传短视频。</p>
+      </section>
+      <section id="cat-timeline-panel" class="spec-panel" hidden>
+        <ul id="cat-timeline-list" class="spec-timeline-list"></ul>
+        <p id="cat-timeline-empty" class="fine" hidden>还没有动态记录。</p>
+      </section>
+      <section id="cat-merge-section" class="spec-merge-box">
+        <button type="button" id="merge-toggle-btn" class="text-button">发现重复猫咪？发起足迹合并申请</button>
+        <form id="cat-merge-form" class="spec-merge-form" hidden>
+          <select id="merge-target-select" aria-label="选择要合并的目标猫咪"></select>
+          <button type="submit" class="button secondary">提交合并申请</button>
+        </form>
+        <div id="cat-merge-pending"></div>
       </section>
     </div>
   </dialog>
@@ -225,7 +271,7 @@
       <h2 id="auth-title">Log in</h2>
       <p id="auth-error" class="error" role="alert" hidden></p>
       <form id="auth-login" data-auth-form="login" method="post" action="./api/auth/login">
-        <label><span data-i="email">Email</span><input name="email" type="text" autocomplete="username" maxlength="254" required autofocus></label>
+        <label><span>Username / Email</span><input name="email" type="text" autocomplete="username" maxlength="254" required autofocus></label>
         <label><span data-i="password">Password</span><input name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
         <button class="button primary auth-submit" type="submit" data-i="login">Log in</button>
         <div class="auth-options">
@@ -234,8 +280,9 @@
         </div>
       </form>
       <form id="auth-register" data-auth-form="register" method="post" action="./api/auth/register" hidden>
+        <label><span>Username（唯一用户名）</span><input name="username" type="text" minlength="2" maxlength="32" autocomplete="nickname" required placeholder="e.g. meow_lover"></label>
         <label><span data-i="email">Email</span><input name="email" type="email" autocomplete="username" maxlength="254" required></label>
-        <label><span data-i="password">Password</span><input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" aria-describedby="register-password-help" required><small id="register-password-help" data-i="passwordHelp">At least 10 characters.</small></label>
+        <label><span data-i="password">Password</span><input name="password" type="password" autocomplete="new-password" minlength="4" maxlength="128" aria-describedby="register-password-help" required><small id="register-password-help">至少 4 个字符。</small></label>
         <button class="button primary auth-submit" type="submit" data-i="register">Register</button>
         <button class="text-button auth-back" type="button" data-auth-open="login" data-i="login">Log in</button>
       </form>
@@ -263,6 +310,17 @@
       <h2 id="account-title" data-i="account">My account</h2>
       <p id="account-message"></p>
       <div id="account-links" class="dialog-actions"></div>
+      <section id="pawprints-library" hidden>
+        <h3>猫咪足迹库</h3>
+        <div class="pawprints-tabs" role="tablist">
+          <button type="button" class="spec-tab" role="tab" data-paw-tab="favorites" aria-selected="true">♥ 收藏</button>
+          <button type="button" class="spec-tab" role="tab" data-paw-tab="following" aria-selected="false">★ 追踪中</button>
+          <button type="button" class="spec-tab" role="tab" data-paw-tab="discovered" aria-selected="false">我发现的</button>
+        </div>
+        <ul id="pawprints-list" class="pawprints-list"></ul>
+        <p id="pawprints-empty" class="fine" hidden></p>
+        <div id="pawprints-merges"></div>
+      </section>
       <section id="account-collection" class="account-collection" aria-labelledby="account-collection-title" hidden>
         <h3 id="account-collection-title" data-i="myCollection">My collection</h3>
         <p id="account-collection-status" class="fine" role="status" hidden></p>
@@ -279,24 +337,29 @@
       <p id="upload-mode"></p>
       <form id="sighting-form">
         <label><span data-i="name">Cat name</span><input name="name" maxlength="48" required autofocus data-placeholder="nameExample" placeholder="e.g. Milo"></label>
+        <label><span data-i="profilePhoto">Profile photo</span><input name="image" type="file" accept="image/*" required><img id="upload-photo-preview" alt="" hidden style="max-width:100%;max-height:180px;border-radius:12px;margin-top:8px;object-fit:cover;"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
+        <label id="guest-name-field" hidden><span>访客发布昵称（选填，留空显示为匿名）</span><input name="guestName" maxlength="40" placeholder="e.g. 路过的猫友"></label>
         <div class="form-grid">
           <label><span data-i="category">Category</span><select name="category"><option value="stray" data-i="stray">Stray</option><option value="pet" data-i="pet">Pet</option><option value="cafe" data-i="cafe">Café</option></select></label>
-          <label><span data-i="city">City or town</span><input name="city" maxlength="70" required data-placeholder="cityExample" placeholder="e.g. Ipoh"></label>
-        </div>
-        <div class="form-grid">
-          <label><span data-i="ageMonths">Age (months)</span><input name="ageMonths" type="number" min="0" max="480" step="1" data-placeholder="unknown" placeholder="Unknown"></label>
           <label><span data-i="gender">Sex</span><select name="gender"><option value="unknown" data-i="unknown">Unknown</option><option value="female" data-i="female">Female</option><option value="male" data-i="male">Male</option></select></label>
         </div>
-        <label><span data-i="around">Nearby public landmark</span><input name="location" maxlength="100" required data-placeholder="placeExample" placeholder="e.g. Near the town garden"></label>
+        <label id="hide-location-field" class="privacy-toggle-row" hidden>
+          <input name="hideLocation" type="checkbox">
+          <span>隐藏精确位置（家猫隐私保护：地图仅显示附近约 200m–500m 模糊区域）</span>
+        </label>
+        <div class="form-grid">
+          <label><span data-i="city">City or town (optional)</span><input name="city" maxlength="70" data-placeholder="cityExample" placeholder="e.g. Ipoh"></label>
+          <label><span data-i="ageMonths">Age (months)</span><input name="ageMonths" type="number" min="0" max="480" step="1" data-placeholder="unknown" placeholder="Unknown"></label>
+        </div>
+        <label><span data-i="around">Nearby public landmark (optional)</span><input name="location" maxlength="100" data-placeholder="placeExample" placeholder="e.g. Near the town garden"></label>
         <div class="pin-row">
           <button class="button secondary" type="button" id="pick-location" data-i="selectPin">Choose a map pin</button>
           <span id="pin-status" class="fine" data-i="pinNone">No pin selected</span>
         </div>
-        <label><span data-i="observed">Date spotted</span><input name="observed" type="date" required></label>
-        <label><span data-i="profilePhoto">Profile photo</span><input name="image" type="file" accept="image/*"><img id="upload-photo-preview" alt="" hidden style="max-width:100%;max-height:180px;border-radius:12px;margin-top:8px;object-fit:cover;"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
+        <label><span data-i="observed">Date spotted (optional)</span><input name="observed" type="date"></label>
         <label><span data-i="note">Notes (optional)</span><textarea name="note" rows="3" maxlength="450" data-placeholder="noteExample" placeholder="What would help others recognise this cat?"></textarea></label>
         <p id="upload-error" class="error" role="alert" hidden></p>
-        <div class="dialog-actions"><button class="button primary" type="submit" id="submit-sighting" data-i="submit">Submit for review</button></div>
+        <div class="dialog-actions"><button class="button primary" type="submit" id="submit-sighting" data-i="submit">Submit</button></div>
       </form>
     </div>
   </dialog>
