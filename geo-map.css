@@ -2,7 +2,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: #F4EFE6;
+  background: #F0E6D2;
 }
 
 .mana-map::after {
@@ -12,7 +12,7 @@
   z-index: 1;
   pointer-events: none;
   mix-blend-mode: multiply;
-  opacity: 0.08;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' fill='%23d8ccb8'/%3E%3C/svg%3E");
   background-size: 220px 220px;
 }
