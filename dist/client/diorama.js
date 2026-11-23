@@ -55,53 +55,96 @@
     }
   }
 
-  function addTreeIcon(map) {
-    if (map.hasImage('manameow-3d-tree-icon')) return true;
-    const w = 28, h = 36, s = 2;
-    const sheet = document.createElement('canvas');
-    sheet.width = w * s;
-    sheet.height = h * s;
-    const g = sheet.getContext('2d');
-    if (!g) return false;
-    g.scale(s, s);
+  function paintTree(g, ox, oy, scale, shades) {
+    g.save();
+    g.translate(ox, oy);
+    g.scale(scale, scale);
     g.fillStyle = 'rgba(80,90,60,0.22)';
     g.beginPath(); g.ellipse(14, 33, 9, 2.5, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#9C7A55';
     g.fillRect(12.5, 20, 3, 13);
-    const blobs = [[14, 12, 9, '#8FAE68'], [8.5, 17, 6, '#7E9A5D'], [19.5, 17, 6, '#86A562'], [14, 9, 6, '#A3BF7C']];
+    const blobs = [
+      [14, 12, 9, shades[0]],
+      [8.5, 17, 6, shades[1]],
+      [19.5, 17, 6, shades[2]],
+      [14, 9, 6, shades[3]],
+    ];
     for (const [x, y, r, col] of blobs) {
       g.fillStyle = col;
       g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     }
     g.fillStyle = 'rgba(255,250,220,0.45)';
     g.beginPath(); g.arc(11, 8, 2.4, 0, Math.PI * 2); g.fill();
-    map.addImage('manameow-3d-tree-icon', g.getImageData(0, 0, sheet.width, sheet.height), { pixelRatio: s });
+    g.restore();
+  }
+
+  function addTreeIcons(map) {
+    const s = 2;
+    if (!map.hasImage('manameow-3d-tree-icon')) {
+      const w = 28, h = 36;
+      const sheet = document.createElement('canvas');
+      sheet.width = w * s;
+      sheet.height = h * s;
+      const g = sheet.getContext('2d');
+      if (!g) return false;
+      g.scale(s, s);
+      paintTree(g, 0, 0, 1, ['#8FAE68', '#7E9A5D', '#86A562', '#A3BF7C']);
+      map.addImage('manameow-3d-tree-icon', g.getImageData(0, 0, sheet.width, sheet.height), { pixelRatio: s });
+    }
+    if (!map.hasImage('manameow-3d-grove-icon')) {
+      const w = 52, h = 42;
+      const sheet = document.createElement('canvas');
+      sheet.width = w * s;
+      sheet.height = h * s;
+      const g = sheet.getContext('2d');
+      if (!g) return false;
+      g.scale(s, s);
+      paintTree(g, 2, 4, 0.85, ['#7E9A5D', '#6F8B50', '#799458', '#94B16E']);
+      paintTree(g, 24, 3, 0.9, ['#8FAE68', '#7D995C', '#86A462', '#A6C280']);
+      paintTree(g, 12, 8, 0.95, ['#98B670', '#83A060', '#8CA967', '#B2CC8A']);
+      map.addImage('manameow-3d-grove-icon', g.getImageData(0, 0, sheet.width, sheet.height), { pixelRatio: s });
+    }
     return true;
   }
 
   function addTreeLayers(map) {
-    if (!map.getSource('openmaptiles') || !addTreeIcon(map)) return;
+    if (!map.getSource('openmaptiles') || !addTreeIcons(map)) return;
     const all = (map.getStyle() || {}).layers || [];
     const firstBlock = all.find(l => l.type === 'fill-extrusion');
     const before = firstBlock ? firstBlock.id : undefined;
-    const icon = {
-      'icon-image': 'manameow-3d-tree-icon',
+    const baseLayout = {
       'icon-anchor': 'bottom',
       'icon-pitch-alignment': 'viewport',
       'icon-rotation-alignment': 'viewport',
-      'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.55, 16, 0.9, 18, 1.2],
-      'symbol-placement': 'line',
-      'symbol-spacing': 30,
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'icon-padding': 0,
       visibility: 'none',
     };
-    const add = (id, sourceLayer, filter) => {
+    const add = (id, sourceLayer, { filter, minzoom = 11, placement = 'line', spacing = 14, image = 'manameow-3d-tree-icon', size } = {}) => {
       if (map.getLayer(id)) return;
-      const def = { id, type: 'symbol', source: 'openmaptiles', 'source-layer': sourceLayer, minzoom: 13, layout: icon };
+      const layout = {
+        ...baseLayout,
+        'icon-image': image,
+        'icon-size': size || ['interpolate', ['linear'], ['zoom'], 11, 0.42, 14, 0.72, 17, 1.05, 19, 1.3],
+        'symbol-placement': placement,
+      };
+      if (placement === 'line') layout['symbol-spacing'] = spacing;
+      const def = { id, type: 'symbol', source: 'openmaptiles', 'source-layer': sourceLayer, minzoom, layout };
       if (filter) def.filter = filter;
       try { map.addLayer(def, before); } catch (e) {}
     };
-    add('manameow-3d-trees-park', 'park');
-    add('manameow-3d-trees-wood', 'landcover', ['==', ['get', 'class'], 'wood']);
+    const woodFilter = ['==', ['get', 'class'], 'wood'];
+    const grassFilter = ['==', ['get', 'class'], 'grass'];
+    const greenLanduseFilter = ['in', ['get', 'class'], ['literal', ['cemetery', 'school', 'hospital', 'pitch', 'stadium', 'track']]];
+
+    add('manameow-3d-trees-wood-edge', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'line', spacing: 12, image: 'manameow-3d-grove-icon' });
+    add('manameow-3d-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
+    add('manameow-3d-trees-park-edge', 'park', { minzoom: 11, placement: 'line', spacing: 14, image: 'manameow-3d-tree-icon' });
+    add('manameow-3d-trees-park-center', 'park', { minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
+    add('manameow-3d-trees-grass-edge', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'line', spacing: 18, image: 'manameow-3d-tree-icon' });
+    add('manameow-3d-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'point', image: 'manameow-3d-grove-icon' });
+    add('manameow-3d-trees-landuse', 'landuse', { filter: greenLanduseFilter, minzoom: 13, placement: 'line', spacing: 20, image: 'manameow-3d-tree-icon' });
   }
 
   function setMode(map, tilted) {
