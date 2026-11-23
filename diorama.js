@@ -3,18 +3,20 @@
 
   // Cozy 16-bit pixel-art palette matching the approved ManaMeow mockup
   const C = {
-    paper: '#F0E6D2',
-    park: '#A4C373',
-    lawn: '#B5CE84',
-    forest: '#85AC5C',
-    water: '#7CC2B6',
-    shore: '#EFE5CE',
-    roadMain: '#F4EBDA',
-    roadMinor: '#ECE0CA',
-    roadEdge: '#B39E84',
-    flatHouse: '#F4DFC0',
-    flatHouseEdge: '#9F8365',
-    blockHouse: '#F4DFC0',
+    ground: '#C2D593',       // soft pastel meadow ground so cream roads & buildings pop
+    residential: '#CBD9A3',  // slightly lighter grassy neighborhood blocks
+    park: '#A4C373',         // lush moss green park
+    lawn: '#B5CE84',         // lighter grass
+    forest: '#85AC5C',       // rich pixel woodland green
+    water: '#7CC2B6',        // celadon aqua
+    shore: '#EFE5CE',        // warm cream bank
+    roadMain: '#F9F2E2',     // warm cream main road
+    roadMinor: '#F3E9D4',    // warm light-sand minor road
+    roadEdge: '#8D745C',     // crisp pixel warm-brown road outline
+    roadDash: '#CFC0A6',     // subtle pixel road centerline
+    flatHouse: '#F5E1C2',    // warm cream-butter building fill
+    flatHouseEdge: '#8D7156',// crisp pixel warm-brown building outline
+    roofTop: '#FBF1DF',      // bright warm-cream flat roof in 3D
   };
 
   function setColor(map, id, prop, value) {
@@ -38,29 +40,23 @@
 
   function drawPixelTree(px, ox, oy, shades) {
     const [out, dark, mid, light] = shades;
-    // Ground shadow
     px(ox + 3, oy + 18, 10, 2, 'rgba(74,90,58,0.28)');
-    // Trunk
     px(ox + 6, oy + 14, 4, 5, '#57402D');
     px(ox + 7, oy + 14, 2, 4, '#8E6849');
-    // Canopy outline (rounded 16-bit tree silhouette)
     px(ox + 5, oy + 1, 6, 1, out);
     px(ox + 3, oy + 2, 10, 1, out);
     px(ox + 2, oy + 3, 12, 2, out);
     px(ox + 1, oy + 5, 14, 7, out);
     px(ox + 2, oy + 12, 12, 2, out);
     px(ox + 4, oy + 14, 8, 1, out);
-    // Mid foliage fill
     px(ox + 5, oy + 2, 6, 1, mid);
     px(ox + 3, oy + 3, 10, 2, mid);
     px(ox + 2, oy + 5, 12, 7, mid);
     px(ox + 4, oy + 12, 8, 2, mid);
-    // Bottom-right shading
     px(ox + 3, oy + 11, 10, 2, dark);
     px(ox + 10, oy + 7, 4, 4, dark);
     px(ox + 11, oy + 5, 2, 3, dark);
     px(ox + 4, oy + 12, 8, 1, dark);
-    // Top-left highlights
     px(ox + 5, oy + 2, 5, 2, light);
     px(ox + 3, oy + 4, 6, 3, light);
     px(ox + 4, oy + 3, 2, 1, '#CFE59B');
@@ -73,29 +69,24 @@
     const dark = '#7AA352';
     const light = '#B2D282';
     px(2, 17, 28, 2, 'rgba(74,90,58,0.20)');
-    // Hill silhouette
     px(11, 2, 10, 1, out);
     px(8, 3, 16, 1, out);
     px(6, 4, 20, 2, out);
     px(4, 6, 24, 3, out);
     px(2, 9, 28, 4, out);
     px(1, 13, 30, 4, out);
-    // Fill
     px(11, 3, 10, 1, mid);
     px(8, 4, 16, 2, mid);
     px(6, 6, 20, 3, mid);
     px(4, 9, 24, 4, mid);
     px(2, 13, 28, 4, mid);
-    // Right shade
     px(18, 5, 5, 2, dark);
     px(20, 7, 6, 3, dark);
     px(22, 10, 6, 3, dark);
     px(23, 13, 6, 4, dark);
-    // Left highlight
     px(11, 3, 6, 2, light);
     px(8, 5, 6, 2, light);
     px(6, 7, 5, 2, light);
-    // Pixel grass dots
     px(10, 11, 2, 1, dark);
     px(16, 13, 2, 1, dark);
     px(7, 14, 1, 1, dark);
@@ -145,6 +136,38 @@
       });
       if (c) map.addImage('manameow-pixel-grass-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
+    // 16-bit pixel-art warm cream building wall with tiny cozy windows (for 3D walls)
+    if (!map.hasImage('manameow-pixel-wall-tile')) {
+      const c = makePixelCanvas(16, 16, s, px => {
+        px(0, 0, 16, 16, '#F2DAB4');
+        // Subtle horizontal floor band
+        px(0, 0, 16, 1, '#D8BC95');
+        px(0, 8, 16, 1, '#E6CCA5');
+        // Two cute pixel windows on upper row
+        for (const wx of [2, 10]) {
+          px(wx, 2, 4, 5, '#8D7156');
+          px(wx + 1, 3, 2, 3, '#C7B69B');
+          px(wx + 1, 3, 1, 1, '#EDE4D1');
+        }
+        // Two cute pixel windows on lower row
+        for (const wx of [2, 10]) {
+          px(wx, 10, 4, 5, '#8D7156');
+          px(wx + 1, 11, 2, 3, '#C7B69B');
+          px(wx + 1, 11, 1, 1, '#EDE4D1');
+        }
+      });
+      if (c) map.addImage('manameow-pixel-wall-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
+    }
+    // Subtle 2D pixel roof tile
+    if (!map.hasImage('manameow-pixel-roof-tile')) {
+      const c = makePixelCanvas(16, 16, s, px => {
+        px(0, 0, 16, 16, '#F6E4C6');
+        px(0, 0, 16, 1, '#EBD4B0');
+        px(0, 8, 16, 1, '#EFE0C2');
+        px(2, 2, 3, 2, '#E5CCA6');
+      });
+      if (c) map.addImage('manameow-pixel-roof-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
+    }
     return true;
   }
 
@@ -153,8 +176,8 @@
       map.setLight({
         anchor: 'viewport',
         color: '#FFF8E8',
-        intensity: 0.42,
-        position: [1.3, 215, 45],
+        intensity: 0.38,
+        position: [1.3, 215, 48],
       });
     } catch (e) {}
 
@@ -172,7 +195,7 @@
       if (id.startsWith('manameow-')) continue;
 
       if (layer.type === 'background') {
-        setColor(map, id, 'background-color', C.paper);
+        setColor(map, id, 'background-color', C.ground);
       } else if (layer.type === 'fill') {
         if (id.includes('water')) {
           setColor(map, id, 'fill-color', C.water);
@@ -185,27 +208,33 @@
         } else if (/grass|meadow|pitch|wetland|cemetery/.test(id)) {
           setColor(map, id, 'fill-color', C.lawn);
         } else if (layer['source-layer'] === 'building' || id.includes('building')) {
-          setColor(map, id, 'fill-color', C.flatHouse);
-          setColor(map, id, 'fill-outline-color', C.flatHouseEdge);
-        } else if (/residential|landuse|hospital|school/.test(id)) {
-          setColor(map, id, 'fill-color', C.paper);
+          // Hide liberty's default building fill (replaced by our crisp pixel building layers)
+          try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
+        } else if (id.includes('residential')) {
+          setColor(map, id, 'fill-color', C.residential);
+          setColor(map, id, 'fill-opacity', 0.85);
+        } else if (/landuse|hospital|school|aeroway/.test(id)) {
+          setColor(map, id, 'fill-color', C.residential);
+          setColor(map, id, 'fill-opacity', 0.65);
         }
       } else if (layer.type === 'line') {
         if (id.includes('waterway')) {
           setColor(map, id, 'line-color', C.water);
-        } else if (/road|bridge|tunnel|highway/.test(id) && !/rail|path|stitches/.test(id)) {
-          if (id.includes('casing')) setColor(map, id, 'line-color', C.roadEdge);
-          else if (/motorway|trunk|primary/.test(id)) setColor(map, id, 'line-color', C.roadMain);
-          else setColor(map, id, 'line-color', C.roadMinor);
+        } else if (/road|bridge|tunnel|highway/.test(id) && !/rail|stitches/.test(id)) {
+          if (id.includes('casing')) {
+            setColor(map, id, 'line-color', C.roadEdge);
+            setColor(map, id, 'line-opacity', 1);
+          } else if (id.includes('path')) {
+            setColor(map, id, 'line-color', '#E5D3B3');
+          } else if (/motorway|trunk|primary/.test(id)) {
+            setColor(map, id, 'line-color', C.roadMain);
+          } else {
+            setColor(map, id, 'line-color', C.roadMinor);
+          }
         }
       } else if (layer.type === 'fill-extrusion') {
-        // Uniform warm-cream flat-roof pixel-style blocks in 3D mode
-        try { map.setLayerZoomRange(id, 14, 24); } catch (e) {}
-        setColor(map, id, 'fill-extrusion-color', C.blockHouse);
-        setColor(map, id, 'fill-extrusion-height', 11);
-        setColor(map, id, 'fill-extrusion-base', 0);
-        setColor(map, id, 'fill-extrusion-opacity', 1);
-        setColor(map, id, 'fill-extrusion-vertical-gradient', true);
+        // Hide liberty's default 3D extrusion (replaced by our uniform pixel 3D buildings)
+        try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
       }
     }
   }
@@ -218,7 +247,7 @@
       return idx >= 0 ? all[idx + 1]?.id : undefined;
     };
 
-    // Pixel water ripples & grass tufts (visible in both 2D & 3D)
+    // 1. Pixel water ripples & grass tufts
     const waterLayer = all.find(l => l.id === 'water');
     if (waterLayer && !map.getLayer('manameow-pixel-water')) {
       try {
@@ -240,9 +269,165 @@
       } catch (e) {}
     }
 
-    // Lush pixel-art trees & groves (visible in both 2D & 3D, upright in 3D!)
-    const firstBlock = all.find(l => l.type === 'fill-extrusion');
-    const before = firstBlock ? firstBlock.id : undefined;
+    // 2. Crisp pixel-art road outlines & cream surface (guaranteed visible at street zoom 12-20)
+    const firstBuilding = all.find(l => l['source-layer'] === 'building' || l.type === 'fill-extrusion');
+    const beforeBuildings = firstBuilding ? firstBuilding.id : undefined;
+    const roadClasses = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor', 'service', 'track'];
+    const roadFilter = ['in', ['get', 'class'], ['literal', roadClasses]];
+
+    if (!map.getLayer('manameow-pixel-road-casing')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-road-casing',
+          type: 'line',
+          source: 'openmaptiles',
+          'source-layer': 'transportation',
+          minzoom: 12,
+          filter: roadFilter,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': C.roadEdge,
+            'line-width': [
+              'interpolate', ['exponential', 1.5], ['zoom'],
+              12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 5, ['secondary', 'tertiary'], 3.5, 2.2],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 18, ['secondary', 'tertiary'], 14, 10],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 34, ['secondary', 'tertiary'], 26, 20],
+            ],
+          },
+        }, beforeBuildings);
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-pixel-road-fill')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-road-fill',
+          type: 'line',
+          source: 'openmaptiles',
+          'source-layer': 'transportation',
+          minzoom: 12,
+          filter: roadFilter,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], C.roadMain, C.roadMinor],
+            'line-width': [
+              'interpolate', ['exponential', 1.5], ['zoom'],
+              12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 3, ['secondary', 'tertiary'], 2, 1.2],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 14, ['secondary', 'tertiary'], 10.5, 7],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 28, ['secondary', 'tertiary'], 21, 15.5],
+            ],
+          },
+        }, beforeBuildings);
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-pixel-road-dash')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-road-dash',
+          type: 'line',
+          source: 'openmaptiles',
+          'source-layer': 'transportation',
+          minzoom: 14,
+          filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary', 'tertiary']]],
+          layout: { 'line-cap': 'butt', 'line-join': 'round' },
+          paint: {
+            'line-color': C.roadDash,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1, 18, 2],
+            'line-dasharray': [3, 3],
+            'line-opacity': 0.85,
+          },
+        }, beforeBuildings);
+      } catch (e) {}
+    }
+
+    // 3. Crisp 2D pixel-art buildings (ALWAYS visible at zoom 13-24 with shadow + roof + brown outline)
+    if (!map.getLayer('manameow-pixel-building-shadow')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-building-shadow',
+          type: 'fill',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 13,
+          paint: {
+            'fill-color': 'rgba(110, 88, 66, 0.28)',
+            'fill-translate': [4, 4],
+          },
+        });
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-pixel-building-fill')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-building-fill',
+          type: 'fill',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 13,
+          paint: {
+            'fill-pattern': 'manameow-pixel-roof-tile',
+            'fill-opacity': 1,
+          },
+        });
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-pixel-building-outline')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-building-outline',
+          type: 'line',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 13,
+          layout: { 'line-join': 'miter' },
+          paint: {
+            'line-color': C.flatHouseEdge,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.1, 16, 2.0, 18, 2.6],
+          },
+        });
+      } catch (e) {}
+    }
+
+    // 4. Uniform 3D pixel-art buildings (visible in 3D tilted mode only: windowed cream walls + clean cream flat roof)
+    if (!map.getLayer('manameow-3d-building-walls')) {
+      try {
+        map.addLayer({
+          id: 'manameow-3d-building-walls',
+          type: 'fill-extrusion',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 13,
+          layout: { visibility: 'none' },
+          paint: {
+            'fill-extrusion-pattern': 'manameow-pixel-wall-tile',
+            'fill-extrusion-base': 0,
+            'fill-extrusion-height': 10.5,
+            'fill-extrusion-opacity': 1,
+            'fill-extrusion-vertical-gradient': true,
+          },
+        });
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-3d-building-roof')) {
+      try {
+        map.addLayer({
+          id: 'manameow-3d-building-roof',
+          type: 'fill-extrusion',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 13,
+          layout: { visibility: 'none' },
+          paint: {
+            'fill-extrusion-color': C.roofTop,
+            'fill-extrusion-base': 10.5,
+            'fill-extrusion-height': 11.8,
+            'fill-extrusion-opacity': 1,
+            'fill-extrusion-vertical-gradient': false,
+          },
+        });
+      } catch (e) {}
+    }
+
+    // 5. Lush pixel-art trees & groves
     const baseLayout = {
       'icon-anchor': 'bottom',
       'icon-pitch-alignment': 'viewport',
@@ -251,7 +436,7 @@
       'icon-ignore-placement': true,
       'icon-padding': 0,
     };
-    const add = (id, sourceLayer, { filter, minzoom = 11, placement = 'line', spacing = 14, image = 'manameow-3d-tree-icon' } = {}) => {
+    const addTree = (id, sourceLayer, { filter, minzoom = 11, placement = 'line', spacing = 14, image = 'manameow-3d-tree-icon' } = {}) => {
       if (map.getLayer(id)) return;
       const layout = {
         ...baseLayout,
@@ -262,27 +447,26 @@
       if (placement === 'line') layout['symbol-spacing'] = spacing;
       const def = { id, type: 'symbol', source: 'openmaptiles', 'source-layer': sourceLayer, minzoom, layout };
       if (filter) def.filter = filter;
-      try { map.addLayer(def, before); } catch (e) {}
+      try { map.addLayer(def); } catch (e) {}
     };
     const woodFilter = ['==', ['get', 'class'], 'wood'];
     const grassFilter = ['==', ['get', 'class'], 'grass'];
     const greenLanduseFilter = ['in', ['get', 'class'], ['literal', ['cemetery', 'school', 'hospital', 'pitch', 'stadium', 'track']]];
 
-    add('manameow-pixel-trees-wood-edge', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'line', spacing: 11, image: 'manameow-3d-grove-icon' });
-    add('manameow-pixel-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
-    add('manameow-pixel-trees-park-edge', 'park', { minzoom: 11, placement: 'line', spacing: 13, image: 'manameow-3d-tree-icon' });
-    add('manameow-pixel-trees-park-center', 'park', { minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
-    add('manameow-pixel-trees-grass-edge', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'line', spacing: 18, image: 'manameow-3d-tree-icon' });
-    add('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'point', image: 'manameow-3d-grove-icon' });
-    add('manameow-pixel-trees-landuse', 'landuse', { filter: greenLanduseFilter, minzoom: 13, placement: 'line', spacing: 20, image: 'manameow-3d-tree-icon' });
+    addTree('manameow-pixel-trees-wood-edge', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'line', spacing: 11, image: 'manameow-3d-grove-icon' });
+    addTree('manameow-pixel-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
+    addTree('manameow-pixel-trees-park-edge', 'park', { minzoom: 11, placement: 'line', spacing: 13, image: 'manameow-3d-tree-icon' });
+    addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
+    addTree('manameow-pixel-trees-grass-edge', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'line', spacing: 18, image: 'manameow-3d-tree-icon' });
+    addTree('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'point', image: 'manameow-3d-grove-icon' });
+    addTree('manameow-pixel-trees-landuse', 'landuse', { filter: greenLanduseFilter, minzoom: 13, placement: 'line', spacing: 20, image: 'manameow-3d-tree-icon' });
   }
 
   function setMode(map, tilted) {
-    const all = (map.getStyle() || {}).layers || [];
-    const show = tilted ? 'visible' : 'none';
-    for (const layer of all) {
-      if (layer.type === 'fill-extrusion') {
-        try { map.setLayoutProperty(layer.id, 'visibility', show); } catch (e) {}
+    const show3d = tilted ? 'visible' : 'none';
+    for (const id of ['manameow-3d-building-walls', 'manameow-3d-building-roof']) {
+      if (map.getLayer(id)) {
+        try { map.setLayoutProperty(id, 'visibility', show3d); } catch (e) {}
       }
     }
   }
