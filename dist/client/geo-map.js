@@ -15,14 +15,14 @@
   const DEGREES = Math.PI / 180;
 
   const colors = {
-    paper: '#F5F0E6',
-    ocean: '#85CFC2',
-    river: '#76C1B4',
-    woodland: '#92BC66',
-    grass: '#B5D586',
-    park: '#A1C972',
-    parkEdge: '#82A85A',
-    neighborhood: '#EFE7DA',
+    paper: '#F4EFE6', // warm cream paper
+    ocean: '#9ED2C6', // soft aqua
+    river: '#9ED2C6', // same as ocean
+    woodland: '#B7CF9B', // low‑saturation mint
+    grass: '#B7CF9B', // reuse pastel green
+    park: '#B7CF9B', // pastel green for parks
+    parkEdge: '#B7CF9B',
+    neighborhood: '#EFE7DA', // light neutral
     border: '#B8A69E',
   };
 
