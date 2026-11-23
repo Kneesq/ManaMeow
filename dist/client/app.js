@@ -141,19 +141,26 @@
   dateInput.max = today;
   dateInput.value = today;
 
+  const tiltButton = $('#tilt-map');
   const map = window.createManaMap?.(mapElement, {
     cards: state.cats,
     select: id => {
       if (state.picking) return;
       const currentZoom = map?.center?.()?.zoom ?? 0;
       map?.select(id);
-      if (currentZoom >= 13.5) openCat(id);
+      if (currentZoom >= 16) openCat(id);
     },
     onPick: acceptPin,
+    onTiltChange: tilted => {
+      if (!tiltButton) return;
+      tiltButton.setAttribute('aria-pressed', String(tilted));
+      tiltButton.textContent = tilted ? '2D' : '3D';
+    },
     translate: t
   });
   $('#zoom-in').addEventListener('click', () => map?.zoomBy(1.6));
   $('#zoom-out').addEventListener('click', () => map?.zoomBy(1/1.6));
+  tiltButton?.addEventListener('click', () => map?.toggleTilt?.());
   $('#reset-map').addEventListener('click', () => map?.reset());
 
 

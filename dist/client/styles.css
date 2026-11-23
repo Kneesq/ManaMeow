@@ -130,6 +130,8 @@ ul { list-style: none; padding: 0; }
 .locate-icon::before { width: 2px; height: 5px; top: -5px; left: 5.3px; box-shadow: 0 17.5px currentColor; }
 .locate-icon::after { width: 5px; height: 2px; top: 5.3px; left: -5px; box-shadow: 17.5px 0 currentColor; }
 .map-tools #locate-map[aria-busy=true] { background: var(--paper); color: var(--orange); }
+.map-tools #tilt-map { font-size: 13px; letter-spacing: -.02em; }
+.map-tools #tilt-map[aria-pressed=true] { background: var(--paper); color: var(--orange); }
 .map-instruction { position: absolute; top: calc(var(--edge-top) + var(--toolbar-extra-row) + 55px); left: 50%; transform: translateX(-50%); z-index: 3; width: max-content; max-width: calc(100% - var(--edge-start) - var(--edge-end)); padding: 7px 10px; border-radius: 11px; background: var(--card); box-shadow: var(--shadow); font-size: .87rem; }
 .text-button { min-height: 32px; padding-inline: 7px; border: 0; background: transparent; color: var(--orange); text-decoration: underline; }
 

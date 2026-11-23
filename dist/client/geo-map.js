@@ -5,12 +5,12 @@
   const STYLE = 'https://tiles.openfreemap.org/styles/liberty';
   const HOME_BOUNDS = [[99.6, 0.9], [104.75, 6.55]];
   const MIN_ZOOM = 4;
-  const MAX_ZOOM = 17;
+  const MAX_ZOOM = 19;
   const OVERVIEW_PITCH = 0;
   const OVERVIEW_BEARING = 0;
-  const FOCUS_ZOOM = 15.6;
-  const FOCUS_PITCH = 50;
-  const FOCUS_BEARING = -25;
+  const FOCUS_ZOOM = 17.5;
+  const TILT_PITCH = 55;
+  const TILT_BEARING = -30;
   const MAX_PITCH = 65;
   const DEGREES = Math.PI / 180;
 
@@ -480,7 +480,7 @@
     };
   }
 
-  function createManaMap(container, { cards = [], select: selectCard, onPick, translate } = {}) {
+  function createManaMap(container, { cards = [], select: selectCard, onPick, onTiltChange, translate } = {}) {
     const canvas = document.createElement('canvas');
     const engine = document.createElement('div');
     const pinLayer = document.createElement('div');
@@ -641,6 +641,27 @@
       return { ...camera };
     }
 
+    let lastTilted = false;
+    function syncTiltState() {
+      const tilted = Boolean(loaded && map && map.getPitch() >= 20);
+      if (tilted !== lastTilted) {
+        lastTilted = tilted;
+        onTiltChange?.(tilted);
+      }
+    }
+
+    function toggleTilt() {
+      if (!loaded || !map) return false;
+      const nextTilted = map.getPitch() < 20;
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      map.easeTo({
+        pitch: nextTilted ? TILT_PITCH : OVERVIEW_PITCH,
+        bearing: nextTilted ? TILT_BEARING : OVERVIEW_BEARING,
+        duration: reduceMotion ? 0 : 450,
+      });
+      return nextTilted;
+    }
+
     function select(id) {
       selectedId = id;
       const match = pins.find(({ card }) => card.id === id);
@@ -653,17 +674,13 @@
           map.flyTo({
             center: [camera.lng, camera.lat],
             zoom: camera.zoom,
-            pitch: FOCUS_PITCH,
-            bearing: FOCUS_BEARING,
-            duration: reduceMotion ? 0 : 900,
+            duration: reduceMotion ? 0 : 850,
             essential: true,
           });
         } else if (map) {
           map.jumpTo({
             center: [camera.lng, camera.lat],
             zoom: camera.zoom,
-            pitch: FOCUS_PITCH,
-            bearing: FOCUS_BEARING,
           });
         }
       }
@@ -836,7 +853,7 @@
       map.on('webglcontextlost', showFallback);
       map.on('webglcontextrestored', () => requestAnimationFrame(connectMap));
       map.on('move', scheduleRender);
-      map.on('pitch', scheduleRender);
+      map.on('pitch', () => { syncTiltState(); scheduleRender(); });
       map.on('rotate', scheduleRender);
       map.on('movestart', event => { if (event.originalEvent) atHome = false; });
       map.on('click', ({ lngLat }) => { if (picking) onPick?.({ lng: lngLat.lng, lat: lngLat.lat }); });
@@ -851,7 +868,7 @@
     window.addEventListener('offline', showFallback);
     connectMap();
 
-    return { setCards, select, zoomBy, reset, setPicking, center };
+    return { setCards, select, zoomBy, reset, setPicking, center, toggleTilt };
   }
 
   window.createManaMap = createManaMap;
