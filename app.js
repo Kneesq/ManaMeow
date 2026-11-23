@@ -244,9 +244,22 @@
     sampleNote: cat => cat.sample && sampleNotes[state.lang]?.[samples.findIndex(item => item.id === cat.id)],
   });
 
+  const specFeatures = window.createManaSpecFeatures?.({
+    getCats: () => state.cats,
+    getAccount: () => state.account,
+    requestLogin: showEmailLogin,
+    request,
+    refreshCats,
+    focusCat: id => map?.select?.(id, { onArrive: () => openCat(id) }),
+    toast,
+  });
+
   function openCat(id) {
     const cat = state.cats.find(item => item.id === id);
-    if (cat) profiles?.open(cat);
+    if (cat) {
+      profiles?.open(cat);
+      specFeatures?.loadCatSpec(cat);
+    }
   }
 
   const authDialog = $('#auth-dialog');
@@ -543,9 +556,10 @@
       if (state.account.signInUrl) links.append(link(t('signIn'),state.account.signInUrl,false));
       return;
     }
-    message.textContent = state.account.local && state.account.email
-      ? t('signedInAs') + ' ' + state.account.email
+    message.textContent = state.account.local && (state.account.username || state.account.email)
+      ? t('signedInAs') + ' @' + (state.account.username || state.account.email)
       : t('myIntro');
+    specFeatures?.loadPawprints();
     startAccountCollection();
     if (state.account.moderator || state.account.platformModerator) links.append(link(t('review'),'./review',false));
     if (state.account.local) {
@@ -592,14 +606,24 @@
     for (const name of ['name','category','city','location','observed','note','ageMonths','gender']) if (draft[name] != null) form.elements[name].value = draft[name];
     state.pin = draft.pin || null;
   }
-  const online = () => state.account.available && state.account.signedIn;
+  const online = () => Boolean(state.account.available);
+  const guestNameField = $('#guest-name-field');
+  const hideLocationField = $('#hide-location-field');
+  function syncUploadOptionFields() {
+    if (guestNameField) guestNameField.hidden = Boolean(state.account.signedIn);
+    if (hideLocationField) hideLocationField.hidden = form.elements.category?.value !== 'pet';
+  }
+  form.elements.category?.addEventListener('change', syncUploadOptionFields);
+
   async function openUpload() {
     await accountLoad;
-    if (state.account.available && !state.account.signedIn) return openAccount();
     if (state.picking) stopPicking();
     showError('');
-    $('#upload-mode').textContent = t(online() ? 'onlineMode' : 'localMode');
-    submit.textContent = t(online() ? 'submit' : 'saveDraft');
+    syncUploadOptionFields();
+    $('#upload-mode').textContent = state.account.signedIn
+      ? t('onlineMode')
+      : '访客模式：无需登录即可上传猫咪（也可随时注册账号管理档案）';
+    submit.textContent = t('submit');
     renderPin();
     if (!upload.open) upload.showModal();
   }
@@ -618,10 +642,6 @@
   }
   async function startAddCat() {
     await accountLoad;
-    if (state.account.available && !state.account.signedIn) {
-      showEmailLogin(() => startPicking(false));
-      return;
-    }
     startPicking(false);
   }
   $('#add-cat').addEventListener('click', startAddCat);
@@ -714,15 +734,17 @@
     event.preventDefault();
     if (submit.disabled) return;
     showError('');
-    if (!state.pin) return showError(t('needPin'));
+    const pin = state.pin || map?.center?.() || { lat: 3.139, lng: 101.6869 };
     const data = new FormData(form);
     const fields = {};
-    for (const key of ['name','category','city','location','observed','note']) fields[key] = String(data.get(key) || '').trim();
+    for (const key of ['name','category','city','location','observed','note','guestName']) fields[key] = String(data.get(key) || '').trim();
+    if (!fields.observed) fields.observed = today;
     const age = String(data.get('ageMonths') || '').trim();
     fields.ageMonths = age === '' ? null : Number(age);
     fields.gender = String(data.get('gender') || 'unknown');
+    fields.hideLocation = Boolean(data.get('hideLocation'));
     if (!online()) {
-      if (!storage.set('manameow-draft', JSON.stringify({...fields,pin:state.pin}))) return showError(t('failed'));
+      if (!storage.set('manameow-draft', JSON.stringify({...fields,pin}))) return showError(t('failed'));
       upload.close();
       toast(t('draftSaved'));
       return;
@@ -733,7 +755,7 @@
     try {
       fields.image = await encodePhoto(file);
       const result = await request('./api/sightings', {
-        method:'POST', headers:{Accept:'application/json','Content-Type':'application/json'}, body:JSON.stringify({...fields,...state.pin})
+        method:'POST', headers:{Accept:'application/json','Content-Type':'application/json'}, body:JSON.stringify({...fields, lat: pin.lat, lng: pin.lng})
       });
       if (!result?.ok) return showError(result?.payload?.message || t('failed'));
       storage.remove('manameow-draft');
