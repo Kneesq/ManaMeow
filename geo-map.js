@@ -6,53 +6,56 @@
   const HOME_BOUNDS = [[99.6, 0.9], [104.75, 6.55]];
   const MIN_ZOOM = 4;
   const MAX_ZOOM = 17;
+  const DEFAULT_PITCH = 55;
+  const DEFAULT_BEARING = -30;
+  const MAX_PITCH = 65;
   const DEGREES = Math.PI / 180;
 
   const colors = {
-    paper: '#f8edcd',
-    ocean: '#a9d8d2',
-    river: '#90c4ba',
-    woodland: '#b5ce8e',
-    grass: '#dfdf9f',
-    park: '#d0df9f',
-    parkEdge: '#abbc7d',
-    neighborhood: '#f4dbb7',
-    border: '#b19298',
+    paper: '#F5F0E6',
+    ocean: '#85CFC2',
+    river: '#76C1B4',
+    woodland: '#92BC66',
+    grass: '#B5D586',
+    park: '#A1C972',
+    parkEdge: '#82A85A',
+    neighborhood: '#EFE7DA',
+    border: '#B8A69E',
   };
 
   const layerPaint = {
     background: { 'background-color': colors.paper },
-    natural_earth: { 'raster-opacity': ['interpolate', ['linear'], ['zoom'], 0, .25, 5, .15, 7, 0] },
+    natural_earth: { 'raster-opacity': ['interpolate', ['linear'], ['zoom'], 0, .18, 5, .1, 7, 0] },
     water: { 'fill-color': colors.ocean },
     waterway_river: { 'line-color': colors.river },
     waterway_other: { 'line-color': colors.river },
     waterway_tunnel: { 'line-color': colors.river },
-    park: { 'fill-color': colors.park, 'fill-outline-color': colors.parkEdge, 'fill-opacity': .74 },
+    park: { 'fill-color': colors.park, 'fill-outline-color': colors.parkEdge, 'fill-opacity': .84 },
     park_outline: { 'line-color': colors.parkEdge },
-    landcover_wood: { 'fill-color': colors.woodland, 'fill-opacity': .8 },
-    landcover_grass: { 'fill-color': colors.grass, 'fill-opacity': .72 },
-    landuse_residential: { 'fill-color': colors.neighborhood, 'fill-opacity': .72 },
-    landcover_sand: { 'fill-color': '#f3dfa5' },
-    landuse_pitch: { 'fill-color': '#c4d798' },
-    landuse_track: { 'fill-color': '#ebc6a8' },
-    landuse_cemetery: { 'fill-color': '#d7d8a3', 'fill-opacity': .66 },
-    landuse_hospital: { 'fill-color': '#f4dbc1', 'fill-opacity': .57 },
-    landuse_school: { 'fill-color': '#e8ddb0', 'fill-opacity': .62 },
-    aeroway_fill: { 'fill-color': '#e9d9c2' },
-    aeroway_runway: { 'line-color': '#d0bca8' },
-    aeroway_taxiway: { 'line-color': '#d0bca8' },
-    boundary_2: { 'line-color': colors.border, 'line-opacity': .48 },
-    boundary_3: { 'line-color': colors.border, 'line-opacity': .22 },
-    boundary_disputed: { 'line-color': colors.border, 'line-opacity': .38 },
+    landcover_wood: { 'fill-color': colors.woodland, 'fill-opacity': .82 },
+    landcover_grass: { 'fill-color': colors.grass, 'fill-opacity': .78 },
+    landuse_residential: { 'fill-color': colors.neighborhood, 'fill-opacity': .7 },
+    landcover_sand: { 'fill-color': '#EFE2C6' },
+    landuse_pitch: { 'fill-color': '#A8CE78' },
+    landuse_track: { 'fill-color': '#E2B69E' },
+    landuse_cemetery: { 'fill-color': '#C5D59B', 'fill-opacity': .66 },
+    landuse_hospital: { 'fill-color': '#F2DFD3', 'fill-opacity': .62 },
+    landuse_school: { 'fill-color': '#ECE2C6', 'fill-opacity': .64 },
+    aeroway_fill: { 'fill-color': '#EAE0D2' },
+    aeroway_runway: { 'line-color': '#D7C8B8' },
+    aeroway_taxiway: { 'line-color': '#D7C8B8' },
+    boundary_2: { 'line-color': colors.border, 'line-opacity': .4 },
+    boundary_3: { 'line-color': colors.border, 'line-opacity': .2 },
+    boundary_disputed: { 'line-color': colors.border, 'line-opacity': .3 },
   };
   const roadColors = {
-    road_motorway: ['#edb684', '#c59671'],
-    road_motorway_link: ['#edb684', '#c59671'],
-    road_trunk_primary: ['#f6ce94', '#c59e76'],
-    road_secondary_tertiary: ['#ffebb9', '#d2b181'],
-    road_link: ['#ffebb9', '#d2b181'],
-    road_minor: ['#fff7e0', '#d4b998'],
-    road_service_track: ['#fff0cf', '#d8bf9c'],
+    road_motorway: ['#DDA58C', '#BE8871'],
+    road_motorway_link: ['#DDA58C', '#BE8871'],
+    road_trunk_primary: ['#E5B8A0', '#C79B84'],
+    road_secondary_tertiary: ['#F1DFCF', '#D5C2B1'],
+    road_link: ['#F1DFCF', '#D5C2B1'],
+    road_minor: ['#F7F1E7', '#DFD3C3'],
+    road_service_track: ['#F4EDE2', '#DDD1C0'],
   };
   const walkingPaths = new Set(['road_path_pedestrian', 'bridge_path_pedestrian', 'tunnel_path_pedestrian']);
   const stitchedRoads = new Set(['road_motorway', 'road_trunk_primary']);
@@ -97,7 +100,7 @@
   function styleTheMap(_previous, style) {
     const { sprite, glyphs, ...base } = style;
     const layers = style.layers.flatMap(layer => {
-      if (layer.type === 'symbol' || layer['source-layer'] === 'building') return [];
+      if (layer.type === 'symbol') return [];
       if (layer.type === 'line') {
         const road = styleRoad(layer);
         if (stitchedRoads.has(layer.id)) return [road, roadStitches(road)];
@@ -105,12 +108,81 @@
       }
 
       if (layer.id === 'landcover_wetland' || layer.id === 'road_area_pattern') {
-        return [{ ...layer, paint: { 'fill-color': layer.id === 'landcover_wetland' ? '#bfd8a6' : '#f8e6c4' } }];
+        return [{ ...layer, paint: { 'fill-color': layer.id === 'landcover_wetland' ? '#B7CF9B' : '#EFE7DA' } }];
       }
       const custom = layerPaint[layer.id];
       return [custom ? { ...layer, paint: { ...layer.paint, ...custom } } : layer];
     });
     return { ...base, layers };
+  }
+
+  function trySetPaint(map, layerId, prop, value) {
+    try {
+      if (map.getLayer(layerId)) map.setPaintProperty(layerId, prop, value);
+    } catch {}
+  }
+
+  function applyWarmDioramaPalette(map) {
+    const style = map.getStyle();
+    if (!style?.layers) return;
+
+    try {
+      map.setLight({
+        anchor: 'viewport',
+        color: '#FFF5E4',
+        intensity: 0.48,
+        position: [1.35, 225, 42],
+      });
+    } catch {}
+
+    const buildingBucket = ['%', ['floor', ['abs', ['+', ['coalesce', ['to-number', ['id'], 0], 0], ['*', ['coalesce', ['get', 'render_height'], ['get', 'height'], 8], 3]]]], 6];
+    const warmBuildingColor = [
+      'match', buildingBucket,
+      0, '#ECE2D2', // warm cream parchment
+      1, '#D3978F', // dusty terracotta rose
+      2, '#95AEB8', // muted storybook slate-blue
+      3, '#E5BE6E', // warm golden ochre
+      4, '#B4A9B8', // soft lavender-taupe
+      '#DCA68B',    // soft brick peach
+    ];
+
+    for (const layer of style.layers) {
+      const id = layer.id;
+      if (layer.type === 'background' && id !== 'manameow-paper-flecks') {
+        trySetPaint(map, id, 'background-color', colors.paper);
+      } else if (layer.type === 'fill') {
+        if (id.includes('water')) {
+          trySetPaint(map, id, 'fill-color', colors.ocean);
+        } else if (id.includes('park') || id.includes('wood') || id.includes('forest')) {
+          trySetPaint(map, id, 'fill-color', colors.park);
+          trySetPaint(map, id, 'fill-outline-color', colors.parkEdge);
+        } else if (id.includes('grass') || id.includes('meadow') || id.includes('pitch') || id.includes('wetland')) {
+          trySetPaint(map, id, 'fill-color', colors.grass);
+        } else if (layer['source-layer'] === 'building' || id.includes('building')) {
+          trySetPaint(map, id, 'fill-color', '#EFE6D8');
+          trySetPaint(map, id, 'fill-outline-color', '#D8C8B4');
+        } else if (id.includes('residential') || id.includes('landuse')) {
+          trySetPaint(map, id, 'fill-color', colors.neighborhood);
+        }
+      } else if (layer.type === 'line') {
+        if (id.includes('waterway')) {
+          trySetPaint(map, id, 'line-color', colors.river);
+        } else if (id.includes('road') || id.includes('bridge') || id.includes('tunnel') || id.includes('highway')) {
+          if (id.includes('casing')) {
+            trySetPaint(map, id, 'line-color', id.includes('motorway') || id.includes('trunk') || id.includes('primary') ? '#C79B84' : '#DDD0BF');
+          } else if (id.includes('motorway') || id.includes('trunk') || id.includes('primary')) {
+            trySetPaint(map, id, 'line-color', '#E2B198');
+          } else if (!id.includes('stitches') && !id.includes('path') && !id.includes('rail')) {
+            trySetPaint(map, id, 'line-color', '#F7F1E7');
+          }
+        }
+      } else if (layer.type === 'fill-extrusion') {
+        try { map.setLayerZoomRange(id, 13, 24); } catch {}
+        trySetPaint(map, id, 'fill-extrusion-color', warmBuildingColor);
+        trySetPaint(map, id, 'fill-extrusion-opacity', 0.94);
+        trySetPaint(map, id, 'fill-extrusion-vertical-gradient', true);
+      }
+    }
   }
 
   function drawRipple(context, x, y) {
@@ -301,11 +373,11 @@
         brush.stroke();
       }
     });
-    pattern('manameow-park-groves', 'park', zoom([4, .63, 11, .69, 16, .76]), brush => {
-      drawStoryTree(brush, 20, 28, .65, '#acbf7a', '#92a76a');
-      drawStoryTree(brush, 81, 61, .72, '#acbf83', '#8ea774');
-      drawStoryTree(brush, 94, 69, .46, '#bccb89', '#9aae77');
-      drawStoryTree(brush, 39, 104, .52, '#a8b778', '#8e9e62');
+    pattern('manameow-park-groves', 'park', zoom([4, .65, 11, .72, 16, .82]), brush => {
+      drawStoryTree(brush, 20, 28, .66, '#9EC86A', '#7FA854');
+      drawStoryTree(brush, 81, 61, .72, '#E2A84E', '#C98A3D');
+      drawStoryTree(brush, 94, 69, .48, '#A9D174', '#86B05B');
+      drawStoryTree(brush, 39, 104, .54, '#94BE62', '#759D4B');
       for (const [x, y] of [[41, 36], [95, 92], [47, 119], [115, 19], [52, 69]]) {
         storyEllipse(brush, x, y, 2.6, 1.8, '#e6be80');
         storyEllipse(brush, x - 1, y - 1, 1.25, .9, '#fff1ba');
@@ -341,24 +413,7 @@
       });
     }
 
-    if (!map.getSource('openmaptiles')) return;
-    const cottages = [
-      ['manameow-cottage-coral', '#d7896d', '#f8dfae'],
-      ['manameow-cottage-sage', '#8eb09a', '#fae5be'],
-      ['manameow-cottage-lilac', '#ba9cb6', '#f1d3b1'],
-    ];
-    if (!cottages.every(([id, roof, wall]) => storyImage(map, id, 60, 54, brush => drawStoryCottage(brush, roof, wall)))) return;
-    const houseVariant = ['%', ['floor', ['abs', ['to-number', ['id'], ['get', 'render_height'], 0]]], 3];
-    const [coral, sage, lilac] = cottages.map(([id]) => id);
-    map.addLayer({
-      id: 'manameow-cottages', type: 'symbol', source: 'openmaptiles', 'source-layer': 'building', minzoom: 14,
-      layout: {
-        'icon-image': ['image', ['match', houseVariant, 0, coral, 1, sage, lilac]],
-        'icon-size': zoom([14, .4, 16, .52, 17, .66]), 'icon-padding': [7],
-        'icon-rotation-alignment': 'viewport', 'symbol-placement': 'point',
-      },
-      paint: { 'icon-opacity': zoom([14, .78, 15, .96, 17, 1]) },
-    });
+    // Preserve OpenFreeMap liberty 3D buildings without overlaying flat 2D cottages.
   }
 
   // Generalized coastlines for the built-in overview. The streets and boundaries
@@ -509,6 +564,7 @@
         placed.push({ x: x + offset, y });
         button.style.left = `${x + offset}px`;
         button.style.top = `${y}px`;
+        button.style.zIndex = card.id === selectedId ? '10000' : String(Math.max(1, Math.round(y)));
         button.classList.toggle('mana-map__pin--active', card.id === selectedId);
         if (x + offset >= 0 && x + offset <= width && y >= 0 && y <= height) window.loadManaPixelCatCoat?.(button);
       });
@@ -599,7 +655,14 @@
       camera = fallbackCamera(width, height);
       atHome = true;
       selectedId = null;
-      if (loaded) map.jumpTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
+      if (loaded) {
+        map.jumpTo({
+          center: [camera.lng, camera.lat],
+          zoom: camera.zoom,
+          pitch: DEFAULT_PITCH,
+          bearing: DEFAULT_BEARING,
+        });
+      }
       scheduleRender();
     }
 
@@ -711,18 +774,28 @@
     function attachMap({ Map, AttributionControl }) {
       map = new Map({
         container: engine, style: STYLE, center: [camera.lng, camera.lat], zoom: camera.zoom,
-        minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: 0, dragRotate: false,
+        pitch: DEFAULT_PITCH, bearing: DEFAULT_BEARING,
+        minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: MAX_PITCH, dragRotate: true, touchPitch: true,
         renderWorldCopies: false, cooperativeGestures: false, attributionControl: false,
         transformStyle: styleTheMap
       });
       map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
+      map.on('style.load', () => {
+        applyWarmDioramaPalette(map);
+      });
       map.once('load', () => {
         if (!navigator.onLine) {
           showFallback();
           return;
         }
         fallbackLoading = false;
-        map.jumpTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
+        map.jumpTo({
+          center: [camera.lng, camera.lat],
+          zoom: camera.zoom,
+          pitch: DEFAULT_PITCH,
+          bearing: DEFAULT_BEARING,
+        });
+        applyWarmDioramaPalette(map);
         installStorybookArt(map);
         loaded = true;
         container.classList.add('mana-map--online');
@@ -738,6 +811,8 @@
       map.on('webglcontextlost', showFallback);
       map.on('webglcontextrestored', () => requestAnimationFrame(connectMap));
       map.on('move', scheduleRender);
+      map.on('pitch', scheduleRender);
+      map.on('rotate', scheduleRender);
       map.on('movestart', event => { if (event.originalEvent) atHome = false; });
       map.on('click', ({ lngLat }) => { if (picking) onPick?.({ lng: lngLat.lng, lat: lngLat.lat }); });
       map.getCanvas().addEventListener('keydown', event => {
