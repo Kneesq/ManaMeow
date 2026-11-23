@@ -15,15 +15,15 @@
   const DEGREES = Math.PI / 180;
 
   const colors = {
-    paper: '#F4EFE6', // warm cream paper
-    ocean: '#9ED2C6', // soft aqua
-    river: '#9ED2C6', // same as ocean
-    woodland: '#B7CF9B', // low‑saturation mint
-    grass: '#B7CF9B', // reuse pastel green
-    park: '#B7CF9B', // pastel green for parks
-    parkEdge: '#B7CF9B',
-    neighborhood: '#EFE7DA', // light neutral
-    border: '#B8A69E',
+    paper: '#EFECE2', // warm watercolor paper
+    ocean: '#72B2A4', // teal water
+    river: '#72B2A4', // same as ocean
+    woodland: '#7E9A5D', // olive green
+    grass: '#9EB576', // moss green
+    park: '#9EB576', // moss green for parks
+    parkEdge: '#B8C894', // lighter moss edge
+    neighborhood: '#EFECE2', // neutral ground
+    border: '#C5BBA6', // warm gray brown
   };
 
   const layerPaint = {
@@ -52,13 +52,13 @@
     boundary_disputed: { 'line-color': colors.border, 'line-opacity': .3 },
   };
   const roadColors = {
-    road_motorway: ['#DDA58C', '#BE8871'],
-    road_motorway_link: ['#DDA58C', '#BE8871'],
-    road_trunk_primary: ['#E5B8A0', '#C79B84'],
-    road_secondary_tertiary: ['#F1DFCF', '#D5C2B1'],
-    road_link: ['#F1DFCF', '#D5C2B1'],
-    road_minor: ['#F7F1E7', '#DFD3C3'],
-    road_service_track: ['#F4EDE2', '#DDD1C0'],
+    road_motorway: ['#F7F3E8', '#C5BBA6'],
+    road_motorway_link: ['#F7F3E8', '#C5BBA6'],
+    road_trunk_primary: ['#F7F3E8', '#C5BBA6'],
+    road_secondary_tertiary: ['#E2D9C5', '#C5BBA6'],
+    road_link: ['#E2D9C5', '#C5BBA6'],
+    road_minor: ['#E2D9C5', '#C5BBA6'],
+    road_service_track: ['#E2D9C5', '#C5BBA6'],
   };
   const walkingPaths = new Set(['road_path_pedestrian', 'bridge_path_pedestrian', 'tunnel_path_pedestrian']);
   const stitchedRoads = new Set(['road_motorway', 'road_trunk_primary']);
@@ -646,6 +646,7 @@
       const tilted = Boolean(loaded && map && map.getPitch() >= 20);
       if (tilted !== lastTilted) {
         lastTilted = tilted;
+        if (map) window.manaDiorama?.setMode(map, tilted);
         onTiltChange?.(tilted);
       }
     }
@@ -839,6 +840,7 @@
         });
         applyWarmDioramaPalette(map);
         installStorybookArt(map);
+        window.manaDiorama?.apply(map);
         loaded = true;
         container.classList.add('mana-map--online');
         engine.removeAttribute('aria-hidden');
