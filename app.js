@@ -142,7 +142,15 @@
   dateInput.value = today;
 
   const map = window.createManaMap?.(mapElement, {
-    cards: state.cats, select: id => { if (!state.picking) openCat(id); }, onPick: acceptPin, translate: t
+    cards: state.cats,
+    select: id => {
+      if (state.picking) return;
+      const currentZoom = map?.center?.()?.zoom ?? 0;
+      map?.select(id);
+      if (currentZoom >= 13.5) openCat(id);
+    },
+    onPick: acceptPin,
+    translate: t
   });
   $('#zoom-in').addEventListener('click', () => map?.zoomBy(1.6));
   $('#zoom-out').addEventListener('click', () => map?.zoomBy(1/1.6));

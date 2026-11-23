@@ -6,8 +6,11 @@
   const HOME_BOUNDS = [[99.6, 0.9], [104.75, 6.55]];
   const MIN_ZOOM = 4;
   const MAX_ZOOM = 17;
-  const DEFAULT_PITCH = 55;
-  const DEFAULT_BEARING = -30;
+  const OVERVIEW_PITCH = 0;
+  const OVERVIEW_BEARING = 0;
+  const FOCUS_ZOOM = 15.6;
+  const FOCUS_PITCH = 50;
+  const FOCUS_BEARING = -25;
   const MAX_PITCH = 65;
   const DEGREES = Math.PI / 180;
 
@@ -641,7 +644,29 @@
     function select(id) {
       selectedId = id;
       const match = pins.find(({ card }) => card.id === id);
-      if (match) center(match.card, Math.max(center().zoom, 14.4));
+      if (match) {
+        const targetZoom = clamp(Math.max(center().zoom, FOCUS_ZOOM), MIN_ZOOM, MAX_ZOOM);
+        atHome = false;
+        camera = { ...normaliseCenter(match.card), zoom: targetZoom };
+        if (loaded) {
+          const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          map.flyTo({
+            center: [camera.lng, camera.lat],
+            zoom: camera.zoom,
+            pitch: FOCUS_PITCH,
+            bearing: FOCUS_BEARING,
+            duration: reduceMotion ? 0 : 900,
+            essential: true,
+          });
+        } else if (map) {
+          map.jumpTo({
+            center: [camera.lng, camera.lat],
+            zoom: camera.zoom,
+            pitch: FOCUS_PITCH,
+            bearing: FOCUS_BEARING,
+          });
+        }
+      }
       scheduleRender();
     }
 
@@ -659,8 +684,8 @@
         map.jumpTo({
           center: [camera.lng, camera.lat],
           zoom: camera.zoom,
-          pitch: DEFAULT_PITCH,
-          bearing: DEFAULT_BEARING,
+          pitch: OVERVIEW_PITCH,
+          bearing: OVERVIEW_BEARING,
         });
       }
       scheduleRender();
@@ -774,7 +799,7 @@
     function attachMap({ Map, AttributionControl }) {
       map = new Map({
         container: engine, style: STYLE, center: [camera.lng, camera.lat], zoom: camera.zoom,
-        pitch: DEFAULT_PITCH, bearing: DEFAULT_BEARING,
+        pitch: OVERVIEW_PITCH, bearing: OVERVIEW_BEARING,
         minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, maxPitch: MAX_PITCH, dragRotate: true, touchPitch: true,
         renderWorldCopies: false, cooperativeGestures: false, attributionControl: false,
         transformStyle: styleTheMap
@@ -792,8 +817,8 @@
         map.jumpTo({
           center: [camera.lng, camera.lat],
           zoom: camera.zoom,
-          pitch: DEFAULT_PITCH,
-          bearing: DEFAULT_BEARING,
+          pitch: OVERVIEW_PITCH,
+          bearing: OVERVIEW_BEARING,
         });
         applyWarmDioramaPalette(map);
         installStorybookArt(map);
