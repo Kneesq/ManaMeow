@@ -364,26 +364,42 @@
       } catch (e) {}
     }
 
-    // 3. Stylized top-down roofs (terracotta red, chestnut brown, tangerine ochre, slate grey) with shadow + shingle ribs + dark border
+    // 3. Clean architectural top-down roofs (terracotta rose, honey tan, white-rimmed grey & sand flat roofs) + layered diagonal sun shadow
     const roofBucket = [
       '%',
       ['floor', ['abs', ['+', ['coalesce', ['to-number', ['id'], 0], 0], ['*', ['coalesce', ['get', 'render_height'], ['get', 'height'], 6], 7]]]],
-      5,
+      4,
     ];
     const roofColor = [
       'match', roofBucket,
-      0, '#E89B8C', // soft pastel coral-peach
-      1, '#D9A78B', // warm milk-tea caramel
-      2, '#F2BE82', // soft apricot-butter
-      3, '#D3DCE6', // light pastel sky-grey flat roof
-      '#E4B5A0',    // warm blush-cocoa
+      0, '#C47E72', // soft dusty terracotta-rose pitched roof
+      1, '#D3AD7F', // soft warm honey-tan pitched roof
+      2, '#B6BCC4', // clean light concrete-grey flat roof
+      '#C4B29B',    // clean light sand-taupe flat roof
     ];
     const roofOutline = [
       'match', roofBucket,
-      3, '#8E9BAA', // soft slate parapet for grey roofs
-      '#A48472',    // soft warm-taupe border for pastel roofs
+      0, '#9E5E53', // terracotta roof trim
+      1, '#AD895D', // honey-tan roof trim
+      '#FAFBFD',    // crisp white parapet rim for flat concrete/sand roofs
     ];
 
+    // Layered diagonal architectural sun shadows (45 deg bottom-right)
+    if (!map.getLayer('manameow-pixel-building-shadow-far')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-building-shadow-far',
+          type: 'fill',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 13,
+          paint: {
+            'fill-color': 'rgba(54, 60, 52, 0.13)',
+            'fill-translate': ['interpolate', ['linear'], ['zoom'], 13, ['literal', [4, 4]], 16, ['literal', [8, 8]], 19, ['literal', [13, 13]]],
+          },
+        });
+      } catch (e) {}
+    }
     if (!map.getLayer('manameow-pixel-building-shadow')) {
       try {
         map.addLayer({
@@ -393,8 +409,8 @@
           'source-layer': 'building',
           minzoom: 13,
           paint: {
-            'fill-color': 'rgba(110, 96, 82, 0.16)',
-            'fill-translate': [4, 4],
+            'fill-color': 'rgba(54, 60, 52, 0.19)',
+            'fill-translate': ['interpolate', ['linear'], ['zoom'], 13, ['literal', [2, 2]], 16, ['literal', [4.5, 4.5]], 19, ['literal', [7, 7]]],
           },
         });
       } catch (e) {}
