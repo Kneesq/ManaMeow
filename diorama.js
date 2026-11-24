@@ -566,50 +566,35 @@
       } catch (e) {}
     }
 
-    // 1b. Continuous fluffy forest canopy + diagonal sun shadow on large woodland areas
+    // 1b. Clean soft forest fill + diagonal sun shadow on large woodland areas (no tiled pattern that shrinks on zoom)
     const woodLayer = all.find(l => l.id === 'landcover_wood');
-    if (woodLayer) {
-      if (!map.getLayer('manameow-forest-shadow')) {
-        try {
-          map.addLayer({
-            ...woodLayer,
-            id: 'manameow-forest-shadow',
-            paint: {
-              'fill-color': 'rgba(54, 64, 42, 0.16)',
-              'fill-translate': ['interpolate', ['linear'], ['zoom'], 11, ['literal', [3, 3]], 16, ['literal', [6, 6]], 19, ['literal', [9, 9]]],
-            },
-          }, 'landcover_wood');
-        } catch (e) {}
-      }
-      if (!map.getLayer('manameow-forest-canopy')) {
-        try {
-          map.addLayer({
-            ...woodLayer,
-            id: 'manameow-forest-canopy',
-            paint: {
-              'fill-pattern': 'manameow-canopy-forest-tile',
-              'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.55, 13, 0.92, 18, 0.96],
-            },
-          }, nextOf('landcover_wood'));
-        } catch (e) {}
-      }
+    if (woodLayer && !map.getLayer('manameow-forest-shadow')) {
+      try {
+        map.addLayer({
+          ...woodLayer,
+          id: 'manameow-forest-shadow',
+          paint: {
+            'fill-color': 'rgba(54, 64, 42, 0.16)',
+            'fill-translate': ['interpolate', ['linear'], ['zoom'], 11, ['literal', [3, 3]], 16, ['literal', [6, 6]], 19, ['literal', [9, 9]]],
+          },
+        }, 'landcover_wood');
+      } catch (e) {}
     }
 
-    // 5. Well-spaced top-down trees & organic tree clusters (no clutter, with diagonal sun shadows)
-    const baseLayout = {
-      'icon-anchor': 'center',
-      'icon-pitch-alignment': 'map',
-      'icon-rotation-alignment': 'map',
-      'icon-allow-overlap': false,
-      'icon-ignore-placement': false,
-      'icon-padding': 8,
-    };
-    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'line', spacing = 56, image = 'manameow-3d-tree-icon', size } = {}) => {
+    // 5. Top-down shadowed trees: ring around large woodlands + clean park/grass clusters, scaling smoothly with zoom (never shrinking)
+    const treeScale = ['interpolate', ['exponential', 1.75], ['zoom'], 12, 0.38, 15, 0.85, 17, 1.45, 19, 2.3];
+    const clusterScale = ['interpolate', ['exponential', 1.75], ['zoom'], 12, 0.42, 15, 0.92, 17, 1.55, 19, 2.4];
+    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'point', spacing = 44, image = 'manameow-3d-tree-icon', size = treeScale, overlap = false } = {}) => {
       if (map.getLayer(id)) return;
       const layout = {
-        ...baseLayout,
+        'icon-anchor': 'center',
+        'icon-pitch-alignment': 'map',
+        'icon-rotation-alignment': 'map',
+        'icon-allow-overlap': overlap,
+        'icon-ignore-placement': overlap,
+        'icon-padding': overlap ? 0 : 8,
         'icon-image': image,
-        'icon-size': size || ['interpolate', ['linear'], ['zoom'], 12, 0.45, 15, 0.78, 18, 1.15],
+        'icon-size': size,
         'symbol-placement': placement,
       };
       if (placement === 'line') layout['symbol-spacing'] = spacing;
@@ -617,16 +602,33 @@
       if (filter) def.filter = filter;
       try { map.addLayer(def); } catch (e) {}
     };
+    const woodFilter = ['==', ['get', 'class'], 'wood'];
     const grassFilter = ['==', ['get', 'class'], 'grass'];
-    const greenLanduseFilter = ['in', ['get', 'class'], ['literal', ['cemetery', 'school', 'hospital', 'pitch']]];
 
-    // Parks: organic cluster at center + relaxed scattered single trees along borders
-    addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 12, placement: 'point', image: 'manameow-3d-grove-icon', size: ['interpolate', ['linear'], ['zoom'], 12, 0.52, 15, 0.88, 18, 1.25] });
-    addTree('manameow-pixel-trees-park-edge', 'park', { minzoom: 13, placement: 'line', spacing: 58, image: 'manameow-3d-tree-icon' });
-    // Grass patches: occasional cozy cluster in the middle (not crowded edges)
-    addTree('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 13, placement: 'point', image: 'manameow-3d-grove-icon' });
-    // Schools/hospitals/fields: light scattered single trees
-    addTree('manameow-pixel-trees-landuse', 'landuse', { filter: greenLanduseFilter, minzoom: 14, placement: 'line', spacing: 74, image: 'manameow-3d-tree-icon' });
+    // Large woodland areas: wrap a fluffy leafy ring around the perimeter (interior stays clean green)
+    addTree('manameow-pixel-trees-wood-ring', 'landcover', {
+      filter: woodFilter,
+      minzoom: 12,
+      placement: 'line',
+      spacing: 42,
+      image: 'manameow-3d-grove-icon',
+      size: clusterScale,
+      overlap: true,
+    });
+    // Parks & grass: clean organic cluster in the middle (no line clutter)
+    addTree('manameow-pixel-trees-park-center', 'park', {
+      minzoom: 12,
+      placement: 'point',
+      image: 'manameow-3d-grove-icon',
+      size: clusterScale,
+    });
+    addTree('manameow-pixel-trees-grass-center', 'landcover', {
+      filter: grassFilter,
+      minzoom: 13,
+      placement: 'point',
+      image: 'manameow-3d-tree-icon',
+      size: treeScale,
+    });
   }
 
   function setMode(map, tilted) {
