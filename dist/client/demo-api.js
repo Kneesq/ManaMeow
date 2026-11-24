@@ -263,6 +263,8 @@
       const pubCoords = hasCoords && hideLocation ? fuzzCoordinate(rawLat, rawLng) : { lat: rawLat, lng: rawLng };
       const id = makeId('cat');
       const acc = user ? db.accounts[user] : null;
+      const postAnonymous = Boolean(body.postAnonymous);
+      const publicUsername = user && !postAnonymous ? (acc?.username || user) : null;
       const sighting = {
         id,
         name,
@@ -280,8 +282,9 @@
         y: body.y,
         status: 'approved',
         owner: user || null,
-        creatorName: acc ? (acc.username || user) : null,
-        guestName: user ? null : (String(body.guestName || '').trim() || 'Anonymous'),
+        isAnonymous: !publicUsername,
+        creatorName: publicUsername,
+        guestName: user ? (postAnonymous ? 'Anonymous' : null) : (String(body.guestName || '').trim() || 'Anonymous'),
         isLocationHidden: hideLocation,
         createdAt: new Date().toISOString(),
       };
@@ -442,9 +445,12 @@
       const sighting = db.sightings.find((s) => s.id === catId);
       const isPet = sighting?.category === 'pet';
       const isOwner = Boolean(user && sighting && sighting.owner === user);
-      const creatorLabel = sighting
-        ? (sighting.creatorName ? '@' + sighting.creatorName : (sighting.owner ? '@' + sighting.owner : (sighting.guestName || 'Anonymous')))
-        : '@ManaMeow';
+      const creatorUsername = sighting
+        ? (sighting.isAnonymous ? null : (sighting.creatorName || sighting.owner || null))
+        : 'ManaMeow';
+      const creatorLabel = creatorUsername
+        ? '@' + creatorUsername
+        : (sighting?.guestName || 'Anonymous');
       const publicNames = Array.isArray(db.publicNames[catId]) ? db.publicNames[catId] : [];
       const videos = Array.isArray(db.videos[catId]) ? db.videos[catId] : [];
       const userRel = user ? (db.relations[user] || { favorite: [], following: [] }) : { favorite: [], following: [] };
@@ -461,6 +467,7 @@
         isPet,
         isOwner,
         isLocationHidden: Boolean(sighting?.isLocationHidden),
+        creatorUsername,
         creatorLabel,
         publicNames,
         relations: {
@@ -633,6 +640,25 @@
       }
       saveDB(db);
       return jsonResponse({ request: req });
+    }
+
+    // 19. Public User Profile (clicked from Credit by @username)
+    const userProfileMatch = apiPath.match(/^\/api\/users\/([^/]+)\/profile$/);
+    if (userProfileMatch && method === 'GET') {
+      const targetName = decodeURIComponent(userProfileMatch[1]).replace(/^@/, '').trim();
+      const lower = targetName.toLowerCase();
+      const found = findAccount(db, lower);
+      const displayUsername = found?.account?.username || targetName;
+      const discovered = db.sightings.filter((s) => {
+        if (s.mergedIntoCatId || s.isAnonymous) return false;
+        const cname = (s.creatorName || s.owner || '').toLowerCase();
+        return cname === lower || (found && cname === found.key);
+      });
+      return jsonResponse({
+        username: displayUsername,
+        isOfficial: lower === 'manameow',
+        discovered,
+      });
     }
 
     return jsonResponse({ error: 'not_found' }, 404);

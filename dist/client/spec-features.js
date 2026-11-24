@@ -75,7 +75,16 @@
 
     function renderCatSpec(cat, data) {
       if (creditEl) {
-        creditEl.textContent = 'Credit by ' + (data.creatorLabel || '@ManaMeow');
+        creditEl.replaceChildren();
+        creditEl.append('Credit by ');
+        if (data.creatorUsername) {
+          const btn = el('button', 'credit-link', '@' + data.creatorUsername);
+          btn.type = 'button';
+          btn.addEventListener('click', () => openUserProfile(data.creatorUsername));
+          creditEl.append(btn);
+        } else {
+          creditEl.append(el('span', '', data.creatorLabel || 'Anonymous'));
+        }
       }
       if (privacyBadge) {
         privacyBadge.hidden = !(data.isLocationHidden || cat.isLocationHidden);
@@ -380,6 +389,63 @@
       }
     }
 
-    return { loadCatSpec, loadPawprints };
+    // Public User Profile Dialog (opened by clicking Credit by @username)
+    const userDialog = $('#user-profile-dialog');
+    const userTitle = $('#user-profile-title');
+    const userSubtitle = $('#user-profile-subtitle');
+    const userCatsList = $('#user-profile-cats');
+    const userCatsEmpty = $('#user-profile-empty');
+
+    async function openUserProfile(username) {
+      if (!userDialog || !username) return;
+      const clean = String(username).replace(/^@/, '').trim();
+      if (userTitle) userTitle.textContent = '@' + clean;
+      if (userSubtitle) userSubtitle.textContent = '加载中…';
+      if (userCatsList) userCatsList.replaceChildren();
+      if (userCatsEmpty) userCatsEmpty.hidden = true;
+      const catDialog = $('#cat-dialog');
+      if (catDialog?.open) catDialog.close();
+      if (!userDialog.open) userDialog.showModal();
+
+      const res = await request('./api/users/' + encodeURIComponent(clean) + '/profile');
+      if (!res?.ok) {
+        if (userSubtitle) userSubtitle.textContent = '暂时无法读取该用户档案。';
+        return;
+      }
+      const payload = res.payload;
+      let items = payload.discovered || [];
+      if (payload.isOfficial && !items.length) {
+        items = getCats().filter((c) => c.sample);
+      }
+      if (userTitle) userTitle.textContent = '@' + (payload.username || clean);
+      if (userSubtitle) {
+        userSubtitle.textContent = payload.isOfficial
+          ? `ManaMeow 官方示例猫咪（共 ${items.length} 只）`
+          : `已发现并公开分享的猫咪（共 ${items.length} 只）`;
+      }
+      if (userCatsEmpty) userCatsEmpty.hidden = items.length > 0;
+      if (userCatsList) {
+        userCatsList.replaceChildren(...items.map((cat) => {
+          const li = el('li', 'pawprints-item');
+          if (cat.image) {
+            const img = document.createElement('img');
+            img.src = cat.image;
+            img.alt = '';
+            li.append(img);
+          }
+          const info = el('div', 'pawprints-item-info');
+          info.append(el('strong', '', cat.name));
+          info.append(el('span', '', [cat.category === 'pet' ? '家猫' : '街猫', cat.city || cat.location].filter(Boolean).join(' · ')));
+          li.append(info);
+          li.addEventListener('click', () => {
+            userDialog.close();
+            focusCat(cat.id);
+          });
+          return li;
+        }));
+      }
+    }
+
+    return { loadCatSpec, loadPawprints, openUserProfile };
   };
 })();

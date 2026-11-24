@@ -608,9 +608,17 @@
   }
   const online = () => Boolean(state.account.available);
   const guestNameField = $('#guest-name-field');
+  const postIdentityField = $('#post-identity-field');
+  const postIdentityUsername = $('#post-identity-username');
   const hideLocationField = $('#hide-location-field');
   function syncUploadOptionFields() {
-    if (guestNameField) guestNameField.hidden = Boolean(state.account.signedIn);
+    const signedIn = Boolean(state.account.signedIn);
+    if (guestNameField) guestNameField.hidden = signedIn;
+    if (postIdentityField) postIdentityField.hidden = !signedIn;
+    if (postIdentityUsername && signedIn) {
+      const uname = state.account.username || state.account.email || 'me';
+      postIdentityUsername.textContent = `显示我的用户名 (@${uname})`;
+    }
     if (hideLocationField) hideLocationField.hidden = form.elements.category?.value !== 'pet';
   }
   form.elements.category?.addEventListener('change', syncUploadOptionFields);
@@ -743,6 +751,7 @@
     fields.ageMonths = age === '' ? null : Number(age);
     fields.gender = String(data.get('gender') || 'unknown');
     fields.hideLocation = Boolean(data.get('hideLocation'));
+    fields.postAnonymous = state.account.signedIn && data.get('postIdentity') === 'anonymous';
     if (!online()) {
       if (!storage.set('manameow-draft', JSON.stringify({...fields,pin}))) return showError(t('failed'));
       upload.close();

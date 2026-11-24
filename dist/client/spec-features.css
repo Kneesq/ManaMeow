@@ -316,3 +316,48 @@
   width: auto !important;
   margin: 0;
 }
+
+.credit-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: #b6593b;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.credit-link:hover {
+  color: #8f3d23;
+}
+
+.identity-fieldset {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e4d9c6;
+  background: #faf6ee;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.identity-fieldset legend {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6b5c4f;
+  padding: 0 4px;
+}
+.identity-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4a3f35;
+  cursor: pointer;
+}
+.identity-option input {
+  width: auto !important;
+  margin: 0;
+}
