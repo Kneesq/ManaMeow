@@ -16,17 +16,17 @@
   <link rel="stylesheet" href="styles.css?v=13">
   <link rel="stylesheet" href="profile-social.css?v=3">
   <link rel="stylesheet" href="catch.css?v=2">
-  <link rel="stylesheet" href="spec-features.css?v=1">
+  <link rel="stylesheet" href="spec-features.css?v=2">
   <script defer src="supabase-config.js?v=1"></script>
-  <script defer src="demo-api.js?v=3"></script>
+  <script defer src="demo-api.js?v=4"></script>
   <script defer src="pixel-cats.js?v=2"></script>
   <script defer src="storybook-fallback.js?v=1"></script>
   <script defer src="geo-map.js?v=13"></script>
   <script defer src="diorama.js?v=13"></script>
   <script defer src="catch.js?v=2"></script>
   <script defer src="profile-social.js?v=4"></script>
-  <script defer src="spec-features.js?v=1"></script>
-  <script defer src="app.js?v=15"></script>
+  <script defer src="spec-features.js?v=2"></script>
+  <script defer src="app.js?v=16"></script>
 </head>
 <body>
   <a class="skip" href="#map" data-i="skip">Skip to the map</a>
@@ -330,6 +330,15 @@
       <ul id="my-sightings" class="my-sightings"></ul>
     </div>
   </dialog>
+  <dialog id="user-profile-dialog" aria-labelledby="user-profile-title">
+    <button class="close" type="button" data-close aria-label="Close">×</button>
+    <div class="dialog-body">
+      <h2 id="user-profile-title">@user</h2>
+      <p id="user-profile-subtitle" class="fine"></p>
+      <ul id="user-profile-cats" class="pawprints-list"></ul>
+      <p id="user-profile-empty" class="fine" hidden>该用户暂未公开发布猫咪档案。</p>
+    </div>
+  </dialog>
   <dialog id="upload-dialog" aria-labelledby="upload-title">
     <button class="close" type="button" data-close aria-label="Close">×</button>
     <div class="dialog-body">
@@ -339,6 +348,11 @@
         <label><span data-i="name">Cat name</span><input name="name" maxlength="48" required autofocus data-placeholder="nameExample" placeholder="e.g. Milo"></label>
         <label><span data-i="profilePhoto">Profile photo</span><input name="image" type="file" accept="image/*" required><img id="upload-photo-preview" alt="" hidden style="max-width:100%;max-height:180px;border-radius:12px;margin-top:8px;object-fit:cover;"><small data-i="photoHelp">JPG, PNG or WebP, up to 10 MB. Choose a photo you have permission to share.</small></label>
         <label id="guest-name-field" hidden><span>访客发布昵称（选填，留空显示为匿名）</span><input name="guestName" maxlength="40" placeholder="e.g. 路过的猫友"></label>
+        <fieldset id="post-identity-field" class="identity-fieldset" hidden>
+          <legend>发布署名方式</legend>
+          <label class="identity-option"><input type="radio" name="postIdentity" value="username" checked><span id="post-identity-username">显示我的用户名</span></label>
+          <label class="identity-option"><input type="radio" name="postIdentity" value="anonymous"><span>匿名发布（不显示我的用户名）</span></label>
+        </fieldset>
         <div class="form-grid">
           <label><span data-i="category">Category</span><select name="category"><option value="stray" data-i="stray">Stray</option><option value="pet" data-i="pet">Pet</option><option value="cafe" data-i="cafe">Café</option></select></label>
           <label><span data-i="gender">Sex</span><select name="gender"><option value="unknown" data-i="unknown">Unknown</option><option value="female" data-i="female">Female</option><option value="male" data-i="male">Male</option></select></label>
