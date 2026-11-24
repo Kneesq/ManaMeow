@@ -611,10 +611,26 @@
       }
     }
 
-    // 5. Clean flat-vector notched trees on parks & grass centers (scaling smoothly with zoom)
-    const treeScale = ['interpolate', ['exponential', 1.75], ['zoom'], 12, 0.38, 15, 0.85, 17, 1.45, 19, 2.3];
-    const clusterScale = ['interpolate', ['exponential', 1.75], ['zoom'], 12, 0.42, 15, 0.92, 17, 1.55, 19, 2.4];
-    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'point', image = 'manameow-3d-tree-icon', size = treeScale } = {}) => {
+    // 5. Randomly scattered trees that keep relaxed spacing at EVERY zoom level (never forming a dense row when zoomed in)
+    const treeBucket = ['%', ['floor', ['abs', ['coalesce', ['to-number', ['id'], 0], 0]]], 5];
+    const randomTreeImage = [
+      'match', treeBucket,
+      0, 'manameow-3d-grove-icon',
+      2, 'manameow-3d-grove-icon',
+      'manameow-3d-tree-icon',
+    ];
+    const randomOffset = [
+      'match', treeBucket,
+      0, ['literal', [-14, 10]],
+      1, ['literal', [16, -12]],
+      2, ['literal', [-10, -16]],
+      3, ['literal', [14, 14]],
+      ['literal', [4, -8]],
+    ];
+    const treeScale = ['interpolate', ['exponential', 1.6], ['zoom'], 12, 0.44, 15, 0.85, 17, 1.32, 19, 1.95];
+    const relaxedPadding = ['interpolate', ['linear'], ['zoom'], 12, 22, 15, 42, 17, 68, 19, 96];
+
+    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'point', spacing = 140 } = {}) => {
       if (map.getLayer(id)) return;
       const layout = {
         'icon-anchor': 'center',
@@ -622,30 +638,25 @@
         'icon-rotation-alignment': 'map',
         'icon-allow-overlap': false,
         'icon-ignore-placement': false,
-        'icon-padding': 8,
-        'icon-image': image,
-        'icon-size': size,
+        'icon-padding': relaxedPadding,
+        'icon-image': randomTreeImage,
+        'icon-offset': randomOffset,
+        'icon-size': treeScale,
         'symbol-placement': placement,
       };
+      if (placement === 'line') layout['symbol-spacing'] = spacing;
       const def = { id, type: 'symbol', source: 'openmaptiles', 'source-layer': sourceLayer, minzoom, layout };
       if (filter) def.filter = filter;
       try { map.addLayer(def); } catch (e) {}
     };
+    const woodFilter = ['==', ['get', 'class'], 'wood'];
     const grassFilter = ['==', ['get', 'class'], 'grass'];
 
-    addTree('manameow-pixel-trees-park-center', 'park', {
-      minzoom: 12,
-      placement: 'point',
-      image: 'manameow-3d-grove-icon',
-      size: clusterScale,
-    });
-    addTree('manameow-pixel-trees-grass-center', 'landcover', {
-      filter: grassFilter,
-      minzoom: 13,
-      placement: 'point',
-      image: 'manameow-3d-tree-icon',
-      size: treeScale,
-    });
+    // Scattered randomly across woodlands, parks, and grass (wide spacing + growing collision padding prevents dense rows on zoom-in)
+    addTree('manameow-pixel-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 12, placement: 'point' });
+    addTree('manameow-pixel-trees-wood-scatter', 'landcover', { filter: woodFilter, minzoom: 12, placement: 'line', spacing: 145 });
+    addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 12, placement: 'point' });
+    addTree('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 13, placement: 'point' });
   }
 
   function setMode(map, tilted) {
