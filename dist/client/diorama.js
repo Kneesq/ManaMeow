@@ -159,13 +159,17 @@
       });
       if (c) map.addImage('manameow-pixel-wall-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // Subtle 2D pixel roof tile
+    // Semi-transparent corrugated/shingle roof rib texture (overlays cleanly on terracotta/brown/ochre/slate roofs)
     if (!map.hasImage('manameow-pixel-roof-tile')) {
       const c = makePixelCanvas(16, 16, s, px => {
-        px(0, 0, 16, 16, '#F6E4C6');
-        px(0, 0, 16, 1, '#EBD4B0');
-        px(0, 8, 16, 1, '#EFE0C2');
-        px(2, 2, 3, 2, '#E5CCA6');
+        // Vertical subtle roof tile ribs (like the corrugated red/brown roofs)
+        for (let x = 0; x < 16; x += 4) {
+          px(x, 0, 1, 16, 'rgba(38, 22, 16, 0.14)');
+          px(x + 1, 0, 1, 16, 'rgba(255, 245, 232, 0.11)');
+        }
+        // Subtle center roof ridge line
+        px(0, 7, 16, 1, 'rgba(255, 245, 232, 0.22)');
+        px(0, 8, 16, 1, 'rgba(38, 22, 16, 0.18)');
       });
       if (c) map.addImage('manameow-pixel-roof-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
@@ -362,7 +366,26 @@
       } catch (e) {}
     }
 
-    // 3. Crisp 2D pixel-art buildings (ALWAYS visible at zoom 13-24 with shadow + roof + brown outline)
+    // 3. Stylized top-down roofs (terracotta red, chestnut brown, tangerine ochre, slate grey) with shadow + shingle ribs + dark border
+    const roofBucket = [
+      '%',
+      ['floor', ['abs', ['+', ['coalesce', ['to-number', ['id'], 0], 0], ['*', ['coalesce', ['get', 'render_height'], ['get', 'height'], 6], 7]]]],
+      5,
+    ];
+    const roofColor = [
+      'match', roofBucket,
+      0, '#C75846', // terracotta brick red
+      1, '#8D543D', // warm chestnut brown
+      2, '#DC823E', // warm tangerine ochre
+      3, '#BAC3CE', // cool slate-grey flat roof
+      '#9D5D43',    // medium cedar brown
+    ];
+    const roofOutline = [
+      'match', roofBucket,
+      3, '#4D5560', // dark slate parapet for grey roofs
+      '#633C2C',    // dark cocoa border for warm roofs
+    ];
+
     if (!map.getLayer('manameow-pixel-building-shadow')) {
       try {
         map.addLayer({
@@ -372,8 +395,8 @@
           'source-layer': 'building',
           minzoom: 13,
           paint: {
-            'fill-color': 'rgba(110, 88, 66, 0.28)',
-            'fill-translate': [4, 4],
+            'fill-color': 'rgba(58, 52, 46, 0.26)',
+            'fill-translate': [5, 5],
           },
         });
       } catch (e) {}
@@ -387,8 +410,23 @@
           'source-layer': 'building',
           minzoom: 13,
           paint: {
-            'fill-pattern': 'manameow-pixel-roof-tile',
+            'fill-color': roofColor,
             'fill-opacity': 1,
+          },
+        });
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-pixel-building-texture')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-building-texture',
+          type: 'fill',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          minzoom: 14,
+          paint: {
+            'fill-pattern': 'manameow-pixel-roof-tile',
+            'fill-opacity': 0.9,
           },
         });
       } catch (e) {}
@@ -403,14 +441,14 @@
           minzoom: 13,
           layout: { 'line-join': 'miter' },
           paint: {
-            'line-color': C.flatHouseEdge,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.1, 16, 2.0, 18, 2.6],
+            'line-color': roofOutline,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.2, 16, 2.2, 18, 2.8],
           },
         });
       } catch (e) {}
     }
 
-    // 4. Uniform 3D pixel-art buildings (visible in 3D tilted mode only: windowed cream walls + clean cream flat roof)
+    // 4. Uniform 3D pixel-art buildings (visible in 3D tilted mode only: windowed cream walls + matching colored roof cap)
     if (!map.getLayer('manameow-3d-building-walls')) {
       try {
         map.addLayer({
@@ -440,9 +478,9 @@
           minzoom: 13,
           layout: { visibility: 'none' },
           paint: {
-            'fill-extrusion-color': C.roofTop,
+            'fill-extrusion-color': roofColor,
             'fill-extrusion-base': 10.5,
-            'fill-extrusion-height': 11.8,
+            'fill-extrusion-height': 12.2,
             'fill-extrusion-opacity': 1,
             'fill-extrusion-vertical-gradient': false,
           },
