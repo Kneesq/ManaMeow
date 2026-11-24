@@ -10,10 +10,11 @@
     forest: '#85AC5C',       // rich pixel woodland green
     water: '#7CC2B6',        // celadon aqua
     shore: '#EFE5CE',        // warm cream bank
-    roadMain: '#F9F2E2',     // warm cream main road
-    roadMinor: '#F3E9D4',    // warm light-sand minor road
-    roadEdge: '#8D745C',     // crisp pixel warm-brown road outline
-    roadDash: '#CFC0A6',     // subtle pixel road centerline
+    roadMain: '#535558',     // dark charcoal asphalt road
+    roadMinor: '#5B5D60',    // slightly lighter charcoal minor road
+    roadEdge: '#47494C',     // outer dark asphalt shoulder
+    roadSideLine: '#F7F8FA', // crisp solid white side-edge lines
+    roadDash: '#FFFFFF',     // crisp white dashed centerline
     flatHouse: '#F5E1C2',    // warm cream-butter building fill
     flatHouseEdge: '#8D7156',// crisp pixel warm-brown building outline
     roofTop: '#FBF1DF',      // bright warm-cream flat roof in 3D
@@ -184,7 +185,7 @@
     const layers = (map.getStyle() || {}).layers || [];
     for (const layer of layers) {
       const id = layer.id;
-      if (id === 'manameow-water-ripples' || id === 'manameow-meadow-sprigs' || id === 'manameow-paper-flecks') {
+      if (id === 'manameow-water-ripples' || id === 'manameow-meadow-sprigs' || id === 'manameow-paper-flecks' || id.includes('-stitches')) {
         try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
         continue;
       }
@@ -269,7 +270,7 @@
       } catch (e) {}
     }
 
-    // 2. Crisp pixel-art road outlines & cream surface (guaranteed visible at street zoom 12-20)
+    // 2. Dark charcoal asphalt roads with crisp white side lines & white dashed centerline
     const firstBuilding = all.find(l => l['source-layer'] === 'building' || l.type === 'fill-extrusion');
     const beforeBuildings = firstBuilding ? firstBuilding.id : undefined;
     const roadClasses = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor', 'service', 'track'];
@@ -289,9 +290,31 @@
             'line-color': C.roadEdge,
             'line-width': [
               'interpolate', ['exponential', 1.5], ['zoom'],
-              12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 5, ['secondary', 'tertiary'], 3.5, 2.2],
-              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 18, ['secondary', 'tertiary'], 14, 10],
-              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 34, ['secondary', 'tertiary'], 26, 20],
+              12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 6, ['secondary', 'tertiary'], 4.5, 3],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 22, ['secondary', 'tertiary'], 17, 13],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 40, ['secondary', 'tertiary'], 31, 24],
+            ],
+          },
+        }, beforeBuildings);
+      } catch (e) {}
+    }
+    if (!map.getLayer('manameow-pixel-road-sideline')) {
+      try {
+        map.addLayer({
+          id: 'manameow-pixel-road-sideline',
+          type: 'line',
+          source: 'openmaptiles',
+          'source-layer': 'transportation',
+          minzoom: 13,
+          filter: roadFilter,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': C.roadSideLine,
+            'line-width': [
+              'interpolate', ['exponential', 1.5], ['zoom'],
+              13, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 5.8, ['secondary', 'tertiary'], 4.3, 3.0],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 19, ['secondary', 'tertiary'], 14.4, 10.8],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 35, ['secondary', 'tertiary'], 26.8, 20.4],
             ],
           },
         }, beforeBuildings);
@@ -311,9 +334,9 @@
             'line-color': ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], C.roadMain, C.roadMinor],
             'line-width': [
               'interpolate', ['exponential', 1.5], ['zoom'],
-              12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 3, ['secondary', 'tertiary'], 2, 1.2],
-              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 14, ['secondary', 'tertiary'], 10.5, 7],
-              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 28, ['secondary', 'tertiary'], 21, 15.5],
+              12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 3.8, ['secondary', 'tertiary'], 2.6, 1.8],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 16.2, ['secondary', 'tertiary'], 12.0, 8.8],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 30.5, ['secondary', 'tertiary'], 23.0, 17.2],
             ],
           },
         }, beforeBuildings);
@@ -326,14 +349,14 @@
           type: 'line',
           source: 'openmaptiles',
           'source-layer': 'transportation',
-          minzoom: 14,
-          filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary', 'tertiary']]],
+          minzoom: 13,
+          filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor']]],
           layout: { 'line-cap': 'butt', 'line-join': 'round' },
           paint: {
             'line-color': C.roadDash,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1, 18, 2],
-            'line-dasharray': [3, 3],
-            'line-opacity': 0.85,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.0, 16, 1.6, 19, 2.4],
+            'line-dasharray': [4, 4],
+            'line-opacity': 0.95,
           },
         }, beforeBuildings);
       } catch (e) {}
