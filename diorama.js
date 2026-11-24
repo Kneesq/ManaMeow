@@ -39,29 +39,51 @@
     return { sheet, g };
   }
 
-  function drawPixelTree(px, ox, oy, shades) {
-    const [out, dark, mid, light] = shades;
-    px(ox + 3, oy + 18, 10, 2, 'rgba(74,90,58,0.28)');
-    px(ox + 6, oy + 14, 4, 5, '#57402D');
-    px(ox + 7, oy + 14, 2, 4, '#8E6849');
-    px(ox + 5, oy + 1, 6, 1, out);
-    px(ox + 3, oy + 2, 10, 1, out);
-    px(ox + 2, oy + 3, 12, 2, out);
-    px(ox + 1, oy + 5, 14, 7, out);
-    px(ox + 2, oy + 12, 12, 2, out);
-    px(ox + 4, oy + 14, 8, 1, out);
-    px(ox + 5, oy + 2, 6, 1, mid);
-    px(ox + 3, oy + 3, 10, 2, mid);
-    px(ox + 2, oy + 5, 12, 7, mid);
-    px(ox + 4, oy + 12, 8, 2, mid);
-    px(ox + 3, oy + 11, 10, 2, dark);
-    px(ox + 10, oy + 7, 4, 4, dark);
-    px(ox + 11, oy + 5, 2, 3, dark);
-    px(ox + 4, oy + 12, 8, 1, dark);
-    px(ox + 5, oy + 2, 5, 2, light);
-    px(ox + 3, oy + 4, 6, 3, light);
-    px(ox + 4, oy + 3, 2, 1, '#CFE59B');
-    px(ox + 3, oy + 6, 2, 2, light);
+  function makeCanvas(w, h, scale, draw) {
+    const sheet = document.createElement('canvas');
+    sheet.width = w * scale;
+    sheet.height = h * scale;
+    const g = sheet.getContext('2d');
+    if (!g) return null;
+    g.scale(scale, scale);
+    draw(g);
+    return { sheet, g };
+  }
+
+  // Draw a scalloped fluffy top-down tree crown matching the reference style
+  function drawScallop(g, cx, cy, r, bumps, phase, fill) {
+    g.beginPath();
+    const steps = bumps * 6;
+    for (let i = 0; i <= steps; i++) {
+      const a = (i / steps) * Math.PI * 2;
+      const wave = 1 + 0.095 * Math.sin(a * bumps + phase) + 0.04 * Math.cos(a * (bumps - 3) - phase);
+      const x = cx + Math.cos(a) * r * wave;
+      const y = cy + Math.sin(a) * r * wave;
+      if (i === 0) g.moveTo(x, y);
+      else g.lineTo(x, y);
+    }
+    g.closePath();
+    g.fillStyle = fill;
+    g.fill();
+  }
+
+  function drawCanopyCrown(g, cx, cy, r, opts = {}) {
+    const {
+      shadow = true,
+      phase = 0.4,
+      rim = '#6C9427',
+      body = '#8BB835',
+      ring = '#B4D65E',
+      core = '#97C441',
+    } = opts;
+    if (shadow) {
+      drawScallop(g, cx + r * 0.36, cy + r * 0.36, r * 0.96, 10, phase, 'rgba(54, 64, 42, 0.20)');
+    }
+    drawScallop(g, cx, cy, r, 12, phase, rim);
+    drawScallop(g, cx - r * 0.05, cy - r * 0.05, r * 0.87, 11, phase + 0.5, body);
+    // Sunlit inner highlight ring (top-left biased)
+    drawScallop(g, cx - r * 0.09, cy - r * 0.09, r * 0.58, 9, phase + 1.1, ring);
+    drawScallop(g, cx - r * 0.06, cy - r * 0.06, r * 0.39, 8, phase + 1.7, core);
   }
 
   function drawPixelHill(px) {
@@ -95,21 +117,63 @@
 
   function installPixelSprites(map) {
     const s = 2;
-    const sh1 = ['#4A5A3A', '#6E944B', '#8FB663', '#B4D17E'];
-    const sh2 = ['#4A5A3A', '#648844', '#82A958', '#A6C672'];
-    const sh3 = ['#4A5A3A', '#759B52', '#97BE6B', '#BEDB89'];
 
+    // 1. Single fluffy top-down tree with 45 deg diagonal sun shadow
     if (!map.hasImage('manameow-3d-tree-icon')) {
-      const c = makePixelCanvas(16, 20, s, px => drawPixelTree(px, 0, 0, sh1));
+      const c = makeCanvas(38, 38, s, g => {
+        drawCanopyCrown(g, 16, 16, 12.5, { phase: 0.4 });
+      });
       if (c) map.addImage('manameow-3d-tree-icon', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
+    // 2. Organic multi-lobe tree cluster (like the reference middle/bottom shapes) with sun shadow
     if (!map.hasImage('manameow-3d-grove-icon')) {
-      const c = makePixelCanvas(30, 24, s, px => {
-        drawPixelTree(px, 1, 1, sh2);
-        drawPixelTree(px, 13, 0, sh1);
-        drawPixelTree(px, 7, 4, sh3);
+      const c = makeCanvas(64, 64, s, g => {
+        // Unified shadow pass first so lobes blend naturally
+        const lobes = [
+          [27, 13, 10.5, 0.2, { rim: '#678E24', body: '#84B030', ring: '#ACD056', core: '#92BF3C' }],
+          [15, 29, 10.5, 1.4, { rim: '#658B23', body: '#82AE2E', ring: '#A9CE54', core: '#90BC3B' }],
+          [41, 29, 10.0, 2.3, { rim: '#699126', body: '#87B432', ring: '#B0D45A', core: '#94C23F' }],
+          [28, 42, 11.5, 3.1, { rim: '#648A22', body: '#80AC2D', ring: '#A8CC52', core: '#8EBA3A' }],
+          [27, 27, 14.5, 0.9, { rim: '#6E9828', body: '#8EB836', ring: '#B7DA62', core: '#9AC643' }],
+        ];
+        for (const [x, y, r, ph] of lobes) {
+          drawScallop(g, x + 5.5, y + 5.5, r * 0.96, 10, ph, 'rgba(54, 64, 42, 0.16)');
+        }
+        for (const [x, y, r, ph, pal] of lobes) {
+          drawCanopyCrown(g, x, y, r, { shadow: false, phase: ph, ...pal });
+        }
       });
       if (c) map.addImage('manameow-3d-grove-icon', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
+    }
+    // 3. Seamless continuous forest canopy fill-pattern for large woodland patches (no individual tree spam!)
+    if (!map.hasImage('manameow-canopy-forest-tile')) {
+      const c = makeCanvas(96, 96, s, g => {
+        g.fillStyle = '#7FA931';
+        g.fillRect(0, 0, 96, 96);
+        const puffs = [
+          [18, 18, 17, 0.3], [56, 14, 15, 1.2], [86, 28, 16, 2.1],
+          [34, 48, 19, 0.8], [72, 54, 17, 1.9], [14, 72, 16, 2.7],
+          [50, 82, 18, 0.5], [88, 84, 15, 1.5],
+        ];
+        // Wrap around edges so the 96x96 tile repeats seamlessly
+        for (const [x, y, r, ph] of puffs) {
+          for (const dx of [-96, 0, 96]) {
+            for (const dy of [-96, 0, 96]) {
+              const nx = x + dx, ny = y + dy;
+              if (nx + r + 8 < 0 || nx - r - 8 > 96 || ny + r + 8 < 0 || ny - r - 8 > 96) continue;
+              drawCanopyCrown(g, nx, ny, r, {
+                shadow: true,
+                phase: ph,
+                rim: '#688F24',
+                body: '#88B433',
+                ring: '#B1D45B',
+                core: '#94C03E',
+              });
+            }
+          }
+        }
+      });
+      if (c) map.addImage('manameow-canopy-forest-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
     if (!map.hasImage('manameow-pixel-hill-icon')) {
       const c = makePixelCanvas(32, 20, s, drawPixelHill);
@@ -187,7 +251,7 @@
     const layers = (map.getStyle() || {}).layers || [];
     for (const layer of layers) {
       const id = layer.id;
-      if (id === 'manameow-water-ripples' || id === 'manameow-meadow-sprigs' || id === 'manameow-paper-flecks' || id.includes('-stitches')) {
+      if (id === 'manameow-water-ripples' || id === 'manameow-meadow-sprigs' || id === 'manameow-paper-flecks' || id === 'manameow-woodland-groves' || id === 'manameow-park-groves' || id.includes('-stitches')) {
         try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
         continue;
       }
@@ -502,21 +566,50 @@
       } catch (e) {}
     }
 
-    // 5. Lush pixel-art trees & groves
+    // 1b. Continuous fluffy forest canopy + diagonal sun shadow on large woodland areas
+    const woodLayer = all.find(l => l.id === 'landcover_wood');
+    if (woodLayer) {
+      if (!map.getLayer('manameow-forest-shadow')) {
+        try {
+          map.addLayer({
+            ...woodLayer,
+            id: 'manameow-forest-shadow',
+            paint: {
+              'fill-color': 'rgba(54, 64, 42, 0.16)',
+              'fill-translate': ['interpolate', ['linear'], ['zoom'], 11, ['literal', [3, 3]], 16, ['literal', [6, 6]], 19, ['literal', [9, 9]]],
+            },
+          }, 'landcover_wood');
+        } catch (e) {}
+      }
+      if (!map.getLayer('manameow-forest-canopy')) {
+        try {
+          map.addLayer({
+            ...woodLayer,
+            id: 'manameow-forest-canopy',
+            paint: {
+              'fill-pattern': 'manameow-canopy-forest-tile',
+              'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.55, 13, 0.92, 18, 0.96],
+            },
+          }, nextOf('landcover_wood'));
+        } catch (e) {}
+      }
+    }
+
+    // 5. Well-spaced top-down trees & organic tree clusters (no clutter, with diagonal sun shadows)
     const baseLayout = {
-      'icon-anchor': 'bottom',
-      'icon-pitch-alignment': 'viewport',
-      'icon-rotation-alignment': 'viewport',
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-      'icon-padding': 0,
+      'icon-anchor': 'center',
+      'icon-pitch-alignment': 'map',
+      'icon-rotation-alignment': 'map',
+      'icon-allow-overlap': false,
+      'icon-ignore-placement': false,
+      'icon-padding': 8,
     };
-    const addTree = (id, sourceLayer, { filter, minzoom = 11, placement = 'line', spacing = 14, image = 'manameow-3d-tree-icon' } = {}) => {
+    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'line', spacing = 56, image = 'manameow-3d-tree-icon', size } = {}) => {
       if (map.getLayer(id)) return;
       const layout = {
         ...baseLayout,
         'icon-image': image,
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.52, 14, 0.82, 17, 1.15, 19, 1.4],
+        'icon-size': size || ['interpolate', ['linear'], ['zoom'], 12, 0.45, 15, 0.78, 18, 1.15],
         'symbol-placement': placement,
       };
       if (placement === 'line') layout['symbol-spacing'] = spacing;
@@ -524,17 +617,16 @@
       if (filter) def.filter = filter;
       try { map.addLayer(def); } catch (e) {}
     };
-    const woodFilter = ['==', ['get', 'class'], 'wood'];
     const grassFilter = ['==', ['get', 'class'], 'grass'];
-    const greenLanduseFilter = ['in', ['get', 'class'], ['literal', ['cemetery', 'school', 'hospital', 'pitch', 'stadium', 'track']]];
+    const greenLanduseFilter = ['in', ['get', 'class'], ['literal', ['cemetery', 'school', 'hospital', 'pitch']]];
 
-    addTree('manameow-pixel-trees-wood-edge', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'line', spacing: 11, image: 'manameow-3d-grove-icon' });
-    addTree('manameow-pixel-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
-    addTree('manameow-pixel-trees-park-edge', 'park', { minzoom: 11, placement: 'line', spacing: 13, image: 'manameow-3d-tree-icon' });
-    addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 11, placement: 'point', image: 'manameow-3d-grove-icon' });
-    addTree('manameow-pixel-trees-grass-edge', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'line', spacing: 18, image: 'manameow-3d-tree-icon' });
-    addTree('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 12, placement: 'point', image: 'manameow-3d-grove-icon' });
-    addTree('manameow-pixel-trees-landuse', 'landuse', { filter: greenLanduseFilter, minzoom: 13, placement: 'line', spacing: 20, image: 'manameow-3d-tree-icon' });
+    // Parks: organic cluster at center + relaxed scattered single trees along borders
+    addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 12, placement: 'point', image: 'manameow-3d-grove-icon', size: ['interpolate', ['linear'], ['zoom'], 12, 0.52, 15, 0.88, 18, 1.25] });
+    addTree('manameow-pixel-trees-park-edge', 'park', { minzoom: 13, placement: 'line', spacing: 58, image: 'manameow-3d-tree-icon' });
+    // Grass patches: occasional cozy cluster in the middle (not crowded edges)
+    addTree('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 13, placement: 'point', image: 'manameow-3d-grove-icon' });
+    // Schools/hospitals/fields: light scattered single trees
+    addTree('manameow-pixel-trees-landuse', 'landuse', { filter: greenLanduseFilter, minzoom: 14, placement: 'line', spacing: 74, image: 'manameow-3d-tree-icon' });
   }
 
   function setMode(map, tilted) {
