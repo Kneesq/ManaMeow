@@ -10,9 +10,9 @@
     forest: '#97BC6E',       // gentle pixel woodland green
     water: '#94D4CA',        // soft pastel aqua water
     shore: '#F5EFE0',        // light cream bank
-    roadMain: '#7C828B',     // soft pastel slate-grey road (keeps white-line asphalt design without looking dark)
-    roadMinor: '#898F98',    // lighter pastel grey minor road
-    roadEdge: '#6E747D',     // soft outer road shoulder
+    roadMain: '#D9C7AE',     // warm latte-beige main road (white lines pop cleanly)
+    roadMinor: '#E2D3BC',    // soft cream-beige minor road
+    roadEdge: '#C2AE92',     // warm sand-beige outer road shoulder
     roadSideLine: '#FFFFFF', // crisp solid white side-edge lines
     roadDash: '#FFFFFF',     // crisp white dashed centerline
     flatHouse: '#F5E1C2',
