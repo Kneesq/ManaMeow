@@ -1,23 +1,23 @@
 (() => {
   'use strict';
 
-  // Cozy 16-bit pixel-art palette matching the approved ManaMeow mockup
+  // Soft, light pastel 16-bit cute palette
   const C = {
-    ground: '#C2D593',       // soft pastel meadow ground so cream roads & buildings pop
-    residential: '#CBD9A3',  // slightly lighter grassy neighborhood blocks
-    park: '#A4C373',         // lush moss green park
-    lawn: '#B5CE84',         // lighter grass
-    forest: '#85AC5C',       // rich pixel woodland green
-    water: '#7CC2B6',        // celadon aqua
-    shore: '#EFE5CE',        // warm cream bank
-    roadMain: '#535558',     // dark charcoal asphalt road
-    roadMinor: '#5B5D60',    // slightly lighter charcoal minor road
-    roadEdge: '#47494C',     // outer dark asphalt shoulder
-    roadSideLine: '#F7F8FA', // crisp solid white side-edge lines
+    ground: '#CBE09E',       // light fresh spring meadow
+    residential: '#D7E6B4',  // airy pastel green neighborhood blocks
+    park: '#B3D182',         // soft moss green park
+    lawn: '#C3DB96',         // light pastel grass
+    forest: '#97BC6E',       // gentle pixel woodland green
+    water: '#94D4CA',        // soft pastel aqua water
+    shore: '#F5EFE0',        // light cream bank
+    roadMain: '#7C828B',     // soft pastel slate-grey road (keeps white-line asphalt design without looking dark)
+    roadMinor: '#898F98',    // lighter pastel grey minor road
+    roadEdge: '#6E747D',     // soft outer road shoulder
+    roadSideLine: '#FFFFFF', // crisp solid white side-edge lines
     roadDash: '#FFFFFF',     // crisp white dashed centerline
-    flatHouse: '#F5E1C2',    // warm cream-butter building fill
-    flatHouseEdge: '#8D7156',// crisp pixel warm-brown building outline
-    roofTop: '#FBF1DF',      // bright warm-cream flat roof in 3D
+    flatHouse: '#F5E1C2',
+    flatHouseEdge: '#A48472',
+    roofTop: '#FBF1DF',
   };
 
   function setColor(map, id, prop, value) {
@@ -159,17 +159,15 @@
       });
       if (c) map.addImage('manameow-pixel-wall-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // Semi-transparent corrugated/shingle roof rib texture (overlays cleanly on terracotta/brown/ochre/slate roofs)
+    // Soft semi-transparent corrugated/shingle roof rib texture
     if (!map.hasImage('manameow-pixel-roof-tile')) {
       const c = makePixelCanvas(16, 16, s, px => {
-        // Vertical subtle roof tile ribs (like the corrugated red/brown roofs)
         for (let x = 0; x < 16; x += 4) {
-          px(x, 0, 1, 16, 'rgba(38, 22, 16, 0.14)');
-          px(x + 1, 0, 1, 16, 'rgba(255, 245, 232, 0.11)');
+          px(x, 0, 1, 16, 'rgba(90, 62, 48, 0.08)');
+          px(x + 1, 0, 1, 16, 'rgba(255, 250, 242, 0.18)');
         }
-        // Subtle center roof ridge line
-        px(0, 7, 16, 1, 'rgba(255, 245, 232, 0.22)');
-        px(0, 8, 16, 1, 'rgba(38, 22, 16, 0.18)');
+        px(0, 7, 16, 1, 'rgba(255, 252, 246, 0.28)');
+        px(0, 8, 16, 1, 'rgba(90, 62, 48, 0.10)');
       });
       if (c) map.addImage('manameow-pixel-roof-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
@@ -374,16 +372,16 @@
     ];
     const roofColor = [
       'match', roofBucket,
-      0, '#C75846', // terracotta brick red
-      1, '#8D543D', // warm chestnut brown
-      2, '#DC823E', // warm tangerine ochre
-      3, '#BAC3CE', // cool slate-grey flat roof
-      '#9D5D43',    // medium cedar brown
+      0, '#E89B8C', // soft pastel coral-peach
+      1, '#D9A78B', // warm milk-tea caramel
+      2, '#F2BE82', // soft apricot-butter
+      3, '#D3DCE6', // light pastel sky-grey flat roof
+      '#E4B5A0',    // warm blush-cocoa
     ];
     const roofOutline = [
       'match', roofBucket,
-      3, '#4D5560', // dark slate parapet for grey roofs
-      '#633C2C',    // dark cocoa border for warm roofs
+      3, '#8E9BAA', // soft slate parapet for grey roofs
+      '#A48472',    // soft warm-taupe border for pastel roofs
     ];
 
     if (!map.getLayer('manameow-pixel-building-shadow')) {
@@ -395,8 +393,8 @@
           'source-layer': 'building',
           minzoom: 13,
           paint: {
-            'fill-color': 'rgba(58, 52, 46, 0.26)',
-            'fill-translate': [5, 5],
+            'fill-color': 'rgba(110, 96, 82, 0.16)',
+            'fill-translate': [4, 4],
           },
         });
       } catch (e) {}
