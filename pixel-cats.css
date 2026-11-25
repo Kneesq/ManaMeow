@@ -3,7 +3,8 @@
   border-radius: 13px;
   background: transparent;
   box-shadow: none;
-  transform: translate(-50%, -86%);
+  transform: translate(-50%, -86%) scale(var(--pin-scale, 1));
+  transform-origin: 50% 86%;
 }
 
 .mana-map__pin--pixel::before {

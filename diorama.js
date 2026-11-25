@@ -1,20 +1,20 @@
 (() => {
   'use strict';
 
-  // Authentic 1990s 16-bit SNES / GBA RPG overworld palette
+  // Light, airy pastel 90s 16-bit RPG palette
   const C = {
-    ground: '#67C459',       // bright nostalgic 90s RPG meadow green
-    residential: '#73CC64',  // cozy town grass
-    park: '#58B64C',         // rich park grass
-    lawn: '#6EC85F',         // light meadow grass
-    forest: '#3D8C3B',       // classic deep RPG woodland green
-    water: '#34A8EB',        // bright 90s RPG river blue
-    shore: '#7A5438',        // pixel dirt riverbank
-    roadMain: '#CFC4A8',     // classic RPG tiled beige-grey road
-    roadMinor: '#D8CEB4',    // slightly lighter side street
-    roadEdge: '#6E5B4B',     // softer warm-brown pixel outline
-    roadSideLine: '#F5EEDB', // pale cream pixel sidewalk curb
-    roadDash: '#FFFFFF',     // crisp white pixel center dashes
+    ground: '#BCE0A0',       // light pastel spring meadow green
+    residential: '#CAE6B2',  // airy pale town grass
+    park: '#A8D48C',         // soft pastel park green
+    lawn: '#C4E3AA',         // light meadow lawn
+    forest: '#8EC176',       // gentle pastel woodland green
+    water: '#9AD8F0',        // light pastel sky-aqua sea & rivers
+    shore: '#C4A888',        // soft light-sand riverbank
+    roadMain: '#E2D9C5',     // light warm beige road
+    roadMinor: '#EBE3D2',    // lighter cream side street
+    roadEdge: '#9E8D7B',     // soft warm-taupe outline
+    roadSideLine: '#FBF7EC', // bright cream sidewalk curb
+    roadDash: '#FFFFFF',     // crisp white center dashes
   };
 
   function setColor(map, id, prop, value) {
@@ -36,20 +36,20 @@
     return { sheet, g };
   }
 
-  // Classic 90s 16-bit RPG chunky pixel tree with dark outline, dithered shading & shadow
+  // Soft pastel 90s 16-bit RPG pixel tree with lighter outline & dithered shading
   function draw90sTree(px, ox, oy) {
-    const out = '#1F2A1D';
-    const dark = '#2E6E35';
-    const mid = '#4CA348';
-    const light = '#7BD158';
-    const hi = '#A8E677';
+    const out = '#3E5E3A';
+    const dark = '#5D9954';
+    const mid = '#80C26C';
+    const light = '#A9DF88';
+    const hi = '#C9F0A6';
     // Ground shadow
-    px(ox + 3, oy + 18, 12, 3, 'rgba(20,34,18,0.34)');
-    px(ox + 5, oy + 20, 8, 1, 'rgba(20,34,18,0.22)');
+    px(ox + 3, oy + 18, 12, 3, 'rgba(42,64,38,0.22)');
+    px(ox + 5, oy + 20, 8, 1, 'rgba(42,64,38,0.14)');
     // Trunk
-    px(ox + 6, oy + 14, 5, 5, '#2A1D15');
-    px(ox + 7, oy + 14, 3, 4, '#8A5A3A');
-    px(ox + 7, oy + 14, 1, 4, '#A8744E');
+    px(ox + 6, oy + 14, 5, 5, '#594232');
+    px(ox + 7, oy + 14, 3, 4, '#A87D5C');
+    px(ox + 7, oy + 14, 1, 4, '#C29A78');
     // Outer dark pixel silhouette
     px(ox + 5, oy + 1, 7, 1, out);
     px(ox + 3, oy + 2, 11, 1, out);
@@ -79,41 +79,41 @@
     px(ox + 4, oy + 4, 2, 1, hi);
   }
 
-  // Classic 90s RPG round bush
+  // Soft pastel 90s RPG round bush
   function draw90sBush(px, ox, oy) {
-    const out = '#1F2A1D';
-    px(ox + 2, oy + 9, 9, 2, 'rgba(20,34,18,0.32)');
+    const out = '#3E5E3A';
+    px(ox + 2, oy + 9, 9, 2, 'rgba(42,64,38,0.20)');
     px(ox + 3, oy + 1, 7, 1, out);
     px(ox + 2, oy + 2, 9, 1, out);
     px(ox + 1, oy + 3, 11, 5, out);
     px(ox + 2, oy + 8, 9, 1, out);
-    px(ox + 3, oy + 2, 7, 1, '#7BD158');
-    px(ox + 2, oy + 3, 9, 4, '#4CA348');
-    px(ox + 3, oy + 3, 4, 2, '#7BD158');
-    px(ox + 2, oy + 6, 9, 2, '#2E6E35');
+    px(ox + 3, oy + 2, 7, 1, '#A9DF88');
+    px(ox + 2, oy + 3, 9, 4, '#80C26C');
+    px(ox + 3, oy + 3, 4, 2, '#A9DF88');
+    px(ox + 2, oy + 6, 9, 2, '#5D9954');
   }
 
   function draw90sHill(px) {
-    const out = '#1F2A1D';
-    px(2, 17, 28, 2, 'rgba(20,34,18,0.28)');
+    const out = '#4C7046';
+    px(2, 17, 28, 2, 'rgba(42,64,38,0.18)');
     px(11, 2, 10, 1, out);
     px(8, 3, 16, 1, out);
     px(6, 4, 20, 2, out);
     px(4, 6, 24, 3, out);
     px(2, 9, 28, 4, out);
     px(1, 13, 30, 4, out);
-    px(11, 3, 10, 1, '#58B64C');
-    px(8, 4, 16, 2, '#58B64C');
-    px(6, 6, 20, 3, '#58B64C');
-    px(4, 9, 24, 4, '#58B64C');
-    px(2, 13, 28, 4, '#58B64C');
-    px(18, 5, 5, 2, '#3D8C3B');
-    px(20, 7, 6, 3, '#3D8C3B');
-    px(22, 10, 6, 3, '#3D8C3B');
-    px(23, 13, 6, 4, '#3D8C3B');
-    px(11, 3, 6, 2, '#7BD158');
-    px(8, 5, 6, 2, '#7BD158');
-    px(6, 7, 5, 2, '#7BD158');
+    px(11, 3, 10, 1, '#96CD7D');
+    px(8, 4, 16, 2, '#96CD7D');
+    px(6, 6, 20, 3, '#96CD7D');
+    px(4, 9, 24, 4, '#96CD7D');
+    px(2, 13, 28, 4, '#96CD7D');
+    px(18, 5, 5, 2, '#7AB364');
+    px(20, 7, 6, 3, '#7AB364');
+    px(22, 10, 6, 3, '#7AB364');
+    px(23, 13, 6, 4, '#7AB364');
+    px(11, 3, 6, 2, '#B6E29B');
+    px(8, 5, 6, 2, '#B6E29B');
+    px(6, 7, 5, 2, '#B6E29B');
   }
 
   function installPixelSprites(map) {
@@ -135,15 +135,12 @@
       const c = makePixelCanvas(32, 20, s, draw90sHill);
       if (c) map.addImage('manameow-pixel-hill-icon', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // 90s RPG bright blue water with crisp white pixel wave dashes
+    // Soft pastel water wave dashes (gentle low-contrast shimmer)
     if (!map.hasImage('manameow-pixel-water-tile')) {
-      const c = makePixelCanvas(32, 32, s, px => {
-        px(4, 7, 6, 1, 'rgba(255,255,255,0.85)');
-        px(6, 9, 3, 1, 'rgba(180,235,255,0.75)');
-        px(19, 17, 6, 1, 'rgba(255,255,255,0.85)');
-        px(21, 19, 3, 1, 'rgba(180,235,255,0.75)');
-        px(8, 26, 5, 1, 'rgba(255,255,255,0.80)');
-        px(24, 5, 4, 1, 'rgba(255,255,255,0.70)');
+      const c = makePixelCanvas(44, 44, s, px => {
+        px(6, 9, 5, 1, 'rgba(255,255,255,0.52)');
+        px(24, 22, 6, 1, 'rgba(255,255,255,0.48)');
+        px(12, 34, 4, 1, 'rgba(255,255,255,0.45)');
       });
       if (c) map.addImage('manameow-pixel-water-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
@@ -171,24 +168,24 @@
       });
       if (c) map.addImage('manameow-pixel-grass-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // Dark-outlined jagged leafy border for large 90s forest blocks
+    // Soft jagged leafy border for large pastel forest blocks
     if (!map.hasImage('manameow-forest-sawtooth-edge')) {
       const c = makePixelCanvas(16, 8, s, px => {
-        px(0, 2, 16, 4, '#1F2A1D');
+        px(0, 2, 16, 4, '#6A9B57');
         for (let x = 0; x < 16; x += 4) {
-          px(x + 1, 1, 2, 6, '#1F2A1D');
-          px(x + 1, 2, 2, 4, '#3D8C3B');
-          px(x, 3, 4, 2, '#4CA348');
+          px(x + 1, 1, 2, 6, '#6A9B57');
+          px(x + 1, 2, 2, 4, '#8EC176');
+          px(x, 3, 4, 2, '#9ECF84');
         }
       });
       if (c) map.addImage('manameow-forest-sawtooth-edge', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // Classic 90s RPG forest floor dither flecks
+    // Gentle pastel forest floor flecks
     if (!map.hasImage('manameow-forest-flecks-tile')) {
       const c = makePixelCanvas(32, 32, s, px => {
         for (const [x, y] of [[4, 6], [18, 4], [26, 16], [10, 22], [22, 26]]) {
-          px(x, y, 3, 2, 'rgba(30,68,30,0.45)');
-          px(x + 1, y - 1, 2, 1, 'rgba(110,185,82,0.4)');
+          px(x, y, 3, 2, 'rgba(84,132,68,0.25)');
+          px(x + 1, y - 1, 2, 1, 'rgba(210,242,174,0.35)');
         }
       });
       if (c) map.addImage('manameow-forest-flecks-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
@@ -321,8 +318,9 @@
             'source-layer': 'water',
             minzoom: 11,
             paint: {
-              'line-color': '#7A5438',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 16, 4.5],
+              'line-color': '#C4A888',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.0, 16, 3.0],
+              'line-opacity': 0.75,
             },
           }, nextOf('water'));
         } catch (e) {}
@@ -452,7 +450,7 @@
       } catch (e) {}
     }
 
-    // 3. 90s SNES RPG red, teal & cream tiled roofs + crisp dark pixel outline + pixel drop shadow
+    // 3. Soft pastel 90s RPG coral, mint-teal & butter-cream roofs + gentle outline & soft shadow
     const roofBucket = [
       '%',
       ['floor', ['abs', ['+', ['coalesce', ['to-number', ['id'], 0], 0], ['*', ['coalesce', ['get', 'render_height'], ['get', 'height'], 6], 7]]]],
@@ -460,9 +458,9 @@
     ];
     const roofColor = [
       'match', roofBucket,
-      0, '#D9534A', // classic 90s RPG red roof
-      1, '#329C94', // classic 90s RPG teal roof
-      '#E2B46E',    // warm cream-ochre roof
+      0, '#E9988E', // soft pastel coral-rose roof
+      1, '#8ACBC4', // soft pastel mint-teal roof
+      '#F0D09B',    // soft butter-cream roof
     ];
 
     if (!map.getLayer('manameow-pixel-building-shadow')) {
@@ -474,7 +472,7 @@
           'source-layer': 'building',
           minzoom: 13,
           paint: {
-            'fill-color': 'rgba(24, 34, 22, 0.30)',
+            'fill-color': 'rgba(54, 66, 48, 0.16)',
             'fill-translate': ['interpolate', ['linear'], ['zoom'], 13, ['literal', [3, 3]], 16, ['literal', [5, 5]], 19, ['literal', [8, 8]]],
           },
         });
@@ -505,7 +503,7 @@
           minzoom: 14,
           paint: {
             'fill-pattern': 'manameow-pixel-roof-tile',
-            'fill-opacity': 0.75,
+            'fill-opacity': 0.55,
           },
         });
       } catch (e) {}
@@ -520,8 +518,8 @@
           minzoom: 13,
           layout: { 'line-join': 'round' },
           paint: {
-            'line-color': '#4A382E',
-            'line-opacity': 0.72,
+            'line-color': '#8B7363',
+            'line-opacity': 0.58,
             'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.5, 16, 1.0, 18, 1.4],
           },
         });
