@@ -142,24 +142,54 @@
   dateInput.value = today;
 
   const tiltButton = $('#tilt-map');
+  const zoomInButton = $('#zoom-in');
+  const zoomOutButton = $('#zoom-out');
+  let lastFocusedCatId = null;
+  const rpgScene = window.createManaRpgScene?.(document.querySelector('.map-app'), {
+    onSelectCat: id => openCat(id),
+  });
+
+  function setRpgSceneOpen(open) {
+    if (!rpgScene) return;
+    if (open) {
+      const centerPos = map?.center?.() || { lat: 3.139, lng: 101.6869 };
+      const sorted = [...state.cats].sort((a, b) => {
+        const da = Math.hypot((a.lat || 0) - centerPos.lat, (a.lng || 0) - centerPos.lng);
+        const db = Math.hypot((b.lat || 0) - centerPos.lat, (b.lng || 0) - centerPos.lng);
+        return da - db;
+      });
+      const focusCat = state.cats.find(c => c.id === lastFocusedCatId) || sorted[0] || null;
+      const areaLabel = [focusCat?.location, focusCat?.city].filter(Boolean).join(' · ');
+      rpgScene.open({ cats: sorted, focusCat, areaLabel });
+    } else {
+      rpgScene.close();
+    }
+    if (tiltButton) {
+      tiltButton.setAttribute('aria-pressed', String(open));
+      tiltButton.textContent = open ? '2D' : '3D';
+    }
+    if (zoomInButton) zoomInButton.disabled = open;
+    if (zoomOutButton) zoomOutButton.disabled = open;
+  }
+
   const map = window.createManaMap?.(mapElement, {
     cards: state.cats,
     select: id => {
       if (state.picking) return;
+      lastFocusedCatId = id;
       map?.select(id, { onArrive: () => openCat(id) });
     },
     onPick: acceptPin,
-    onTiltChange: tilted => {
-      if (!tiltButton) return;
-      tiltButton.setAttribute('aria-pressed', String(tilted));
-      tiltButton.textContent = tilted ? '2D' : '3D';
-    },
+    onTiltChange: () => {},
     translate: t
   });
-  $('#zoom-in').addEventListener('click', () => map?.zoomBy(1.6));
-  $('#zoom-out').addEventListener('click', () => map?.zoomBy(1/1.6));
-  tiltButton?.addEventListener('click', () => map?.toggleTilt?.());
-  $('#reset-map').addEventListener('click', () => map?.reset());
+  zoomInButton.addEventListener('click', () => { if (!rpgScene?.isOpen()) map?.zoomBy(1.6); });
+  zoomOutButton.addEventListener('click', () => { if (!rpgScene?.isOpen()) map?.zoomBy(1/1.6); });
+  tiltButton?.addEventListener('click', () => setRpgSceneOpen(!rpgScene?.isOpen()));
+  $('#reset-map').addEventListener('click', () => {
+    if (rpgScene?.isOpen()) setRpgSceneOpen(false);
+    map?.reset();
+  });
 
 
   const motionControl = $('#cat-animation');
@@ -650,6 +680,7 @@
   }
   async function startAddCat() {
     await accountLoad;
+    if (rpgScene?.isOpen()) setRpgSceneOpen(false);
     startPicking(false);
   }
   $('#add-cat').addEventListener('click', startAddCat);
