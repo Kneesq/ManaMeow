@@ -450,18 +450,8 @@
       } catch (e) {}
     }
 
-    // 3. Soft pastel 90s RPG coral, mint-teal & butter-cream roofs + gentle outline & soft shadow
-    const roofBucket = [
-      '%',
-      ['floor', ['abs', ['+', ['coalesce', ['to-number', ['id'], 0], 0], ['*', ['coalesce', ['get', 'render_height'], ['get', 'height'], 6], 7]]]],
-      3,
-    ];
-    const roofColor = [
-      'match', roofBucket,
-      0, '#E9988E', // soft pastel coral-rose roof
-      1, '#8ACBC4', // soft pastel mint-teal roof
-      '#F0D09B',    // soft butter-cream roof
-    ];
+    // 3. Unified single-color soft warm butter-cream roofs (no tile-seam color splits or flickering on zoom)
+    const roofColor = '#F0D3A8';
 
     if (!map.getLayer('manameow-pixel-building-shadow')) {
       try {
