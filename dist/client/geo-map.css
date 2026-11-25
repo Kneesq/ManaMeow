@@ -2,7 +2,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: #CBE09E;
+  background: #67C459;
 }
 
 .mana-map::after {
