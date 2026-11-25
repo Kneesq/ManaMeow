@@ -48,7 +48,7 @@ ul { list-style: none; padding: 0; }
 }
 .toolbar-actions { grid-area: actions; justify-self: end; display: flex; align-items: center; gap: 8px; }
 .search-toggle { grid-area: search; justify-self: start; }
-.brand, .map-button { min-height: 46px; display: flex; align-items: center; border: 2px solid #8D745C; background: #FBF4E4; color: #4A3829; box-shadow: 0 3px 0 #8D745C; }
+.brand, .map-button { min-height: 46px; display: flex; align-items: center; border: 3px solid #261D17; background: #F6E9CE; color: #261D17; box-shadow: inset 0 0 0 2px #FFFDF7, inset 0 0 0 4px #C9B18A, 0 4px 0 #261D17; }
 .brand {
   grid-area: brand;
   justify-self: center;
@@ -62,12 +62,12 @@ ul { list-style: none; padding: 0; }
 .paw { display: block; position: relative; width: 24px; height: 24px; transform: scale(.78); }
 .paw::before { content: ''; position: absolute; width: 13px; height: 10px; border-radius: 53% 53% 45% 45%; background: currentColor; bottom: 2px; left: 5.5px; }
 .paw::after { content: ''; position: absolute; width: 5px; height: 7px; border-radius: 55%; left: 1px; top: 7px; background: currentColor; box-shadow: 5px -5px currentColor, 12px -5px currentColor, 17px 0 currentColor; }
-.map-button { min-width: 46px; justify-content: center; padding: 0 13px; gap: 8px; border-radius: 17px; font-size: .875rem; font-weight: 700; white-space: nowrap; pointer-events: auto; }
-.map-button:hover { background: #FFFDF7; }
-.map-button:active { transform: translateY(2px); box-shadow: 0 1px 0 #8D745C; }
-.map-button.primary, .button.primary { background: #C66A4B; color: #FFFDF7; border-color: #7E3F2B; box-shadow: 0 3px 0 #7E3F2B; }
-.map-button.primary:hover, .button.primary:hover { background: #B85C3E; }
-.map-button.primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #7E3F2B; }
+.map-button { min-width: 46px; justify-content: center; padding: 0 13px; gap: 8px; border-radius: 10px; font-size: .875rem; font-weight: 800; white-space: nowrap; pointer-events: auto; }
+.map-button:hover { background: #FFF7E4; }
+.map-button:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px #FFFDF7, inset 0 0 0 4px #C9B18A, 0 2px 0 #261D17; }
+.map-button.primary, .button.primary { background: #D2523D; color: #FFFDF7; border-color: #261D17; box-shadow: inset 0 2px 0 #EB7E69, inset 0 -2px 0 #9E3422, 0 4px 0 #261D17; }
+.map-button.primary:hover, .button.primary:hover { background: #C24531; }
+.map-button.primary:active { transform: translateY(2px); box-shadow: inset 0 2px 0 #EB7E69, 0 2px 0 #261D17; }
 .map-button[data-filtered=true] { background: #f6e7dc; border-color: #bf7a59; color: #8a371c; }
 .icon-button { padding: 0; }
 .person-icon { position: relative; width: 20px; height: 21px; }
@@ -110,10 +110,10 @@ ul { list-style: none; padding: 0; }
 .settings-panel button:hover { background: var(--paper); }
 .language-row { justify-content: space-between; }
 .language { min-height: 35px; max-width: 65%; padding: 3px 5px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
-.map-tools { position: absolute; z-index: 2; inset: auto var(--edge-end) calc(var(--edge-bottom) + 36px) auto; display: grid; border: 2px solid #8D745C; border-radius: 14px; background: #FBF4E4; color: #4A3829; box-shadow: 0 3px 0 #8D745C; overflow: hidden; }
-.map-tools button { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #4A3829; font: 700 20px/1 var(--display); }
-.map-tools button + button { border-top: 2px solid #D8C9B2; }
-.map-tools button:hover { background: #FFFDF7; }
+.map-tools { position: absolute; z-index: 2; inset: auto var(--edge-end) calc(var(--edge-bottom) + 36px) auto; display: grid; border: 3px solid #261D17; border-radius: 10px; background: #F6E9CE; color: #261D17; box-shadow: inset 0 0 0 2px #FFFDF7, 0 4px 0 #261D17; overflow: hidden; }
+.map-tools button { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: transparent; color: #261D17; font: 800 20px/1 var(--display); }
+.map-tools button + button { border-top: 2.5px solid #261D17; }
+.map-tools button:hover { background: #FFF7E4; }
 .map-tools #locate-map { display: grid; place-items: center; }
 .locate-icon {
   position: relative;

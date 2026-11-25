@@ -25,13 +25,13 @@
   top: calc(100% - 2px);
   bottom: auto;
   transform: translateX(-50%);
-  background: #FAF3E3;
-  color: #4A3829;
-  border: 2px solid #8D745C;
-  border-radius: 999px;
-  padding: 2px 9px;
-  box-shadow: 0 2px 0 #8D745C;
-  font: 700 11.5px / 1.25 var(--display, system-ui, sans-serif);
+  background: #FFF8E7;
+  color: #261D17;
+  border: 2.5px solid #261D17;
+  border-radius: 6px;
+  padding: 2px 8px;
+  box-shadow: inset 0 0 0 1.5px #E5D1AD, 0 3px 0 #261D17;
+  font: 800 11.5px / 1.25 var(--display, system-ui, sans-serif);
 }
 
 .mana-map__pin--pixel:is(:hover, :focus-visible, .mana-map__pin--active) {
@@ -40,8 +40,8 @@
 
 .mana-map__pin--pixel:is(:hover, :focus-visible, .mana-map__pin--active) .mana-map__pin-name {
   background: #FFFDF7;
-  border-color: #C66A4B;
-  box-shadow: 0 2px 0 #C66A4B;
+  border-color: #D2523D;
+  box-shadow: inset 0 0 0 1.5px #F4C4B4, 0 3px 0 #261D17;
 }
 
 .mana-pixel-cat {

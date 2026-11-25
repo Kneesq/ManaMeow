@@ -1,23 +1,20 @@
 (() => {
   'use strict';
 
-  // Soft, light pastel 16-bit cute palette
+  // Authentic 1990s 16-bit SNES / GBA RPG overworld palette
   const C = {
-    ground: '#CBE09E',       // light fresh spring meadow
-    residential: '#D7E6B4',  // airy pastel green neighborhood blocks
-    park: '#B3D182',         // soft moss green park
-    lawn: '#C3DB96',         // light pastel grass
-    forest: '#84A93C',       // clean flat-vector olive forest matching sawtooth border
-    water: '#94D4CA',        // soft pastel aqua water
-    shore: '#F5EFE0',        // light cream bank
-    roadMain: '#D9C7AE',     // warm latte-beige main road (white lines pop cleanly)
-    roadMinor: '#E2D3BC',    // soft cream-beige minor road
-    roadEdge: '#C2AE92',     // warm sand-beige outer road shoulder
-    roadSideLine: '#FFFFFF', // crisp solid white side-edge lines
-    roadDash: '#FFFFFF',     // crisp white dashed centerline
-    flatHouse: '#F5E1C2',
-    flatHouseEdge: '#A48472',
-    roofTop: '#FBF1DF',
+    ground: '#67C459',       // bright nostalgic 90s RPG meadow green
+    residential: '#73CC64',  // cozy town grass
+    park: '#58B64C',         // rich park grass
+    lawn: '#6EC85F',         // light meadow grass
+    forest: '#3D8C3B',       // classic deep RPG woodland green
+    water: '#34A8EB',        // bright 90s RPG river blue
+    shore: '#7A5438',        // pixel dirt riverbank
+    roadMain: '#CFC4A8',     // classic RPG tiled beige-grey road
+    roadMinor: '#D8CEB4',    // slightly lighter side street
+    roadEdge: '#332820',     // crisp dark pixel outline
+    roadSideLine: '#F5EEDB', // pale cream pixel sidewalk curb
+    roadDash: '#FFFFFF',     // crisp white pixel center dashes
   };
 
   function setColor(map, id, prop, value) {
@@ -39,203 +36,192 @@
     return { sheet, g };
   }
 
-  function makeCanvas(w, h, scale, draw) {
-    const sheet = document.createElement('canvas');
-    sheet.width = w * scale;
-    sheet.height = h * scale;
-    const g = sheet.getContext('2d');
-    if (!g) return null;
-    g.scale(scale, scale);
-    draw(g);
-    return { sheet, g };
+  // Classic 90s 16-bit RPG chunky pixel tree with dark outline, dithered shading & shadow
+  function draw90sTree(px, ox, oy) {
+    const out = '#1F2A1D';
+    const dark = '#2E6E35';
+    const mid = '#4CA348';
+    const light = '#7BD158';
+    const hi = '#A8E677';
+    // Ground shadow
+    px(ox + 3, oy + 18, 12, 3, 'rgba(20,34,18,0.34)');
+    px(ox + 5, oy + 20, 8, 1, 'rgba(20,34,18,0.22)');
+    // Trunk
+    px(ox + 6, oy + 14, 5, 5, '#2A1D15');
+    px(ox + 7, oy + 14, 3, 4, '#8A5A3A');
+    px(ox + 7, oy + 14, 1, 4, '#A8744E');
+    // Outer dark pixel silhouette
+    px(ox + 5, oy + 1, 7, 1, out);
+    px(ox + 3, oy + 2, 11, 1, out);
+    px(ox + 2, oy + 3, 13, 2, out);
+    px(ox + 1, oy + 5, 15, 7, out);
+    px(ox + 2, oy + 12, 13, 2, out);
+    px(ox + 4, oy + 14, 9, 1, out);
+    // Mid foliage fill
+    px(ox + 5, oy + 2, 7, 1, mid);
+    px(ox + 3, oy + 3, 11, 2, mid);
+    px(ox + 2, oy + 5, 13, 7, mid);
+    px(ox + 4, oy + 12, 9, 2, mid);
+    // Bottom & right deep shading + 90s dither pixels
+    px(ox + 3, oy + 11, 11, 2, dark);
+    px(ox + 4, oy + 13, 9, 1, dark);
+    px(ox + 11, oy + 7, 4, 4, dark);
+    px(ox + 12, oy + 5, 2, 3, dark);
+    px(ox + 3, oy + 10, 1, 1, dark);
+    px(ox + 5, oy + 10, 1, 1, dark);
+    px(ox + 7, oy + 10, 1, 1, dark);
+    px(ox + 9, oy + 10, 1, 1, dark);
+    // Top-left sunlit highlight
+    px(ox + 5, oy + 2, 6, 2, light);
+    px(ox + 3, oy + 4, 7, 3, light);
+    px(ox + 3, oy + 7, 3, 2, light);
+    px(ox + 5, oy + 3, 3, 1, hi);
+    px(ox + 4, oy + 4, 2, 1, hi);
   }
 
-  // Draw a clean flat-vector notched round tree (matching the reference image's crisp V-notched circles)
-  function drawNotchedTree(g, cx, cy, r, {
-    shadow = true,
-    body = '#96B948',
-    inner = '#A6C858',
-    rim = '#7D9E39',
-    notches = [0.6, 2.3, 4.1, 5.4],
-  } = {}) {
-    const trace = (ox, oy, rad) => {
-      g.beginPath();
-      const steps = 64;
-      for (let i = 0; i <= steps; i++) {
-        const a = (i / steps) * Math.PI * 2;
-        let rr = rad;
-        for (const na of notches) {
-          let diff = Math.abs(a - na);
-          if (diff > Math.PI) diff = Math.PI * 2 - diff;
-          if (diff < 0.16) rr = rad * (0.76 + (diff / 0.16) * 0.24);
-        }
-        const x = ox + Math.cos(a) * rr;
-        const y = oy + Math.sin(a) * rr;
-        if (i === 0) g.moveTo(x, y);
-        else g.lineTo(x, y);
-      }
-      g.closePath();
-    };
-    if (shadow) {
-      trace(cx + r * 0.32, cy + r * 0.32, r * 0.98);
-      g.fillStyle = 'rgba(54, 64, 42, 0.18)';
-      g.fill();
-    }
-    trace(cx, cy, r);
-    g.fillStyle = rim;
-    g.fill();
-    trace(cx - r * 0.04, cy - r * 0.04, r * 0.93);
-    g.fillStyle = body;
-    g.fill();
-    g.beginPath();
-    g.arc(cx - r * 0.1, cy - r * 0.1, r * 0.56, 0, Math.PI * 2);
-    g.fillStyle = inner;
-    g.fill();
+  // Classic 90s RPG round bush
+  function draw90sBush(px, ox, oy) {
+    const out = '#1F2A1D';
+    px(ox + 2, oy + 9, 9, 2, 'rgba(20,34,18,0.32)');
+    px(ox + 3, oy + 1, 7, 1, out);
+    px(ox + 2, oy + 2, 9, 1, out);
+    px(ox + 1, oy + 3, 11, 5, out);
+    px(ox + 2, oy + 8, 9, 1, out);
+    px(ox + 3, oy + 2, 7, 1, '#7BD158');
+    px(ox + 2, oy + 3, 9, 4, '#4CA348');
+    px(ox + 3, oy + 3, 4, 2, '#7BD158');
+    px(ox + 2, oy + 6, 9, 2, '#2E6E35');
   }
 
-  function drawPixelHill(px) {
-    const out = '#4A5A3A';
-    const mid = '#9AC06C';
-    const dark = '#7AA352';
-    const light = '#B2D282';
-    px(2, 17, 28, 2, 'rgba(74,90,58,0.20)');
+  function draw90sHill(px) {
+    const out = '#1F2A1D';
+    px(2, 17, 28, 2, 'rgba(20,34,18,0.28)');
     px(11, 2, 10, 1, out);
     px(8, 3, 16, 1, out);
     px(6, 4, 20, 2, out);
     px(4, 6, 24, 3, out);
     px(2, 9, 28, 4, out);
     px(1, 13, 30, 4, out);
-    px(11, 3, 10, 1, mid);
-    px(8, 4, 16, 2, mid);
-    px(6, 6, 20, 3, mid);
-    px(4, 9, 24, 4, mid);
-    px(2, 13, 28, 4, mid);
-    px(18, 5, 5, 2, dark);
-    px(20, 7, 6, 3, dark);
-    px(22, 10, 6, 3, dark);
-    px(23, 13, 6, 4, dark);
-    px(11, 3, 6, 2, light);
-    px(8, 5, 6, 2, light);
-    px(6, 7, 5, 2, light);
-    px(10, 11, 2, 1, dark);
-    px(16, 13, 2, 1, dark);
-    px(7, 14, 1, 1, dark);
+    px(11, 3, 10, 1, '#58B64C');
+    px(8, 4, 16, 2, '#58B64C');
+    px(6, 6, 20, 3, '#58B64C');
+    px(4, 9, 24, 4, '#58B64C');
+    px(2, 13, 28, 4, '#58B64C');
+    px(18, 5, 5, 2, '#3D8C3B');
+    px(20, 7, 6, 3, '#3D8C3B');
+    px(22, 10, 6, 3, '#3D8C3B');
+    px(23, 13, 6, 4, '#3D8C3B');
+    px(11, 3, 6, 2, '#7BD158');
+    px(8, 5, 6, 2, '#7BD158');
+    px(6, 7, 5, 2, '#7BD158');
   }
 
   function installPixelSprites(map) {
     const s = 2;
 
-    // 1. Clean flat-vector notched round tree with 45 deg shadow
     if (!map.hasImage('manameow-3d-tree-icon')) {
-      const c = makeCanvas(38, 38, s, g => {
-        drawNotchedTree(g, 16, 16, 12.5, { body: '#96B948', inner: '#A8CA59', rim: '#7E9E39' });
-      });
+      const c = makePixelCanvas(18, 22, s, px => draw90sTree(px, 0, 0));
       if (c) map.addImage('manameow-3d-tree-icon', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // 2. Clean flat-vector double-tree pair (like the 1st & 2nd shapes in the reference) with sun shadow
     if (!map.hasImage('manameow-3d-grove-icon')) {
-      const c = makeCanvas(56, 56, s, g => {
-        drawNotchedTree(g, 30, 31, 15.5, { body: '#95B847', inner: '#A6C758', rim: '#7B9B37', notches: [0.5, 2.6, 4.9] });
-        drawNotchedTree(g, 19, 18, 11.5, { body: '#7C9E42', inner: '#8DB050', rim: '#658433', notches: [1.1, 3.4, 5.5] });
+      const c = makePixelCanvas(30, 26, s, px => {
+        draw90sTree(px, 1, 1);
+        draw90sBush(px, 16, 12);
+        draw90sTree(px, 11, 4);
       });
       if (c) map.addImage('manameow-3d-grove-icon', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // 3. Seamless sawtooth / jagged leafy border strip for large forest perimeters (line-pattern)
-    if (!map.hasImage('manameow-forest-sawtooth-edge')) {
-      const c = makeCanvas(32, 16, s, g => {
-        // Jagged sawtooth leafy teeth along both sides of the forest perimeter line
-        g.fillStyle = '#6A8B2E';
-        g.beginPath();
-        g.moveTo(0, 8);
-        g.lineTo(4, 2); g.lineTo(8, 7); g.lineTo(13, 1); g.lineTo(17, 7); g.lineTo(22, 2); g.lineTo(27, 7); g.lineTo(32, 3);
-        g.lineTo(32, 13); g.lineTo(27, 9); g.lineTo(22, 15); g.lineTo(17, 9); g.lineTo(12, 15); g.lineTo(7, 9); g.lineTo(3, 14); g.lineTo(0, 10);
-        g.closePath();
-        g.fill();
-
-        g.fillStyle = '#84A93C';
-        g.beginPath();
-        g.moveTo(0, 8);
-        g.lineTo(4, 3.5); g.lineTo(8, 7.5); g.lineTo(13, 2.5); g.lineTo(17, 7.5); g.lineTo(22, 3.5); g.lineTo(27, 7.5); g.lineTo(32, 4.5);
-        g.lineTo(32, 11.5); g.lineTo(27, 8.5); g.lineTo(22, 13); g.lineTo(17, 8.5); g.lineTo(12, 13); g.lineTo(7, 8.5); g.lineTo(3, 12); g.lineTo(0, 9.5);
-        g.closePath();
-        g.fill();
-      });
-      if (c) map.addImage('manameow-forest-sawtooth-edge', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
-    }
-    // 4. Subtle dark-green leaf flecks inside large forest blocks (like the reference green rectangles)
-    if (!map.hasImage('manameow-forest-flecks-tile')) {
-      const c = makeCanvas(48, 48, s, g => {
-        const flecks = [[8, 10, 3, 2], [28, 7, 2, 2], [38, 22, 3, 2], [15, 29, 2, 3], [32, 38, 3, 2], [6, 40, 2, 2]];
-        g.fillStyle = 'rgba(84, 114, 34, 0.35)';
-        for (const [x, y, w, h] of flecks) g.fillRect(x, y, w, h);
-        g.fillStyle = 'rgba(176, 208, 96, 0.35)';
-        g.fillRect(19, 16, 3, 2);
-        g.fillRect(40, 34, 2, 2);
-      });
-      if (c) map.addImage('manameow-forest-flecks-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
-    }
     if (!map.hasImage('manameow-pixel-hill-icon')) {
-      const c = makePixelCanvas(32, 20, s, drawPixelHill);
+      const c = makePixelCanvas(32, 20, s, draw90sHill);
       if (c) map.addImage('manameow-pixel-hill-icon', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
+    // 90s RPG bright blue water with crisp white pixel wave dashes
     if (!map.hasImage('manameow-pixel-water-tile')) {
       const c = makePixelCanvas(32, 32, s, px => {
-        px(4, 7, 5, 1, 'rgba(244,252,248,0.65)');
-        px(6, 9, 3, 1, 'rgba(244,252,248,0.45)');
-        px(19, 17, 6, 1, 'rgba(244,252,248,0.65)');
-        px(21, 19, 3, 1, 'rgba(244,252,248,0.45)');
-        px(9, 26, 4, 1, 'rgba(244,252,248,0.55)');
-        px(26, 5, 3, 1, 'rgba(244,252,248,0.50)');
+        px(4, 7, 6, 1, 'rgba(255,255,255,0.85)');
+        px(6, 9, 3, 1, 'rgba(180,235,255,0.75)');
+        px(19, 17, 6, 1, 'rgba(255,255,255,0.85)');
+        px(21, 19, 3, 1, 'rgba(180,235,255,0.75)');
+        px(8, 26, 5, 1, 'rgba(255,255,255,0.80)');
+        px(24, 5, 4, 1, 'rgba(255,255,255,0.70)');
       });
       if (c) map.addImage('manameow-pixel-water-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
+    // 90s RPG grass blades + tiny colorful pixel wildflowers (red, yellow, blue, white)
     if (!map.hasImage('manameow-pixel-grass-tile')) {
-      const c = makePixelCanvas(40, 40, s, px => {
-        // Cute geometric light-green grass squares (like the far-right reference square)
-        const squares = [[6, 7, 4], [24, 11, 5], [14, 26, 3], [31, 30, 4]];
-        for (const [x, y, sz] of squares) {
-          px(x + 1, y + 1, sz, sz, 'rgba(104,136,56,0.22)');
-          px(x, y, sz, sz, 'rgba(182,216,116,0.65)');
+      const c = makePixelCanvas(48, 48, s, px => {
+        // Grass blades
+        for (const [x, y] of [[6, 8], [24, 6], [40, 18], [14, 30], [34, 38], [8, 42]]) {
+          px(x, y, 1, 2, 'rgba(34,94,38,0.45)');
+          px(x + 2, y + 1, 1, 2, 'rgba(34,94,38,0.45)');
+          px(x + 1, y - 1, 1, 1, 'rgba(168,230,119,0.65)');
         }
-        // Subtle tiny pastel flower dots (red & yellow accents)
-        px(10, 20, 2, 2, 'rgba(222,102,90,0.55)');
-        px(32, 6, 2, 2, 'rgba(242,202,92,0.65)');
+        // Pixel wildflowers (red, yellow, white)
+        const flowers = [
+          [12, 16, '#E8534A', '#FFE36E'],
+          [32, 12, '#FFE36E', '#FFFFFF'],
+          [22, 34, '#FFFFFF', '#FFE36E'],
+          [42, 30, '#E8534A', '#FFFFFF'],
+        ];
+        for (const [fx, fy, petal, center] of flowers) {
+          px(fx, fy - 1, 1, 3, petal);
+          px(fx - 1, fy, 3, 1, petal);
+          px(fx, fy, 1, 1, center);
+        }
       });
       if (c) map.addImage('manameow-pixel-grass-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // 16-bit pixel-art warm cream building wall with tiny cozy windows (for 3D walls)
-    if (!map.hasImage('manameow-pixel-wall-tile')) {
-      const c = makePixelCanvas(16, 16, s, px => {
-        px(0, 0, 16, 16, '#F2DAB4');
-        // Subtle horizontal floor band
-        px(0, 0, 16, 1, '#D8BC95');
-        px(0, 8, 16, 1, '#E6CCA5');
-        // Two cute pixel windows on upper row
-        for (const wx of [2, 10]) {
-          px(wx, 2, 4, 5, '#8D7156');
-          px(wx + 1, 3, 2, 3, '#C7B69B');
-          px(wx + 1, 3, 1, 1, '#EDE4D1');
-        }
-        // Two cute pixel windows on lower row
-        for (const wx of [2, 10]) {
-          px(wx, 10, 4, 5, '#8D7156');
-          px(wx + 1, 11, 2, 3, '#C7B69B');
-          px(wx + 1, 11, 1, 1, '#EDE4D1');
+    // Dark-outlined jagged leafy border for large 90s forest blocks
+    if (!map.hasImage('manameow-forest-sawtooth-edge')) {
+      const c = makePixelCanvas(16, 8, s, px => {
+        px(0, 2, 16, 4, '#1F2A1D');
+        for (let x = 0; x < 16; x += 4) {
+          px(x + 1, 1, 2, 6, '#1F2A1D');
+          px(x + 1, 2, 2, 4, '#3D8C3B');
+          px(x, 3, 4, 2, '#4CA348');
         }
       });
-      if (c) map.addImage('manameow-pixel-wall-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
+      if (c) map.addImage('manameow-forest-sawtooth-edge', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
-    // Soft semi-transparent corrugated/shingle roof rib texture
+    // Classic 90s RPG forest floor dither flecks
+    if (!map.hasImage('manameow-forest-flecks-tile')) {
+      const c = makePixelCanvas(32, 32, s, px => {
+        for (const [x, y] of [[4, 6], [18, 4], [26, 16], [10, 22], [22, 26]]) {
+          px(x, y, 3, 2, 'rgba(30,68,30,0.45)');
+          px(x + 1, y - 1, 2, 1, 'rgba(110,185,82,0.4)');
+        }
+      });
+      if (c) map.addImage('manameow-forest-flecks-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
+    }
+    // 90s RPG pixel-shingle roof lines (semi-transparent overlay on red/teal/cream roofs)
     if (!map.hasImage('manameow-pixel-roof-tile')) {
       const c = makePixelCanvas(16, 16, s, px => {
         for (let x = 0; x < 16; x += 4) {
-          px(x, 0, 1, 16, 'rgba(90, 62, 48, 0.08)');
-          px(x + 1, 0, 1, 16, 'rgba(255, 250, 242, 0.18)');
+          px(x, 0, 1, 16, 'rgba(28, 18, 16, 0.22)');
+          px(x + 1, 0, 1, 16, 'rgba(255, 252, 240, 0.16)');
         }
-        px(0, 7, 16, 1, 'rgba(255, 252, 246, 0.28)');
-        px(0, 8, 16, 1, 'rgba(90, 62, 48, 0.10)');
+        for (let y = 0; y < 16; y += 8) {
+          px(0, y, 16, 1, 'rgba(28, 18, 16, 0.18)');
+        }
+        px(0, 7, 16, 1, 'rgba(255, 252, 240, 0.28)');
       });
       if (c) map.addImage('manameow-pixel-roof-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
+    }
+    // 90s RPG wooden-siding house wall with dark-outlined pixel windows (for 3D mode)
+    if (!map.hasImage('manameow-pixel-wall-tile')) {
+      const c = makePixelCanvas(16, 16, s, px => {
+        px(0, 0, 16, 16, '#F4E6C8');
+        for (let y = 0; y < 16; y += 4) px(0, y, 16, 1, '#DECBA6');
+        for (const wx of [2, 10]) {
+          px(wx, 2, 4, 5, '#261D17');
+          px(wx + 1, 3, 2, 3, '#88C8E8');
+          px(wx + 1, 3, 1, 1, '#E6F8FF');
+          px(wx, 10, 4, 5, '#261D17');
+          px(wx + 1, 11, 2, 3, '#88C8E8');
+          px(wx + 1, 11, 1, 1, '#E6F8FF');
+        }
+      });
+      if (c) map.addImage('manameow-pixel-wall-tile', c.g.getImageData(0, 0, c.sheet.width, c.sheet.height), { pixelRatio: s });
     }
     return true;
   }
@@ -244,8 +230,8 @@
     try {
       map.setLight({
         anchor: 'viewport',
-        color: '#FFF8E8',
-        intensity: 0.38,
+        color: '#FFFDF2',
+        intensity: 0.4,
         position: [1.3, 215, 48],
       });
     } catch (e) {}
@@ -273,11 +259,10 @@
           setColor(map, id, 'fill-color', C.forest);
         } else if (id.includes('park')) {
           setColor(map, id, 'fill-color', C.park);
-          setColor(map, id, 'fill-outline-color', C.lawn);
+          setColor(map, id, 'fill-outline-color', '#3E9438');
         } else if (/grass|meadow|pitch|wetland|cemetery/.test(id)) {
           setColor(map, id, 'fill-color', C.lawn);
         } else if (layer['source-layer'] === 'building' || id.includes('building')) {
-          // Hide liberty's default building fill (replaced by our crisp pixel building layers)
           try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
         } else if (id.includes('residential')) {
           setColor(map, id, 'fill-color', C.residential);
@@ -294,7 +279,7 @@
             setColor(map, id, 'line-color', C.roadEdge);
             setColor(map, id, 'line-opacity', 1);
           } else if (id.includes('path')) {
-            setColor(map, id, 'line-color', '#E5D3B3');
+            setColor(map, id, 'line-color', '#E8DDB8');
           } else if (/motorway|trunk|primary/.test(id)) {
             setColor(map, id, 'line-color', C.roadMain);
           } else {
@@ -302,7 +287,6 @@
           }
         }
       } else if (layer.type === 'fill-extrusion') {
-        // Hide liberty's default 3D extrusion (replaced by our uniform pixel 3D buildings)
         try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
       }
     }
@@ -316,29 +300,67 @@
       return idx >= 0 ? all[idx + 1]?.id : undefined;
     };
 
-    // 1. Pixel water ripples & grass tufts
+    // 1. 90s RPG bright blue water ripples + crisp dirt & white foam riverbank
     const waterLayer = all.find(l => l.id === 'water');
-    if (waterLayer && !map.getLayer('manameow-pixel-water')) {
-      try {
-        map.addLayer({
-          ...waterLayer,
-          id: 'manameow-pixel-water',
-          paint: { 'fill-pattern': 'manameow-pixel-water-tile', 'fill-opacity': 0.85 },
-        }, nextOf('water'));
-      } catch (e) {}
-    }
-    const grassLayer = all.find(l => l.id === 'landcover_grass');
-    if (grassLayer && !map.getLayer('manameow-pixel-grass')) {
-      try {
-        map.addLayer({
-          ...grassLayer,
-          id: 'manameow-pixel-grass',
-          paint: { 'fill-pattern': 'manameow-pixel-grass-tile', 'fill-opacity': 0.85 },
-        }, nextOf('landcover_grass'));
-      } catch (e) {}
+    if (waterLayer) {
+      if (!map.getLayer('manameow-pixel-water')) {
+        try {
+          map.addLayer({
+            ...waterLayer,
+            id: 'manameow-pixel-water',
+            paint: { 'fill-pattern': 'manameow-pixel-water-tile', 'fill-opacity': 0.9 },
+          }, nextOf('water'));
+        } catch (e) {}
+      }
+      if (!map.getLayer('manameow-pixel-water-bank')) {
+        try {
+          map.addLayer({
+            id: 'manameow-pixel-water-bank',
+            type: 'line',
+            source: 'openmaptiles',
+            'source-layer': 'water',
+            minzoom: 11,
+            paint: {
+              'line-color': '#7A5438',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 16, 4.5],
+            },
+          }, nextOf('water'));
+        } catch (e) {}
+      }
+      if (!map.getLayer('manameow-pixel-water-foam')) {
+        try {
+          map.addLayer({
+            id: 'manameow-pixel-water-foam',
+            type: 'line',
+            source: 'openmaptiles',
+            'source-layer': 'water',
+            minzoom: 12,
+            paint: {
+              'line-color': '#E8F8FF',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 16, 2],
+              'line-dasharray': [2, 2],
+            },
+          }, nextOf('water'));
+        } catch (e) {}
+      }
     }
 
-    // 2. Dark charcoal asphalt roads with crisp white side lines & white dashed centerline
+    // 1b. 90s RPG grass tufts & wildflowers on grass and parks
+    for (const targetId of ['landcover_grass', 'park']) {
+      const baseLayer = all.find(l => l.id === targetId);
+      const pid = 'manameow-pixel-' + targetId;
+      if (baseLayer && !map.getLayer(pid)) {
+        try {
+          map.addLayer({
+            ...baseLayer,
+            id: pid,
+            paint: { 'fill-pattern': 'manameow-pixel-grass-tile', 'fill-opacity': 0.92 },
+          }, nextOf(targetId));
+        } catch (e) {}
+      }
+    }
+
+    // 2. Classic 90s RPG tiled beige-grey roads with dark pixel outline & cream sidewalk curb
     const firstBuilding = all.find(l => l['source-layer'] === 'building' || l.type === 'fill-extrusion');
     const beforeBuildings = firstBuilding ? firstBuilding.id : undefined;
     const roadClasses = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor', 'service', 'track'];
@@ -380,9 +402,9 @@
             'line-color': C.roadSideLine,
             'line-width': [
               'interpolate', ['exponential', 1.5], ['zoom'],
-              13, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 5.8, ['secondary', 'tertiary'], 4.3, 3.0],
-              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 19, ['secondary', 'tertiary'], 14.4, 10.8],
-              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 35, ['secondary', 'tertiary'], 26.8, 20.4],
+              13, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 5.6, ['secondary', 'tertiary'], 4.2, 2.8],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 19.2, ['secondary', 'tertiary'], 14.6, 11.0],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 35.5, ['secondary', 'tertiary'], 27.2, 20.8],
             ],
           },
         }, beforeBuildings);
@@ -403,8 +425,8 @@
             'line-width': [
               'interpolate', ['exponential', 1.5], ['zoom'],
               12, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 3.8, ['secondary', 'tertiary'], 2.6, 1.8],
-              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 16.2, ['secondary', 'tertiary'], 12.0, 8.8],
-              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 30.5, ['secondary', 'tertiary'], 23.0, 17.2],
+              16, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 15.2, ['secondary', 'tertiary'], 11.2, 8.2],
+              19, ['match', ['get', 'class'], ['motorway', 'trunk', 'primary'], 28.5, ['secondary', 'tertiary'], 21.5, 16.0],
             ],
           },
         }, beforeBuildings);
@@ -423,49 +445,26 @@
           paint: {
             'line-color': C.roadDash,
             'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.0, 16, 1.6, 19, 2.4],
-            'line-dasharray': [4, 4],
-            'line-opacity': 0.95,
+            'line-dasharray': [3, 3],
+            'line-opacity': 0.9,
           },
         }, beforeBuildings);
       } catch (e) {}
     }
 
-    // 3. Clean architectural top-down roofs (terracotta rose, honey tan, white-rimmed grey & sand flat roofs) + layered diagonal sun shadow
+    // 3. 90s SNES RPG red, teal & cream tiled roofs + crisp dark pixel outline + pixel drop shadow
     const roofBucket = [
       '%',
       ['floor', ['abs', ['+', ['coalesce', ['to-number', ['id'], 0], 0], ['*', ['coalesce', ['get', 'render_height'], ['get', 'height'], 6], 7]]]],
-      4,
+      3,
     ];
     const roofColor = [
       'match', roofBucket,
-      0, '#C47E72', // soft dusty terracotta-rose pitched roof
-      1, '#D3AD7F', // soft warm honey-tan pitched roof
-      2, '#B6BCC4', // clean light concrete-grey flat roof
-      '#C4B29B',    // clean light sand-taupe flat roof
-    ];
-    const roofOutline = [
-      'match', roofBucket,
-      0, '#9E5E53', // terracotta roof trim
-      1, '#AD895D', // honey-tan roof trim
-      '#FAFBFD',    // crisp white parapet rim for flat concrete/sand roofs
+      0, '#D9534A', // classic 90s RPG red roof
+      1, '#329C94', // classic 90s RPG teal roof
+      '#E2B46E',    // warm cream-ochre roof
     ];
 
-    // Layered diagonal architectural sun shadows (45 deg bottom-right)
-    if (!map.getLayer('manameow-pixel-building-shadow-far')) {
-      try {
-        map.addLayer({
-          id: 'manameow-pixel-building-shadow-far',
-          type: 'fill',
-          source: 'openmaptiles',
-          'source-layer': 'building',
-          minzoom: 13,
-          paint: {
-            'fill-color': 'rgba(54, 60, 52, 0.13)',
-            'fill-translate': ['interpolate', ['linear'], ['zoom'], 13, ['literal', [4, 4]], 16, ['literal', [8, 8]], 19, ['literal', [13, 13]]],
-          },
-        });
-      } catch (e) {}
-    }
     if (!map.getLayer('manameow-pixel-building-shadow')) {
       try {
         map.addLayer({
@@ -475,8 +474,8 @@
           'source-layer': 'building',
           minzoom: 13,
           paint: {
-            'fill-color': 'rgba(54, 60, 52, 0.19)',
-            'fill-translate': ['interpolate', ['linear'], ['zoom'], 13, ['literal', [2, 2]], 16, ['literal', [4.5, 4.5]], 19, ['literal', [7, 7]]],
+            'fill-color': 'rgba(24, 34, 22, 0.30)',
+            'fill-translate': ['interpolate', ['linear'], ['zoom'], 13, ['literal', [3, 3]], 16, ['literal', [5, 5]], 19, ['literal', [8, 8]]],
           },
         });
       } catch (e) {}
@@ -506,7 +505,7 @@
           minzoom: 14,
           paint: {
             'fill-pattern': 'manameow-pixel-roof-tile',
-            'fill-opacity': 0.9,
+            'fill-opacity': 0.95,
           },
         });
       } catch (e) {}
@@ -521,14 +520,14 @@
           minzoom: 13,
           layout: { 'line-join': 'miter' },
           paint: {
-            'line-color': roofOutline,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.2, 16, 2.2, 18, 2.8],
+            'line-color': '#261D17',
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.5, 16, 2.4, 18, 3.0],
           },
         });
       } catch (e) {}
     }
 
-    // 4. Uniform 3D pixel-art buildings (visible in 3D tilted mode only: windowed cream walls + matching colored roof cap)
+    // 4. Uniform 3D 90s RPG houses (wooden siding + blue pixel windows + red/teal/ochre roof cap)
     if (!map.getLayer('manameow-3d-building-walls')) {
       try {
         map.addLayer({
@@ -568,7 +567,7 @@
       } catch (e) {}
     }
 
-    // 1b. Large woodland areas: clean olive-green fill + subtle leaf flecks + diagonal shadow + sawtooth jagged leafy perimeter
+    // 5. Large woodland areas: deep RPG forest green + dither flecks + dark-outlined sawtooth perimeter
     const woodLayer = all.find(l => l.id === 'landcover_wood');
     if (woodLayer) {
       if (!map.getLayer('manameow-forest-shadow')) {
@@ -577,7 +576,7 @@
             ...woodLayer,
             id: 'manameow-forest-shadow',
             paint: {
-              'fill-color': 'rgba(54, 64, 42, 0.16)',
+              'fill-color': 'rgba(20, 34, 18, 0.24)',
               'fill-translate': ['interpolate', ['linear'], ['zoom'], 11, ['literal', [3, 3]], 16, ['literal', [6, 6]], 19, ['literal', [9, 9]]],
             },
           }, 'landcover_wood');
@@ -588,7 +587,7 @@
           map.addLayer({
             ...woodLayer,
             id: 'manameow-forest-flecks',
-            paint: { 'fill-pattern': 'manameow-forest-flecks-tile', 'fill-opacity': 0.85 },
+            paint: { 'fill-pattern': 'manameow-forest-flecks-tile', 'fill-opacity': 0.9 },
           }, nextOf('landcover_wood'));
         } catch (e) {}
       }
@@ -604,14 +603,14 @@
             layout: { 'line-join': 'round' },
             paint: {
               'line-pattern': 'manameow-forest-sawtooth-edge',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 5, 15, 10, 18, 15],
+              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 5, 15, 9, 18, 14],
             },
           }, nextOf('landcover_wood'));
         } catch (e) {}
       }
     }
 
-    // 5. Randomly scattered trees that keep relaxed spacing at EVERY zoom level (never forming a dense row when zoomed in)
+    // 6. Randomly scattered 90s RPG trees (relaxed spacing across all zoom levels, never dense rows)
     const treeBucket = ['%', ['floor', ['abs', ['coalesce', ['to-number', ['id'], 0], 0]]], 5];
     const randomTreeImage = [
       'match', treeBucket,
@@ -627,15 +626,15 @@
       3, ['literal', [14, 14]],
       ['literal', [4, -8]],
     ];
-    const treeScale = ['interpolate', ['exponential', 1.6], ['zoom'], 12, 0.44, 15, 0.85, 17, 1.32, 19, 1.95];
+    const treeScale = ['interpolate', ['exponential', 1.55], ['zoom'], 12, 0.55, 15, 1.0, 17, 1.45, 19, 2.0];
     const relaxedPadding = ['interpolate', ['linear'], ['zoom'], 12, 22, 15, 42, 17, 68, 19, 96];
 
-    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'point', spacing = 140 } = {}) => {
+    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'point', spacing = 145 } = {}) => {
       if (map.getLayer(id)) return;
       const layout = {
-        'icon-anchor': 'center',
-        'icon-pitch-alignment': 'map',
-        'icon-rotation-alignment': 'map',
+        'icon-anchor': 'bottom',
+        'icon-pitch-alignment': 'viewport',
+        'icon-rotation-alignment': 'viewport',
         'icon-allow-overlap': false,
         'icon-ignore-placement': false,
         'icon-padding': relaxedPadding,
@@ -652,7 +651,6 @@
     const woodFilter = ['==', ['get', 'class'], 'wood'];
     const grassFilter = ['==', ['get', 'class'], 'grass'];
 
-    // Scattered randomly across woodlands, parks, and grass (wide spacing + growing collision padding prevents dense rows on zoom-in)
     addTree('manameow-pixel-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 12, placement: 'point' });
     addTree('manameow-pixel-trees-wood-scatter', 'landcover', { filter: woodFilter, minzoom: 12, placement: 'line', spacing: 145 });
     addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 12, placement: 'point' });
