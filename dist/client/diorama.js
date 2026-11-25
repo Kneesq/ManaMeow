@@ -12,7 +12,7 @@
     shore: '#7A5438',        // pixel dirt riverbank
     roadMain: '#CFC4A8',     // classic RPG tiled beige-grey road
     roadMinor: '#D8CEB4',    // slightly lighter side street
-    roadEdge: '#332820',     // crisp dark pixel outline
+    roadEdge: '#6E5B4B',     // softer warm-brown pixel outline
     roadSideLine: '#F5EEDB', // pale cream pixel sidewalk curb
     roadDash: '#FFFFFF',     // crisp white pixel center dashes
   };
@@ -505,7 +505,7 @@
           minzoom: 14,
           paint: {
             'fill-pattern': 'manameow-pixel-roof-tile',
-            'fill-opacity': 0.95,
+            'fill-opacity': 0.75,
           },
         });
       } catch (e) {}
@@ -518,10 +518,11 @@
           source: 'openmaptiles',
           'source-layer': 'building',
           minzoom: 13,
-          layout: { 'line-join': 'miter' },
+          layout: { 'line-join': 'round' },
           paint: {
-            'line-color': '#261D17',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.5, 16, 2.4, 18, 3.0],
+            'line-color': '#4A382E',
+            'line-opacity': 0.72,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.5, 16, 1.0, 18, 1.4],
           },
         });
       } catch (e) {}
