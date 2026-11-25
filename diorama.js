@@ -611,51 +611,118 @@
       }
     }
 
-    // 6. Randomly scattered 90s RPG trees (relaxed spacing across all zoom levels, never dense rows)
-    const treeBucket = ['%', ['floor', ['abs', ['coalesce', ['to-number', ['id'], 0], 0]]], 5];
-    const randomTreeImage = [
-      'match', treeBucket,
-      0, 'manameow-3d-grove-icon',
-      2, 'manameow-3d-grove-icon',
-      'manameow-3d-tree-icon',
-    ];
-    const randomOffset = [
-      'match', treeBucket,
-      0, ['literal', [-14, 10]],
-      1, ['literal', [16, -12]],
-      2, ['literal', [-10, -16]],
-      3, ['literal', [14, 14]],
-      ['literal', [4, -8]],
-    ];
-    const treeScale = ['interpolate', ['exponential', 1.55], ['zoom'], 12, 0.55, 15, 1.0, 17, 1.45, 19, 2.0];
-    const relaxedPadding = ['interpolate', ['linear'], ['zoom'], 12, 22, 15, 42, 17, 68, 19, 96];
+    // 6. Fixed world-coordinate trees: planted once at exact [lng, lat] so zooming NEVER moves, shifts, or multiplies them
+    if (!map.getSource('manameow-fixed-trees')) {
+      map.addSource('manameow-fixed-trees', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+    }
+    if (!map.getLayer('manameow-fixed-trees-layer')) {
+      try {
+        map.addLayer({
+          id: 'manameow-fixed-trees-layer',
+          type: 'symbol',
+          source: 'manameow-fixed-trees',
+          minzoom: 12,
+          layout: {
+            'icon-image': ['get', 'icon'],
+            'icon-anchor': 'bottom',
+            'icon-pitch-alignment': 'viewport',
+            'icon-rotation-alignment': 'viewport',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true,
+            'icon-size': ['interpolate', ['exponential', 1.65], ['zoom'], 12, 0.52, 15, 0.98, 17, 1.48, 19, 2.1],
+          },
+        });
+      } catch (e) {}
+    }
 
-    const addTree = (id, sourceLayer, { filter, minzoom = 12, placement = 'point', spacing = 145 } = {}) => {
-      if (map.getLayer(id)) return;
-      const layout = {
-        'icon-anchor': 'bottom',
-        'icon-pitch-alignment': 'viewport',
-        'icon-rotation-alignment': 'viewport',
-        'icon-allow-overlap': false,
-        'icon-ignore-placement': false,
-        'icon-padding': relaxedPadding,
-        'icon-image': randomTreeImage,
-        'icon-offset': randomOffset,
-        'icon-size': treeScale,
-        'symbol-placement': placement,
+    if (!map.__manameowTreeSeeded) {
+      map.__manameowTreeSeeded = true;
+      const GRID_DEG = 0.00145; // ~160m fixed real-world cell -> natural airy scatter, never crowded
+      const checkedCells = new Set();
+      const plantedFeatures = [];
+      const MAX_PLANTED = 1800;
+
+      const hash2 = (a, b) => {
+        let h = (Math.imul(a, 374761393) + Math.imul(b, 668265263)) ^ 0x5bf03635;
+        h = Math.imul(h ^ (h >>> 13), 1274126177);
+        return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
       };
-      if (placement === 'line') layout['symbol-spacing'] = spacing;
-      const def = { id, type: 'symbol', source: 'openmaptiles', 'source-layer': sourceLayer, minzoom, layout };
-      if (filter) def.filter = filter;
-      try { map.addLayer(def); } catch (e) {}
-    };
-    const woodFilter = ['==', ['get', 'class'], 'wood'];
-    const grassFilter = ['==', ['get', 'class'], 'grass'];
 
-    addTree('manameow-pixel-trees-wood-center', 'landcover', { filter: woodFilter, minzoom: 12, placement: 'point' });
-    addTree('manameow-pixel-trees-wood-scatter', 'landcover', { filter: woodFilter, minzoom: 12, placement: 'line', spacing: 145 });
-    addTree('manameow-pixel-trees-park-center', 'park', { minzoom: 12, placement: 'point' });
-    addTree('manameow-pixel-trees-grass-center', 'landcover', { filter: grassFilter, minzoom: 13, placement: 'point' });
+      const greenIds = ['landcover_wood', 'park', 'landcover_grass'];
+      const blockerIds = ['water', 'manameow-pixel-road-fill', 'manameow-pixel-road-casing', 'manameow-pixel-building-fill'];
+
+      const harvestVisibleTrees = () => {
+        if (map.getZoom() < 12.2 || plantedFeatures.length >= MAX_PLANTED) return;
+        const activeGreen = greenIds.filter(id => map.getLayer(id));
+        if (!activeGreen.length) return;
+        const activeQuery = [...activeGreen, ...blockerIds.filter(id => map.getLayer(id))];
+        const bounds = map.getBounds();
+        const minX = Math.floor(bounds.getWest() / GRID_DEG);
+        const maxX = Math.floor(bounds.getEast() / GRID_DEG);
+        const minY = Math.floor(bounds.getSouth() / GRID_DEG);
+        const maxY = Math.floor(bounds.getNorth() / GRID_DEG);
+        // Skip huge cell spans when zoomed way out
+        if ((maxX - minX + 1) * (maxY - minY + 1) > 450) return;
+
+        let added = 0;
+        const greenSet = new Set(activeGreen);
+        const blockerSet = new Set(blockerIds);
+
+        for (let gx = minX; gx <= maxX; gx++) {
+          for (let gy = minY; gy <= maxY; gy++) {
+            const key = gx + ',' + gy;
+            if (checkedCells.has(key)) continue;
+            checkedCells.add(key);
+
+            // Deterministic real-world coordinate inside this grid cell
+            const lng = (gx + 0.15 + hash2(gx, gy) * 0.7) * GRID_DEG;
+            const lat = (gy + 0.15 + hash2(gy + 19, gx - 7) * 0.7) * GRID_DEG;
+            const pt = map.project([lng, lat]);
+            if (pt.x < 0 || pt.y < 0 || pt.x > map.getCanvas().clientWidth || pt.y > map.getCanvas().clientHeight) {
+              checkedCells.delete(key); // re-check once actually inside viewport
+              continue;
+            }
+
+            let hits = [];
+            try {
+              hits = map.queryRenderedFeatures([pt.x, pt.y], { layers: activeQuery });
+            } catch (e) { continue; }
+            if (!hits.length) continue;
+
+            // Only plant if on wood/park/grass and NOT on water, road, or building
+            let onGreen = false;
+            let blocked = false;
+            for (const f of hits) {
+              const lid = f.layer?.id;
+              if (blockerSet.has(lid)) { blocked = true; break; }
+              if (greenSet.has(lid)) onGreen = true;
+            }
+            if (!onGreen || blocked) continue;
+
+            const icon = hash2(gx + 41, gy + 83) < 0.36 ? 'manameow-3d-grove-icon' : 'manameow-3d-tree-icon';
+            plantedFeatures.push({
+              type: 'Feature',
+              properties: { icon },
+              geometry: { type: 'Point', coordinates: [lng, lat] },
+            });
+            added++;
+            if (plantedFeatures.length >= MAX_PLANTED) break;
+          }
+          if (plantedFeatures.length >= MAX_PLANTED) break;
+        }
+
+        if (added > 0) {
+          const src = map.getSource('manameow-fixed-trees');
+          src?.setData({ type: 'FeatureCollection', features: plantedFeatures });
+        }
+      };
+
+      map.on('idle', harvestVisibleTrees);
+      harvestVisibleTrees();
+    }
   }
 
   function setMode(map, tilted) {
