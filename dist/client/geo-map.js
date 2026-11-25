@@ -551,6 +551,12 @@
 
     function drawPins() {
       const placed = [];
+      const zoom = loaded ? map.getZoom() : camera.zoom;
+      const pinScale = clamp(0.58 + (zoom - 7.5) * 0.085, 0.58, 1);
+      pinLayer.style.setProperty('--pin-scale', pinScale.toFixed(3));
+      const minDx = Math.round(53 * pinScale);
+      const minDy = Math.round(48 * pinScale);
+      const stepX = Math.round(54 * pinScale);
       pins.forEach(({ card, button }) => {
         const point = project(card.lng, card.lat);
         const { x, y } = point;
@@ -560,9 +566,9 @@
         // Offset overlapping buttons so each sighting remains independently selectable.
         let offset = 0;
         let candidate = 0;
-        while (placed.some(pin => Math.abs(pin.x - x - offset) < 53 && Math.abs(pin.y - y) < 48)) {
+        while (placed.some(pin => Math.abs(pin.x - x - offset) < minDx && Math.abs(pin.y - y) < minDy)) {
           candidate += 1;
-          offset = Math.ceil(candidate / 2) * 54 * (candidate % 2 ? 1 : -1);
+          offset = Math.ceil(candidate / 2) * stepX * (candidate % 2 ? 1 : -1);
         }
         placed.push({ x: x + offset, y });
         button.style.left = `${x + offset}px`;
